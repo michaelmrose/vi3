@@ -241,6 +241,7 @@ mode "op" {
 }
 
 exec "~/scripts/autostart.sh" 
+exec "ff . /opt/vi3/fish/vi3.fish"
 exec "ff vi3_start-vi3"
 # vim:filetype=i3
 
