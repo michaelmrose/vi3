@@ -216,8 +216,6 @@ end
 function vi3_firstrun
    cat ~/.config/fish/config.fish /opt/vi3/fishconfig.txt > /tmp/vi3fish
    cp /tmp/vi3fish ~/.config/fish/config.fish
-   cat ~/.bash_profile /opt/vi3/bashconfig.txt > /tmp/vi3bash
-   cp /tmp/vi3bash ~/.bash_profile
-   cp ~/.i3/config ~/.i3/personalconfig 
+   cp /opt/vi3/personalconfigexample ~/.i3/personalconfig
    update-config
 end
