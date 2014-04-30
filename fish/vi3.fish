@@ -200,13 +200,6 @@ function open-app
     eval $target
 end
 
-function open-to-workspace
-    eval $argv[1]
-    sleep $argv[2]
-    focus $argv[1]
-    vi3_move-window-to-workspace $argv[3]
-end
-
 function update-config
     rm ~/.i3/config
     cat /opt/vi3/header.txt ~/.i3/personalconfig /opt/vi3/vi3config > ~/.i3/config
