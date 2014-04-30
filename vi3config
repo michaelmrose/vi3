@@ -54,7 +54,7 @@
     # reload the configuration file
         bindsym $mod+Shift+c reload
         bindsym $mod+Shift+r restart
-        bindsym F12 exec "ff update-config"
+        bindsym F12 exec "ff update-vi3-config"
 
     #other keybindings
         bindsym $mod+s move scratchpad

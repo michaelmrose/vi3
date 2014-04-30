@@ -200,7 +200,7 @@ function open-app
     eval $target
 end
 
-function update-config
+function update-vi3-config
     rm ~/.i3/config
     cat /opt/vi3/header.txt ~/.i3/personalconfig /opt/vi3/vi3config > ~/.i3/config
     i3-msg restart
