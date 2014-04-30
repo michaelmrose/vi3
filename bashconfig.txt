@@ -1,0 +1,2 @@
+PATH=/opt/vi3/bin:$PATH
+export PATH

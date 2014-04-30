@@ -1,0 +1,246 @@
+#--------------------------------------------------------
+# This portion of the file provided by vi3 and
+# will be overwritten upon update.To add your own bindings
+# and settingsplease edit ~/.i3/personalconfig instead.
+#-------------------------------------------------------- 
+
+#----------------assign workspaces to outputs------------
+
+       workspace q output $secondary_output 
+       workspace w output $secondary_output   
+       workspace e output $secondary_output
+       workspace r output $secondary_output
+       workspace t output $secondary_output
+       workspace a output $secondary_output
+       workspace s output $secondary_output
+       workspace d output $secondary_output 
+       workspace f output $secondary_output
+       workspace g output $secondary_output
+       workspace z output $secondary_output 
+       workspace x output $secondary_output 
+       workspace c output $secondary_output 
+       workspace v output $secondary_output 
+       workspace b output $secondary_output
+       workspace y output $primary_output
+       workspace u output $primary_output
+       workspace i output $primary_output
+       workspace o output $primary_output
+       workspace p output $primary_output
+       workspace h output $primary_output
+       workspace j output $primary_output
+       workspace k output $primary_output
+       workspace l output $primary_output
+       workspace n output $primary_output
+       workspace m output $primary_output
+
+#-----------------------variables-------------------------
+    set $exit mode "default"
+    set $backout exec "ff vi3_backout"
+    set $selectall focus parent, focus parent, focus parent
+    set $dm exec "ff dm"
+    set $killall focus parent, focus parent, focus parent, kill
+    set $next focus output right
+    set $op exec ff vi3_operator-mode
+    floating_modifier $mod
+
+#-----------------------Keybindings------------------------
+
+    # change focus 
+        bindsym $mod+j focus up
+        bindsym $mod+k focus down
+        bindsym $mod+h focus left
+        bindsym $mod+l focus right
+
+    # reload the configuration file
+        bindsym $mod+Shift+c reload
+        bindsym $mod+Shift+r restart
+        bindsym F12 exec "ff update-config"
+
+    #other keybindings
+        bindsym $mod+s move scratchpad
+        bindsym XF86LaunchB mode "command"
+        bindsym XF86Launch2 $op ws
+        bindsym XF86Launch1 $op ws
+        bindsym Control+Mod1+l exec "ff lock"
+        bindsym Control+Mod1+s exec "suspend"
+        bindsym Control+Mod1+r $dm
+        bindsym $mod+a mode "audio"
+ 
+#-----------------------modes------------------------------
+mode "command" {
+    #Keybindings
+    bindsym F13 $dm
+    bindsym XF86LaunchB $dm,$exit
+
+    # kill focused window
+        bindsym q kill,$exit
+        bindsym d mode "kill"
+
+    # alternatively, you can use the cursor keys:
+        bindsym Up focus up
+        bindsym Down focus down
+        bindsym Left focus left
+        bindsym Right focus right
+        
+        bindsym k focus up
+        bindsym j focus down
+        bindsym h focus left
+        bindsym l focus right
+        bindsym space focus output right,$exit
+        bindsym n focus output right, $exit 
+
+    # move windows around
+        bindsym Shift+k move up
+        bindsym Shift+j move down
+        bindsym Shift+h move left
+        bindsym Shift+l move right
+        
+    
+    # split in horizontal orientation
+        bindsym v splitv
+
+    # split in vertical orientation
+        bindsym s splith
+
+    # enter fullscreen mode for the focused container
+        bindsym Shift+f fullscreen, $exit
+
+    # focus the parent container
+        bindsym p focus parent
+
+    # focus the child container
+        #bindsym c focus child
+
+    # reload the configuration file
+        bindsym $mod+Shift+c reload
+        bindsym $mod+Shift+r restart
+
+        bindsym $mod+Shift+s move scratchpad
+        bindsym c exec "xdotool key Caps_Lock" , $exit
+        
+        bindsym f $op focus-app
+        bindsym o $op open-app             
+        bindsym r mode "resize"           
+        bindsym d mode "kill"
+        bindsym m $op mws 
+        bindsym t $op tws
+        bindsym g $op gws
+        bindsym w $op ws
+        bindsym a mode "arrange"
+        bindsym Shift+c $op cws
+        bindsym Shift+r $op rws
+        bindsym Shift+a mode "audio"
+        bindsym z mode "audio"
+
+        bindsym Escape $exit
+}
+
+mode "resize" {
+    #keybindings
+        bindsym Up    resize grow   height 10 px or 10 ppt
+        bindsym Down  resize shrink height 10 px or 10 ppt
+        bindsym Left  resize shrink width  10 px or 10 ppt
+        bindsym Right resize grow   width  10 px or 10 ppt
+
+        bindsym k resize grow   height 10 px or 10 ppt
+        bindsym j resize shrink height 10 px or 10 ppt
+        bindsym h resize shrink width  10 px or 10 ppt
+        bindsym l resize grow   width  10 px or 10 ppt
+
+        bindsym Escape $exit
+}
+
+mode "arrange" {
+    #keybindings
+        bindsym t layout tabbed,$exit
+        bindsym h layout splith,$exit
+        bindsym v layout splitv,$exit
+        bindsym s layout stacked,$exit
+        bindsym f floating toggle,$exit
+        
+        bindsym Escape $exit
+}
+
+mode "kill" {
+    #keybindings
+        bindsym d $killall, $exit
+        bindsym w kill, $exit
+        bindsym a $killall, $next, $killall, $exit
+        bindsym Escape $exit
+}
+
+mode "audio" {
+    #keybindings
+        bindsym j exec "ff setvol -5"
+        bindsym k exec "ff setvol +5"
+        bindsym h exec "ff audio-prev"
+        bindsym l exec "ff audio-next"
+        bindsym Space exec "xdotool key XF86AudioPlay"
+        bindsym p exec "ff audio-play"
+        bindsym n exec "~/scripts/switchaudio.sh"
+
+        bindsym Escape $exit
+}
+
+mode "op" {
+    #keybindings
+        bindsym a exec "ff evalvi3op a",$exit
+        bindsym b exec "ff evalvi3op b",$exit
+        bindsym c exec "ff evalvi3op c",$exit
+        bindsym d exec "ff evalvi3op d",$exit
+        bindsym e exec "ff evalvi3op e",$exit
+        bindsym f exec "ff evalvi3op f",$exit
+        bindsym g exec "ff evalvi3op g",$exit
+        bindsym h exec "ff evalvi3op h",$exit
+        bindsym i exec "ff evalvi3op i",$exit
+        bindsym j exec "ff evalvi3op j",$exit
+        bindsym k exec "ff evalvi3op k",$exit
+        bindsym l exec "ff evalvi3op l",$exit
+        bindsym m exec "ff evalvi3op m",$exit
+        bindsym n exec "ff evalvi3op n",$exit
+        bindsym o exec "ff evalvi3op o",$exit
+        bindsym p exec "ff evalvi3op p",$exit
+        bindsym q exec "ff evalvi3op q",$exit
+        bindsym r exec "ff evalvi3op r",$exit
+        bindsym s exec "ff evalvi3op s",$exit
+        bindsym t exec "ff evalvi3op t",$exit
+        bindsym u exec "ff evalvi3op u",$exit
+        bindsym v exec "ff evalvi3op v",$exit
+        bindsym w exec "ff evalvi3op w",$exit
+        bindsym x exec "ff evalvi3op x",$exit
+        bindsym y exec "ff evalvi3op y",$exit
+        bindsym z exec "ff evalvi3op z",$exit
+        bindsym Shift+a exec "ff evalvi3op A",$exit
+        bindsym Shift+b exec "ff evalvi3op B",$exit
+        bindsym Shift+c exec "ff evalvi3op C",$exit
+        bindsym Shift+d exec "ff evalvi3op D",$exit
+        bindsym Shift+e exec "ff evalvi3op E",$exit
+        bindsym Shift+f exec "ff evalvi3op F",$exit
+        bindsym Shift+g exec "ff evalvi3op G",$exit
+        bindsym Shift+h exec "ff evalvi3op H",$exit
+        bindsym Shift+i exec "ff evalvi3op I",$exit
+        bindsym Shift+j exec "ff evalvi3op J",$exit
+        bindsym Shift+k exec "ff evalvi3op K",$exit
+        bindsym Shift+l exec "ff evalvi3op L",$exit
+        bindsym Shift+m exec "ff evalvi3op M",$exit
+        bindsym Shift+n exec "ff evalvi3op N",$exit
+        bindsym Shift+o exec "ff evalvi3op O",$exit
+        bindsym Shift+p exec "ff evalvi3op P",$exit
+        bindsym Shift+q exec "ff evalvi3op Q",$exit
+        bindsym Shift+r exec "ff evalvi3op R",$exit
+        bindsym Shift+s exec "ff evalvi3op S",$exit
+        bindsym Shift+t exec "ff evalvi3op T",$exit
+        bindsym Shift+u exec "ff evalvi3op U",$exit
+        bindsym Shift+v exec "ff evalvi3op V",$exit
+        bindsym Shift+w exec "ff evalvi3op W",$exit
+        bindsym Shift+x exec "ff evalvi3op X",$exit
+        bindsym Shift+y exec "ff evalvi3op Y",$exit
+        bindsym Shift+z exec "ff evalvi3op Z",$exit
+
+        bindsym Escape $backout
+}
+
+exec "~/scripts/autostart.sh" 
+exec "ff vi3_start-vi3"
+# vim:filetype=i3
+
