@@ -214,8 +214,10 @@ function update-config
 end
 
 function vi3_firstrun
-   cat ~/.config/fish/config.fish /opt/vi3/fishconfig.txt > /tmp/vi3fish
-   cp /tmp/vi3fish ~/.config/fish/config.fish
+   touch ~/.config/fish.fish
+   touch ~/.i3/config
+   cat ~/.config/fish/config.fish /opt/vi3/fishconfig.txt > ~/tmpvi3fish
+   cp ~/tmpvi3fish ~/.config/fish/config.fish
    cp /opt/vi3/personalconfigexample ~/.i3/personalconfig
    update-config
 end
