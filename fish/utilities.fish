@@ -1,5 +1,5 @@
 function dm
-    dmenu_run -p "Command: " -nb "black" -sf "#036300" -sb "#A6CD01" -nf "grey" -fn 'DejaVu Sans Mono 10' -b
+    dmenu_run -p "Command: " -nb "black" -sf "#036300" -sb "#A6CD01" -nf "grey" -fn 'DejaVu Sans Mono 12' -b
 end
 
 function wp
@@ -49,6 +49,6 @@ end
 
 #does NOT work
 function audio-play
-    keyp XF86AudioPlay
+    clemctl Pause
 end
 

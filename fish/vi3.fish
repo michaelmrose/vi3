@@ -41,10 +41,53 @@ function vi3_combo
 end
 
 function vi3_rearrange
-    set -l myworkspace (getCurrentWorkspace) 
     vi3_workspace $combolist[1]
     vi3_take-window-to-workspace $combolist[2]
-    vi3_workspace $myworkspace 
+end
+
+function vi3_change-both
+    vi3_workspace $combolist[1]
+    vi3_workspace $combolist[2]
+end
+
+
+function get-both-workspaces
+#return a list of focused workspaces
+    set focused (getCurrentWorkspace)
+    i3-msg focus output right
+    set focused $focused (getCurrentWorkspace)
+    echo $focused
+end
+
+function focus-primary
+    i3-msg focus output $primaryoutput
+end
+
+function focus-secondary
+    i3-msg focus output $secondaryoutput
+end
+
+function record-workspaces
+    focus-primary
+    set -U workspaceleft (getCurrentWorkspace)
+    i3-msg focus output right
+    set -U workspaceright (getCurrentWorkspace)
+end
+
+function restore-workspaces
+    vi3_workspace $workspaceleft 
+    vi3_workspace $workspaceright
+end
+
+
+function evalandrestore
+    record-workspaces
+    eval $argv
+    restore-workspaces
+end
+
+function vi3_kill
+    i3-msg kill
 end
 
 function vi3_take-n
@@ -71,11 +114,15 @@ end
 
 
 function vi3_combine-workspaces
-    vi3_take-two $argv[1] vi3_combo
+    evalandrestore vi3_take-two $argv[1] vi3_combo
 end
 
 function vi3_rearrange-workspaces
-    vi3_take-two $argv[1] vi3_rearrange
+    evalandrestore vi3_take-two $argv[1] vi3_rearrange
+end
+
+function vi3_change-both-workspaces
+    vi3_take-two $argv[1] vi3_change-both
 end
 
 function vi3_workspace
@@ -96,6 +143,16 @@ function vi3_operator-mode
     i3-msg mode "op"
 end
 
+function vi3_fetch-window
+    focus-app $argv
+    vi3_take-back
+end
+
+function vi3_take-back
+    i3-msg move container to workspace back_and_forth
+    i3-msg workspace back_and_forth
+end
+
 function vi3_backout
     set -e vi3op
     set -e combolist
@@ -104,11 +161,8 @@ end
 
 function vi3_get-workspace
     vi3_workspace $argv 
-    echo "moving to " $argv
     vi3_select-all-in-workspace
-    echo "focusing parent"
-    i3-msg move container to workspace back_and_forth
-    i3-msg workspace back_and_forth
+    vi3_take-back
 end
 
 function vi3_select-all-in-workspace
@@ -133,7 +187,7 @@ function app-switch
         case "b"
             set returnval "firefox"
         case "c"
-            set returnval "kcalc"
+            set returnval "speedcrunch"
         case "d"
             set returnval "qbittorrent"
         case "e"
@@ -171,7 +225,7 @@ function app-switch
         case "s"
             set returnval "nil"
         case "t"
-            set returnval "lxterminal"
+            set returnval "konsole"
         case "u"
             set returnval "nil"
         case "v"
@@ -183,7 +237,7 @@ function app-switch
         case "y"
             set returnval "nil"
         case "z"
-            set returnval "nil"
+            set returnval "zathura"
         case "*"
             set returnval "msg invalid selection"
         end
@@ -213,4 +267,8 @@ function vi3_firstrun
    cp ~/tmpvi3fish ~/.config/fish/config.fish
    cp /opt/vi3/personalconfigexample ~/.i3/personalconfig
    update-vi3-config
+end
+
+function testvi3
+    eval $argv[2..3]
 end

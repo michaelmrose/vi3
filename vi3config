@@ -65,6 +65,8 @@
         bindsym Control+Mod1+s exec "suspend"
         bindsym Control+Mod1+r $dm
         bindsym $mod+a mode "audio"
+        bindsym $mod+f fullscreen
+
  
 #-----------------------modes------------------------------
 mode "command" {
@@ -75,7 +77,6 @@ mode "command" {
     # kill focused window
         bindsym q kill,$exit
         bindsym d mode "kill"
-
     # alternatively, you can use the cursor keys:
         bindsym Up focus up
         bindsym Down focus down
@@ -103,7 +104,7 @@ mode "command" {
         bindsym s splith
 
     # enter fullscreen mode for the focused container
-        bindsym Shift+f fullscreen, $exit
+        #bindsym Shift+f fullscreen, $exit
 
     # focus the parent container
         bindsym p focus parent
@@ -119,6 +120,7 @@ mode "command" {
         bindsym c exec "xdotool key Caps_Lock" , $exit
         
         bindsym f $op focus-app
+        bindsym Shift+f $op vi3_fetch-window
         bindsym o $op open-app             
         bindsym r mode "resize"           
         bindsym d mode "kill"
@@ -126,6 +128,7 @@ mode "command" {
         bindsym t $op tws
         bindsym g $op gws
         bindsym w $op ws
+        bindsym Shift+w $op vi3_change-both-workspaces
         bindsym a mode "arrange"
         bindsym Shift+c $op cws
         bindsym Shift+r $op rws
@@ -137,15 +140,14 @@ mode "command" {
 
 mode "resize" {
     #keybindings
-        bindsym Up    resize grow   height 10 px or 10 ppt
-        bindsym Down  resize shrink height 10 px or 10 ppt
-        bindsym Left  resize shrink width  10 px or 10 ppt
-        bindsym Right resize grow   width  10 px or 10 ppt
-
-        bindsym k resize grow   height 10 px or 10 ppt
-        bindsym j resize shrink height 10 px or 10 ppt
-        bindsym h resize shrink width  10 px or 10 ppt
-        bindsym l resize grow   width  10 px or 10 ppt
+        bindsym k       resize grow   height 15 px or 15 ppt
+        bindsym Shift+k resize grow   height 30 px or 30 ppt
+        bindsym j       resize shrink height 15 px or 15 ppt
+        bindsym Shift+j resize shrink height 30 px or 30 ppt
+        bindsym h       resize shrink width  15 px or 15 ppt
+        bindsym Shift+h resize shrink width  30 px or 30 ppt
+        bindsym l       resize grow   width  15 px or 15 ppt
+        bindsym Shift+l resize grow   width  30 px or 30 ppt
 
         bindsym Escape $exit
 }
@@ -175,8 +177,9 @@ mode "audio" {
         bindsym k exec "ff setvol +5"
         bindsym h exec "ff audio-prev"
         bindsym l exec "ff audio-next"
-        bindsym Space exec "xdotool key XF86AudioPlay"
         bindsym p exec "ff audio-play"
+        bindsym space exec "ff audio-play"
+        bindsym t exec xdotool key XF86AudioNext
         bindsym n exec "~/scripts/switchaudio.sh"
 
         bindsym Escape $exit
@@ -244,4 +247,3 @@ exec "~/scripts/autostart.sh"
 exec "ff . /opt/vi3/fish/vi3.fish"
 exec "ff vi3_start-vi3"
 # vim:filetype=i3
-
