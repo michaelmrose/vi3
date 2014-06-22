@@ -195,7 +195,7 @@ function app-switch
         case "f"
             set returnval "dolphin"
         case "g"
-            set returnval "steam"
+            set returnval "gcalendar"
         case "h"
             set returnval "hexchat"
         case "i"
@@ -246,7 +246,12 @@ end
 
 function focus-app
     set target (app-switch $argv)
+    set -U lasttarget $target
     focus $target
+end
+
+function focus-next
+    nextmatch $lasttarget
 end
 
 function open-app
