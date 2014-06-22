@@ -1,0 +1,386 @@
+function fish_prompt
+    #z --add "$pwd"
+    echo (~/bin/powerline-shell.py $status --shell bare)
+end
+
+. /opt/vi3/fish/vi3.fish
+
+alias ws vi3_workspace
+alias gws vi3_get-workspace
+alias cws vi3_combine-workspaces
+alias rws vi3_rearrange-workspaces
+alias saw vi3_select-all-in-workspace
+alias mws vi3_move-window-to-workspace
+alias tws vi3_take-window-to-workspace
+
+
+
+function reload-config
+    . ~/.config/fish/config.fish
+    . ~/scripts/audio.fish
+    . /opt/vi3/fish/vi3.fish
+end
+
+function ip3
+    ipython3 qtconsole --colors=linux --ConsoleWidget.font_family="DejaVu Sans Mono" --ConsoleWidget.font_size="12"
+end
+
+function ip2
+    ipython qtconsole --colors=linux --ConsoleWidget.font_family="DejaVu Sans Mono" --ConsoleWidget.font_size="12"
+end
+
+function theend
+    sudo shutdown -h now
+end
+
+function rboot
+    sudo shutdown -r now
+end
+
+function u
+    cd ..
+end
+
+function h
+    cd ~
+end
+
+function pman
+    gksudo synaptic
+end
+
+function die
+    xkill
+end
+
+function logoff
+    i3-msg exit
+end
+
+
+function kill-user
+    sudo pkill -KILL -u $argv
+end
+
+function tm
+    time $argv    
+    echo " "
+end
+
+function logout
+    i3-msg exit
+end
+
+
+
+function grepproc
+    ps -A | grep $argv
+end
+
+function serv
+    sudo /etc/init.d/$argv[1] $argv[2]
+end
+
+function service-list
+    ls /etc/init.d/
+end
+
+function freespin
+    sudo /opt/bin/revoco free
+end
+
+function clickit
+    sudo /opt/bin/revoco click
+end
+
+function uz
+    atool -x $argv
+end
+
+function v
+    qvim $argv
+end
+
+function ins
+    sudo apt-get install $argv
+end
+
+function upg
+    sudo apt-get upgrade $argv
+end
+
+function kill-last
+    kill -9 %1
+end
+
+function pstatus
+    apt-cache policy $argv
+end
+
+function aptup
+    sudo apt-get update
+end
+
+function psearch
+    apt-cache search $argv
+end
+
+function repo
+    sudo add-apt-repository $argv
+    aptup
+end
+
+function ppa
+    sudo add-apt-repository ppa:$argv
+    aptup
+end
+
+function here
+    ls -A | grep $argv
+end
+
+function unins
+    sudo apt-get remove $argv
+end
+
+function cs-compile
+    ~/clojurescript/bin/cljsc $argv[1] '{:optimizations :advanced}' > $argv[2]
+end
+
+function version-info
+    cat /etc/linuxmint/info
+    cat /etc/*-release
+end
+
+function lclj
+    zathura /home/michael/calibre/tech/Amit\ Rathore/Clojure\ in\ Action\ 2E\ MEAP\ version\ 06\ \(1244\)/Clojure\ in\ Action\ 2E\ MEAP\ version\ 06\ -\ Amit\ Rathore.pdf &
+    idea
+end
+
+function pdfextract
+    pdftk A=$argv[1] cat A$argv[2]-$argv[3] output temp.pdf
+    mv temp.pdf $argv[1]
+end
+
+function pdfkillcover
+    pdfextract $argv[1] 2 end
+end
+
+function winclass
+    xprop | grep WM_CLASS | cut -d '"' -f4 
+end
+
+function wtfisthis
+    whoami
+    echo \n
+    version-info
+    echo \n
+    inxi -Sxx
+end
+
+
+function msg
+    notify-send --expire-time=1 $argv
+end
+
+function getvol
+    pactl list sinks | sed -n -e '/State: RUNNING/,$p' | grep "Volume: 0" | cut -d " " -f4 | head -c3
+end
+
+function trackname
+    qdbus org.mpris.clementine /Player org.freedesktop.MediaPlayer.GetMetadata | grep album | cut -d ":" -f2 | cut -d " " -f2-7
+end
+
+function appendtoplaylist
+    clementine -a $argv
+end
+
+function testthis
+    set -U lengthofgv (size-of-getvol)
+    echo $lengthofgv
+    if test 2 = 2
+        echo "yes"
+    end
+end
+    
+
+function setlastvol
+    set -U lastvolume (getvol)
+end
+
+function restorelastvol
+    setvol $lastvolume
+end
+
+function size-of-getvol
+    lengthofgetvol.sh
+end
+
+
+alias netflix netflix-desktop
+
+# . /opt/fish/standard.fish
+
+#--------------------------------------------------------------------------
+# git stuff
+#--------------------------------------------------------------------------
+function gl
+    git log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr)%C(bold blue)<%an>%Creset' --abbrev-commit
+end
+
+function gc
+    git commit $argv
+end
+
+function gsb
+    git submodule $argv
+end
+
+function gs
+    git status
+end
+
+function cclass
+    startvm Compilers 
+    mountccl  
+    qvim ~/devvm
+end
+#--------------------------------------------------------------------------
+
+#--------------------------------------------------------------------------
+#ssh stuff
+#--------------------------------------------------------------------------
+function mountccl
+    sshfs ccl:/home/compilers ~/devvm -o Compression=no -o Ciphers=arcfour
+end
+
+function umountccl
+    fusermount -u ~/devvm
+end
+
+function startvm
+    vmrun start ~/vmware/$argv/$argv.vmx
+end
+
+function suspendvm
+    vmrun suspend ~/vmware/$argv/$argv.vmx
+end
+#--------------------------------------------------------------------------
+
+function coursedl
+    coursera-dl -d ~/courses $argv
+end
+
+function noteit
+    qvim
+    sleep 0.5
+    xdotool key e space s n n
+end
+
+function vlcclip
+    vlc (xclip -o)
+end
+
+function vplugname
+    echo $argv | cut -d "/" -f5
+end
+
+function vimplug
+    cd ~/.vim
+    git submodule add $argv ./bundle/(vplugname $argv) 
+end 
+
+function trackedvplug
+    cat .gitmodules | grep path | cut -d "/" -f2
+end
+
+function gcal
+    google calendar add $argv
+end
+
+function gcalendar
+    chromeless -new-window calendar.rosenetwork.net &
+    sleep 1
+    xdotool key Control+z
+end
+
+function keyp
+    xdotool key $argv
+end
+
+function open-trans
+    eval $argv[1]
+    sleep 1
+    set mywin (xdotool getactivewindow)
+    transset -i $mywin $argv[2]
+end
+
+function trans
+    currentapp
+    transset -i $mywin $argv
+end
+
+function currentapp
+    set -U mywin (xdotool getactivewindow)
+end
+
+function transparent
+    currentapp
+    transset -i $mywin .86
+end
+
+function solid
+    currentapp
+    transset -i $mywin 1.0
+end
+
+function nextwindow
+    currentapp
+    set currentclass (xprop -id $mywin | grep WM_CLASS | cut -d '"' -f4)
+    nextmatch $currentclass
+end
+
+function chromeless
+    firefox -P chromeless -no-remote $argv 
+end
+    
+function arrangeme
+    focus firefox
+    i3-msg move container to workspace k
+    focus dolphin
+    i3-msg move container to workspace d
+    focus qvim
+    i3-msg move container to workspace j
+    focus konsole
+    i3-msg move container to workspace f
+end
+
+function pman
+    man -t $argv | ps2pdf - /tmp/{$argv}.pdf
+    open /tmp/{$argv}.pdf &
+end
+
+function why
+    dpkg -S (which $argv)
+end
+
+function escape-spaces
+    echo $argv | sed 's/ /\\ /g' 
+end
+
+function books
+    calibredb list -s title:"{$argv}"
+    # set targetbook (fzf -q "{$argv}")
+    # zathura $targetbook
+end
+
+function save-layout
+    i3-save-tree --workspace (getCurrentWorkspace)   > ~/workspace.json
+end
+
+function restoreme
+    i3-msg append_layout workspace.json
+end
+
+set PATH /opt/vi3/bin /opt/bin /opt/dmenu /opt/scala/bin /opt/vim-qt/bin $PATH ~/scripts ~/racket/bin /opt/cxoffice/bin ~/games/dustaet/
+if test -f /home/michael/.autojump/etc/profile.d/autojump.fish; . /home/michael/.autojump/etc/profile.d/autojump.fish; end
