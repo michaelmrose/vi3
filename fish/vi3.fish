@@ -125,6 +125,23 @@ function vi3_change-both-workspaces
     vi3_take-two $argv[1] vi3_change-both
 end
 
+function vi3_trans-set
+    trans .{$combolist[1]}{$combolist[2]}
+end
+
+function vi3_trans
+    vi3_take-two $argv[1] vi3_trans-set
+end
+
+function vi3_vol-set
+    setvol {$combolist[1]}{$combolist[2]}
+end
+
+function vi3_vol
+    vi3_take-two $argv[1] vi3_vol-set
+end
+
+
 function vi3_workspace
     i3-msg workspace $argv
 end

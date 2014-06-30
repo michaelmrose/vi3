@@ -1,13 +1,13 @@
 #---------------------user variables-----------------------
 
     set $mod Mod4
-    set $primary_output   DVI-I-1
-    set $secondary_output DVI-I-2
+    set $primary_output  HDMI-0 
+    set $secondary_output DVI-I-0
 
 #-----------------------appearance-------------------------
 
     #class                  border  backgr  text    indicator
-    client.focused          #111111 #A6CD01 #036300 #000000
+    client.focused          #111111 #AFD700 #066900 #000000
     client.focused_inactive #111111 #444444 #ffffff #484e50
     client.unfocused        #111111 #222222 #888888 #292d2e
     client.urgent           #2f343a #900000 #ffffff #900000
@@ -19,13 +19,12 @@
             position bottom
             status_command i3status
             tray_output $primary_output
-
             #class                 border  backgr  text
             colors { 
-                focused_workspace  #000000 #A6CD01 #036300
+                focused_workspace  #000000 #AFD700 #066900
                 inactive_workspace #333333 #000000 #AAAAAA
                 active_workspace   #333333 #000000 #FFFFFF
-                urgent_workspace   #333333 #A6CD01 #000000
+                urgent_workspace   #333333 #066900 #AFD700
             }
 
     }
@@ -39,16 +38,25 @@
         assign [class=jetbrains-ide ] u
         assign [class=Vmware        ] r
         assign [class=Thunderbird   ] l
+        assign [class=Screenkey     ] f
         
-for_window [class="Kcalc"] floating enable
+for_window [class="Qalculate"] floating enable
+for_window [class="Speedcrunch"] floating enable
+for_window [class="Main.py"] floating enable
+for_window [class="Screenkey"] floating enable
 for_window [class="Calibre-gui" window_role="dialog"] floating enable
 for_window [class="feh"] floating enable
+#for_window [class="Sxiv"] floating enable
 for_window [class="firefox.exe"] fullscreen
+for_window [class="Lxterminal"] exec "ff trans .80"
+for_window [class="Konsole"] exec "ff trans .80"
+for_window [class="Calibre-ebook-viewer"] fullscreen 
+mouse_warping none
 # vim:filetype=i3
 
 #-----------------------Keybindings------------------------
 
         bindsym F15 exec "ff setvol +5" 
         bindsym F21 exec "ff setvol -5" 
-        bindsym $mod+n exec "ff new-session"
 
+# vim:filetype=i3

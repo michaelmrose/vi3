@@ -66,7 +66,8 @@
         bindsym Control+Mod1+r $dm
         bindsym $mod+a mode "audio"
         bindsym $mod+m mode "mouseset"
-        bindsym $mod+t mode "transparency"
+        bindsym $mod+t $op vi3_trans
+        bindsym $mod+v $op vi3_vol
         bindsym $mod+f fullscreen
         bindsym $mod+n exec "ff nextwindow"
 
@@ -91,7 +92,6 @@ mode "command" {
         bindsym h focus left
         bindsym l focus right
         bindsym space focus output right,$exit
-        bindsym n focus output right, $exit 
 
     # move windows around
         bindsym Shift+k move up
@@ -128,6 +128,7 @@ mode "command" {
         bindsym r mode "resize"           
         bindsym d mode "kill"
         bindsym m $op mws 
+        bindsym n exec "ff nextwindow"
         bindsym t $op tws
         bindsym g $op gws
         bindsym w $op ws
@@ -136,7 +137,7 @@ mode "command" {
         bindsym Shift+c $op cws
         bindsym Shift+r $op rws
         bindsym Shift+a mode "audio"
-        bindsym Shift+t exec "ff transparent", $exit
+        bindsym Shift+t $op vi3_trans
         bindsym Shift+s exec "ff solid", $exit
         bindsym z mode "audio"
 
@@ -244,6 +245,16 @@ mode "op" {
         bindsym Shift+x exec "ff evalvi3op X",$exit
         bindsym Shift+y exec "ff evalvi3op Y",$exit
         bindsym Shift+z exec "ff evalvi3op Z",$exit
+        bindsym 0 exec "ff evalvi3op 0",$exit
+        bindsym 1 exec "ff evalvi3op 1",$exit
+        bindsym 2 exec "ff evalvi3op 2",$exit
+        bindsym 3 exec "ff evalvi3op 3",$exit
+        bindsym 4 exec "ff evalvi3op 4",$exit
+        bindsym 5 exec "ff evalvi3op 5",$exit
+        bindsym 6 exec "ff evalvi3op 6",$exit
+        bindsym 7 exec "ff evalvi3op 7",$exit
+        bindsym 8 exec "ff evalvi3op 8",$exit
+        bindsym 9 exec "ff evalvi3op 9",$exit
 
         bindsym Escape $backout
 }
