@@ -1,5 +1,8 @@
 function dm
+    set lastws (getCurrentWorkspace)
+    focus-primary
     dmenu_run -p "Command: " -nb "black" -sf "#036300" -sb "#A6CD01" -nf "grey" -fn Inconsolata-12 -b
+    ws $lastws
 end
 
 function wp
@@ -54,3 +57,31 @@ function audio-play
     xdotool key XF86AudioPlay
 end
 
+function trans
+    currentapp
+    transset -i $mywin $argv
+end
+
+function another-trans
+    transset -i (xdotool getactivewindow) .{$argv}
+end
+
+function currentapp
+    set -U mywin (xdotool getactivewindow)
+end
+
+function transparent
+    currentapp
+    transset -i $mywin .86
+end
+
+function solid
+    currentapp
+    transset -i $mywin 1.0
+end
+
+function nextwindow
+    currentapp
+    set currentclass (xprop -id $mywin | grep WM_CLASS | cut -d '"' -f4)
+    nextmatch $currentclass
+end

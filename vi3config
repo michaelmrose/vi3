@@ -139,7 +139,7 @@ mode "command" {
         bindsym Shift+a mode "audio"
         bindsym Shift+t $op vi3_trans
         bindsym Shift+s exec "ff solid", $exit
-        bindsym z mode "audio"
+        bindsym z mode "testop"
 
         bindsym Escape $exit
 }
@@ -258,6 +258,38 @@ mode "op" {
 
         bindsym Escape $backout
 }
+
+mode "testop" {
+    #keybindings
+        bindsym a exec "ff sendkey a",$exit
+        bindsym b exec "ff sendkey b",$exit
+        bindsym c exec "ff sendkey c",$exit
+        bindsym d exec "ff sendkey d",$exit
+        bindsym e exec "ff sendkey e",$exit
+        bindsym f exec "ff sendkey f",$exit
+        bindsym g exec "ff sendkey g",$exit
+        bindsym h exec "ff sendkey h",$exit
+        bindsym i exec "ff sendkey i",$exit
+        bindsym j exec "ff sendkey j",$exit
+        bindsym k exec "ff sendkey k",$exit
+        bindsym l exec "ff sendkey l",$exit
+        bindsym m exec "ff sendkey m",$exit
+        bindsym n exec "ff sendkey n",$exit
+        bindsym o exec "ff sendkey o",$exit
+        bindsym p exec "ff sendkey p",$exit
+        bindsym q exec "ff sendkey q",$exit
+        bindsym r exec "ff sendkey r",$exit
+        bindsym s exec "ff sendkey s",$exit
+        bindsym t exec "ff sendkey t",$exit
+        bindsym u exec "ff sendkey u",$exit
+        bindsym v exec "ff sendkey v",$exit
+        bindsym w exec "ff sendkey w",$exit
+        bindsym x exec "ff sendkey x",$exit
+        bindsym y exec "ff sendkey y",$exit
+        bindsym z exec "ff sendkey z",$exit
+        bindsym Escape mode "default", exec "ff clearkeys"
+}
+
 
 mode mouseset {
     #keybindings

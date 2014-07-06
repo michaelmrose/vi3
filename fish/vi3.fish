@@ -294,3 +294,40 @@ end
 function testvi3
     eval $argv[2..3]
 end
+
+function sendkey
+    set -U keyseq $keyseq{$argv}
+    set mycom command_{$keyseq}
+    test $$mycom; and eval $$mycom; and clearkeys; or i3-msg mode "testop"
+end
+
+function clearkeys
+    set -U keyseq ""
+end
+
+function register-command
+    set -U command_{$argv[1]} $argv[2]
+    echo command_{$argv[1]}
+end
+
+function isempty
+    if [ $argv[1] = "" ]
+        return 0
+    else
+        return 1
+    end
+end
+
+function notempty
+    if [ $argv[1] != "" ]
+        return 0
+    else
+        return 1
+    end
+end
+
+function getcom
+    set mycommand command_{$argv}
+    echo $$mycommand
+end
+
