@@ -32,6 +32,8 @@ end
 function vi3_restore-shift-keys
     /opt/bin/xcape -e 'Shift_L=XF86Launch1'
     /opt/bin/xcape -e 'Shift_R=XF86Launch2'
+    /opt/bin/xcape -e 'Control_L=Page_Down'
+    /opt/bin/xcape -e 'Alt_L=Page_Up'
 end
 
 
