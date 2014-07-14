@@ -57,6 +57,18 @@ function audio-play
     xdotool key XF86AudioPlay
 end
 
+function get-connected-displays
+    xrandr | grep " connected" | cut -d "c" -f1
+end
+
+function get-number-of-displays
+    count (get-connected-displays)
+end
+
+function get-primary-display
+    xrandr --verbose | grep primary | cut -d " " -f1
+end
+
 function trans
     currentapp
     transset -i $mywin $argv

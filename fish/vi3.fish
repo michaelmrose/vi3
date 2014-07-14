@@ -1,6 +1,22 @@
 #vi3.fish provides helper functions to provide vi like keybindings for the i3 window manager
 . /opt/vi3/fish/utilities.fish
 
+function defop
+    set -U operation $argv[1]_op
+    set -U numberofkeys $argv[2]
+    set -U finalfunction $argv[3..-1]
+    functions -e $argv[1]_op
+    functions -e $argv[1]
+
+    function $argv[1]_op
+        eval $finalfunction
+    end
+
+    function $argv[1]
+         eval vi3_take-{$numberofkeys} $argv[1] $operation
+    end
+end
+
 function vi3_start-vi3
     vi3_define-vars
     vi3_setup-keyboard
@@ -47,43 +63,44 @@ function vi3_rearrange
     vi3_take-window-to-workspace $combolist[2]
 end
 
-function vi3_change-both
-    vi3_workspace $combolist[1]
-    vi3_workspace $combolist[2]
+function vi3_change-all
+    set num 1
+    for i in $combolist
+        vi3_workspace $combolist[$num]
+        set num (math $num + 1)
+    end
 end
 
-
-function get-both-workspaces
-#return a list of focused workspaces
-    set focused (getCurrentWorkspace)
-    i3-msg focus output right
-    set focused $focused (getCurrentWorkspace)
-    echo $focused
+function vi3_change-all-workspaces
+    set numdisplays (get-number-of-displays)
+    eval vi3_take-{$numdisplays} $argv[1] vi3_change-both
 end
+
+function get-active-workspaces
+    set -e workspaces
+    for i in (get-connected-displays) 
+        set -U workspaces $workspaces (getCurrentWorkspace)
+        i3-msg focus output right
+    end
+    echo (count $workspaces)
+    echo $workspaces
+end
+   
 
 function focus-primary
-    i3-msg focus output $primaryoutput
-end
-
-function focus-secondary
-    i3-msg focus output $secondaryoutput
-end
-
-function record-workspaces
-    focus-primary
-    set -U workspaceleft (getCurrentWorkspace)
-    i3-msg focus output right
-    set -U workspaceright (getCurrentWorkspace)
+    i3-msg focus output (get-primary-display) 
 end
 
 function restore-workspaces
-    vi3_workspace $workspaceleft 
-    vi3_workspace $workspaceright
+    # vi3_workspace $workspaceleft 
+    # vi3_workspace $workspaceright
+    for i in $workspaces
+        i3-msg workspace $i
+    end
 end
 
-
 function evalandrestore
-    record-workspaces
+    get-active-workspaces
     eval $argv
     restore-workspaces
 end
@@ -110,21 +127,17 @@ function vi3_take-n
     end
 end
 
-function vi3_take-two
+function vi3_take-2
     vi3_take-n $argv[1] $argv[2] 2
 end
 
 
 function vi3_combine-workspaces
-    evalandrestore vi3_take-two $argv[1] vi3_combo
+    evalandrestore vi3_take-2 $argv[1] vi3_combo
 end
 
 function vi3_rearrange-workspaces
-    evalandrestore vi3_take-two $argv[1] vi3_rearrange
-end
-
-function vi3_change-both-workspaces
-    vi3_take-two $argv[1] vi3_change-both
+    evalandrestore vi3_take-2 $argv[1] vi3_rearrange
 end
 
 function vi3_trans-set
@@ -132,17 +145,20 @@ function vi3_trans-set
 end
 
 function vi3_trans
-    vi3_take-two $argv[1] vi3_trans-set
+    vi3_take-2 $argv[1] vi3_trans-set
 end
+
+# defop vi3_trans-set 2 'trans .{$combolist[1]}{$combolist[2]}'
 
 function vi3_vol-set
     setvol {$combolist[1]}{$combolist[2]}
 end
 
 function vi3_vol
-    vi3_take-two $argv[1] vi3_vol-set
+    vi3_take-2 $argv[1] vi3_vol-set
 end
 
+# defop vi3_vol 2 'setvol {$combolist[1]}{$combolist[2]}'
 
 function vi3_workspace
     i3-msg workspace $argv
@@ -278,10 +294,34 @@ function open-app
     eval $target
 end
 
+function select-all-in-workspace
+    i3-msg focus parent
+    i3-msg focus parent
+    i3-msg focus parent
+end
+
+function kill-workspace
+    select-all-in-workspace
+    i3-msg kill
+end
+
+function destroy-everything
+    set displays (get-connected-displays)
+    for i in $displays
+        i3-msg focus output right
+        kill-workspace
+    end
+end
+
 function update-vi3-config
     rm ~/.i3/config
-    cat /opt/vi3/header.txt ~/.i3/personalconfig /opt/vi3/vi3config > ~/.i3/config
+    cat /opt/vi3/header.txt ~/.i3/colors/{$colors} ~/.i3/personalconfig /opt/vi3/vi3config > ~/.i3/config
     i3-msg restart
+end
+
+function colorscheme
+    set -U colors $argv
+    update-vi3-config
 end
 
 function vi3_firstrun
@@ -292,44 +332,3 @@ function vi3_firstrun
    cp /opt/vi3/personalconfigexample ~/.i3/personalconfig
    update-vi3-config
 end
-
-function testvi3
-    eval $argv[2..3]
-end
-
-function sendkey
-    set -U keyseq $keyseq{$argv}
-    set mycom command_{$keyseq}
-    test $$mycom; and eval $$mycom; and clearkeys; or i3-msg mode "testop"
-end
-
-function clearkeys
-    set -U keyseq ""
-end
-
-function register-command
-    set -U command_{$argv[1]} $argv[2]
-    echo command_{$argv[1]}
-end
-
-function isempty
-    if [ $argv[1] = "" ]
-        return 0
-    else
-        return 1
-    end
-end
-
-function notempty
-    if [ $argv[1] != "" ]
-        return 0
-    else
-        return 1
-    end
-end
-
-function getcom
-    set mycommand command_{$argv}
-    echo $$mycommand
-end
-
