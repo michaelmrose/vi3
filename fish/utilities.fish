@@ -97,3 +97,11 @@ function nextwindow
     set currentclass (xprop -id $mywin | grep WM_CLASS | cut -d '"' -f4)
     nextmatch $currentclass
 end
+
+function pi3
+   echo "import i3"\n{$argv} | python
+end 
+
+function getCurrentWorkspace
+    pi3 "print i3.filter(i3.get_workspaces(), focused=True)[0]['name']"
+end

@@ -324,6 +324,18 @@ function colorscheme
     update-vi3-config
 end
 
+function saveme
+    i3-save-tree --workspace (getCurrentWorkspace) | sed 's-^\([[:blank:]]*\)//\([[:blank:]]"class".*\),$-\1\2-' > ~/.i3/sessions/{$argv}.json
+    echo '#!/usr/bin/fish' > ~/sessions/{$argv}
+    chmod +x ~/sessions/{$argv}
+    session-edit $argv
+end
+
+function restoreme
+    i3-msg append_layout ~/.i3/sessions/{$argv}.json
+    ff ~/sessions/{$argv}
+end
+
 function vi3_firstrun
    touch ~/.config/fish.fish
    touch ~/.i3/config
