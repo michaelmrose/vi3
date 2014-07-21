@@ -34,6 +34,7 @@
        workspace m output $primary_output
 
 #-----------------------variables-------------------------
+    set $exit exec "ff defaultmode"
     set $exit mode "default"
     set $backout exec "ff vi3_backout"
     set $selectall focus parent, focus parent, focus parent
@@ -124,7 +125,7 @@ mode "command" {
         
         bindsym f $op focus-app
         bindsym Shift+f $op vi3_fetch-window
-        bindsym o $op open-app             
+        bindsym o $op new-open-app             
         bindsym r mode "resize"           
         bindsym d mode "kill"
         bindsym m $op mws 
@@ -140,6 +141,17 @@ mode "command" {
         bindsym Shift+t $op vi3_trans
         bindsym Shift+s exec "ff solid", $exit
         bindsym z mode "testop"
+        
+        set $setsize exec ff set-size-of-next-window
+        bindsym 1 $setsize 1
+        bindsym 2 $setsize 2
+        bindsym 3 $setsize 3
+        bindsym 4 $setsize 4
+        bindsym 5 $setsize 5
+        bindsym 6 $setsize 6
+        bindsym 7 $setsize 7
+        bindsym 8 $setsize 8
+        bindsym 9 $setsize 9
 
         bindsym Escape $exit
 }
@@ -160,6 +172,7 @@ mode "resize" {
 
 mode "arrange" {
     #keybindings
+        bindsym a exec "ff arrangeme",$exit
         bindsym t layout tabbed,$exit
         bindsym h layout splith,$exit
         bindsym v layout splitv,$exit

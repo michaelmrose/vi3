@@ -191,6 +191,7 @@ end
 function vi3_backout
     set -e vi3op
     set -e combolist
+    set -U numkeyed 0
     i3-msg mode "default"
 end
 
@@ -329,6 +330,9 @@ function saveme
     echo '#!/usr/bin/fish' > ~/sessions/{$argv}
     chmod +x ~/sessions/{$argv}
     session-edit $argv
+    # set sessionname ~/sessions/{$argv}
+    # makescript $sessionname
+    # eval $EDITOR $sessionname
 end
 
 function restoreme

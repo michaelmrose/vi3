@@ -101,6 +101,31 @@ function v
     qvim $argv
 end
 
+function vs
+    qvim -S ~/.vim/sessions/{$argv}
+end
+
+function ffs
+    firefox
+    sleep 2
+    xdotool type ":sessionload $argv"
+    xdotool key Return 
+end
+
+function session-load
+    restoreme $argv
+end
+
+function session-edit
+    qvim ~/sessions/{$argv}
+end
+
+function vimcloj
+    session-load $argv
+    vs $argv
+    konsole --workdir /home/michael/proj/clojure/{$argv} -e lein repl
+end
+
 function ins
     sudo apt-get install $argv
 end
@@ -290,18 +315,22 @@ function vimplug
     git submodule add $argv ./bundle/(vplugname $argv) 
 end 
 
+function fadetoblack
+    kdmctl kdm stop
+end
+
 function trackedvplug
     cat .gitmodules | grep path | cut -d "/" -f2
 end
 
 function gcal
-    google calendar add $argv
+    google calendar add "{$argv}"
 end
 
 function gcalendar
     chromeless -new-window calendar.rosenetwork.net &
-    sleep 1
-    xdotool key Control+z
+    sleep 2
+    i3-msg fullscreen
 end
 
 function keyp
@@ -318,6 +347,10 @@ end
 function trans
     currentapp
     transset -i $mywin $argv
+end
+
+function another-trans
+    transset -i (xdotool getactivewindow) .{$argv}
 end
 
 function currentapp
@@ -341,7 +374,9 @@ function nextwindow
 end
 
 function chromeless
-    firefox -P chromeless -no-remote $argv 
+    firefox -P chromeless -no-remote $argv &
+    sleep 2
+    i3-msg fullscreen
 end
     
 function arrangeme
@@ -353,6 +388,8 @@ function arrangeme
     i3-msg move container to workspace j
     focus konsole
     i3-msg move container to workspace f
+    i3-msg workspace k
+    i3-msg workspace a
 end
 
 function pman
@@ -378,9 +415,61 @@ function save-layout
     i3-save-tree --workspace (getCurrentWorkspace)   > ~/workspace.json
 end
 
-function restoreme
-    i3-msg append_layout workspace.json
+
+function sxivd
+    sxiv *.png *.bmp *.jpg
+end
+
+function imgur-upload
+    imgur upload $argv | grep imgur_page | cut -d ":" -f2-3 | xclip -sel clip
 end
 
 set PATH /opt/vi3/bin /opt/bin /opt/dmenu /opt/scala/bin /opt/vim-qt/bin $PATH ~/scripts ~/racket/bin /opt/cxoffice/bin ~/games/dustaet/
 if test -f /home/michael/.autojump/etc/profile.d/autojump.fish; . /home/michael/.autojump/etc/profile.d/autojump.fish; end
+
+function bind-keys
+    killall sxhkd
+    sxhkd -c ~/keybindings/$argv &
+end
+
+function pi3
+   echo "import i3"\n{$argv} | python
+end 
+
+function getCurrentWorkspace
+    pi3 "print i3.filter(i3.get_workspaces(), focused=True)[0]['name']"
+end
+
+function makescript
+    set f $argv
+    touch $f
+    echo '#!/usr/bin/fish' > $f
+    chmod +x $f
+end
+
+
+function new-open-app
+    set target (app-switch $argv)
+    set winclass (capitalize $target)
+    # set sizeof (math numkeyed \* 2)
+    set sizeof (math $numkeyed \* 2)
+
+    if [ $numkeyed = "0" ]
+        echo "no size chosen"
+    else
+        cat ~/.i3/sessions/template.json | sed "s/#size/$sizeof/g" | sed "s/#winclass/$winclass/g" > /tmp/template.json
+        i3-msg append_layout /tmp/template.json
+        set -U numkeyed 0
+    end
+
+    eval $target
+end
+
+function set-size-of-next-window
+    set -U numkeyed $argv
+end
+
+function defaultmode
+    i3-msg mode "default"
+    set -U numkeyed 0
+end
