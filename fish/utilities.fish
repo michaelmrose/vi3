@@ -11,8 +11,8 @@ function wp
 end
 
 function lock
-    #i3lock -i /tmp/util_bg.png -t
-    xscreensaver-command -lock
+    i3lock -i ~/.bgimage/img.png -t
+    # xscreensaver-command -lock
 end
 
 function focus
