@@ -58,7 +58,6 @@
         bindsym F12 exec "ff update-vi3-config"
 
     #other keybindings
-        bindsym $mod+s move scratchpad
         bindsym XF86LaunchB mode "command"
         bindsym XF86Launch2 $op ws
         bindsym XF86Launch1 $op ws
@@ -71,6 +70,7 @@
         bindsym $mod+v $op vi3_vol
         bindsym $mod+f fullscreen
         bindsym $mod+n exec "ff nextwindow"
+        bindsym $mod+s scratchpad show
 
  
 #-----------------------modes------------------------------
@@ -200,6 +200,7 @@ mode "audio" {
         bindsym space exec "ff audio-play"
         bindsym t exec xdotool key XF86AudioNext
         bindsym n exec "~/scripts/switchaudio.sh"
+        bindsym m exec "ff setvol 0"
 
         bindsym Escape $exit
 }

@@ -10,22 +10,22 @@ Operations that require more than one key are implimented via vi3_take-n which i
 
 Additionally commonly used apps are bound to letter and any function that needs to use this association simply calls app-switch on the letter given.
 
-##Insert Mode
+##Interaction Mode
 - Super + v ?? -> Set volume to ??
 - Super + t ?? -> Set transparency of current window to ??
 - Super + a enter audio mode
-- Tap Super_L to go to normal mode
+- Tap Super_L to go to command mode
 - Super + hjkl change focus
 
-##Normal Mode
-### Operations which do NOT terminate normal mode 
+##Command Mode
+### Operations which do NOT terminate command mode 
 - hjkl change focus
 - Shift+hjkl shift window
 - 1-4 set the size of the next window opened via o from aprox 20% to 40%
 - v sets the alignment of the next opened window with current to be vertical
 - s sets the alignment of the next opened window with current to be horizontal
 
-### Operations that end normal mode
+### Operations that end command mode
 - w[a-z] switch to workspace[a-z] tap either shift key as a shortcut for Super -> w
 - g[a-z] get all windows from workspace[a-z] and place them on the current workspace
 - m[a-z] move window to workspace[a-z] remaining on current workspace
@@ -45,6 +45,7 @@ Additionally commonly used apps are bound to letter and any function that needs 
 - as arrange stacked
 - at arrange tabbed
 - c capslock no idea why an entire useful key is devoted to this, especially when it can be better used for escape
+- Escape go back to interaction mode
 
 #### example usage 2vot open a small terminal window below current focused window
 
@@ -54,6 +55,8 @@ Additionally commonly used apps are bound to letter and any function that needs 
 - j volume down 5%
 - k volume up 5%
 - Space toggle playback
+- n make the next audio output the default and send all currently playing streams to it
+- m mute
 
 ##Convenience Functions
 - wp sets your background with feh and converts file via imagemagick for usage with i3lock
