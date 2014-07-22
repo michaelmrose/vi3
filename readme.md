@@ -44,7 +44,7 @@ Additionally commonly used apps are bound to letter and any function that needs 
 - av arrange verticly
 - as arrange stacked
 - at arrange tabbed
-- c capslock no idea why an entire useful key is devoted to this
+- c capslock no idea why an entire useful key is devoted to this, especially when it can be better used for escape
 
 #### example usage 2vot open a small terminal window below current focused window
 
