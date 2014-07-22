@@ -392,3 +392,10 @@ function defaultmode
     set -U numkeyed 0
 end
 
+alias ws vi3_workspace
+alias gws vi3_get-workspace
+alias cws vi3_combine-workspaces
+alias rws vi3_rearrange-workspaces
+alias saw vi3_select-all-in-workspace
+alias mws vi3_move-window-to-workspace
+alias tws vi3_take-window-to-workspace
