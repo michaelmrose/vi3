@@ -341,10 +341,54 @@ function restoreme
 end
 
 function vi3_firstrun
-   touch ~/.config/fish.fish
-   touch ~/.i3/config
-   cat ~/.config/fish/config.fish /opt/vi3/fishconfig.txt > ~/tmpvi3fish
-   cp ~/tmpvi3fish ~/.config/fish/config.fish
+   cat ~/.config/fish/config.fish /opt/vi3/fishconfig.txt > /tmp/tmpvi3fish
+   cp /tmp/tmpvi3fish ~/.config/fish/config.fish
    cp /opt/vi3/personalconfigexample ~/.i3/personalconfig
+   mkdir ~/sessions
+   mkdir ~/.i3/sessions
+   mkdir ~/.i3/colors
+   set -U colors greenandyellow
    update-vi3-config
 end
+
+function pi3
+   echo "import i3"\n{$argv} | python
+end 
+
+function getCurrentWorkspace
+    pi3 "print i3.filter(i3.get_workspaces(), focused=True)[0]['name']"
+end
+
+function makescript
+    set f $argv
+    touch $f
+    echo '#!/usr/bin/fish' > $f
+    chmod +x $f
+end
+
+
+function new-open-app
+    set target (app-switch $argv)
+    set winclass (capitalize $target)
+    set sizeof (math $numkeyed \* 2)
+
+    if [ $numkeyed = "0" ]
+        echo "no size chosen"
+    else
+        cat ~/.i3/sessions/template.json | sed "s/#size/$sizeof/g" | sed "s/#winclass/$winclass/g" > /tmp/template.json
+        i3-msg append_layout /tmp/template.json
+        set -U numkeyed 0
+    end
+
+    eval $target
+end
+
+function set-size-of-next-window
+    set -U numkeyed $argv
+end
+
+function defaultmode
+    i3-msg mode "default"
+    set -U numkeyed 0
+end
+
