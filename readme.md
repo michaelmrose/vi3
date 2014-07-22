@@ -33,6 +33,7 @@ Additionally commonly used apps are bound to letter and any function that needs 
 - f[a-z] focus applications[a-z]
 - o[a-z] open application[a-z]
 - F[a-z] fetch most recently opened application[a-z] and move it to current workspace
+- R[a-z][a-z] relocate windows from workspace 1 to workspace 2 without changing current workspaces without changing current workspaces
 - r enter resize mode same as default resize mode in i3
 - n cycle through all windows with the same window class as current window ie all firefox instances
 - q quit current app
