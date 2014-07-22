@@ -1,5 +1,7 @@
 #!/usr/bin/python
 
+# This script taken from https://github.com/yiuin/i3-wm-scripts original author unknown to me
+
 from sys import argv, exit
 from subprocess import *
 import re
