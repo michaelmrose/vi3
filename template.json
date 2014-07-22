@@ -1,0 +1,20 @@
+// vim:ts=4:sw=4:et
+{
+    "border": "pixel",
+    "floating": "auto_off",
+    "geometry": {
+       "height": 1037,
+       "width": 1918,
+       "x": 0,
+       "y": 0
+    },
+    "name": "template",
+    "percent": 0.#size,
+    "swallows": [
+       {
+        "class": "^#winclass$"
+       }
+    ],
+    "type": "con"
+}
+
