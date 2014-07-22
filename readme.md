@@ -16,6 +16,7 @@ Additionally commonly used apps are bound to letter and any function that needs 
 - Super + a enter audio mode
 - Tap Super_L to go to command mode
 - Super + hjkl change focus
+- Tap either shift to immediately enter Command Mode and select a workspace to shift to, this is accomplished via xcape which provides a different keysym for hitting a key alone rather than as a modifier
 
 ##Command Mode
 ### Operations which do NOT terminate command mode 
@@ -26,7 +27,7 @@ Additionally commonly used apps are bound to letter and any function that needs 
 - s sets the alignment of the next opened window with current to be horizontal
 
 ### Operations that end command mode
-- w[a-z] switch to workspace[a-z] tap either shift key as a shortcut for Super -> w
+- w[a-z] switch to workspace[a-z]
 - g[a-z] get all windows from workspace[a-z] and place them on the current workspace
 - m[a-z] move window to workspace[a-z] remaining on current workspace
 - t[a-z] take window to workspace[a-z] and move focus to this workspace
