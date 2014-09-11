@@ -24,7 +24,7 @@ Additionally commonly used apps are bound to letter and any function that needs 
 - Shift+hjkl shift window
 - 1-4 set the size of the next window opened via o from aprox 20% to 40%
 - v sets the alignment of the next opened window with current to be vertical
-- s sets the alignment of the next opened window with current to be horizontal
+- h sets the alignment of the next opened window with current to be horizontal
 
 ### Operations that end command mode
 - w[a-z] switch to workspace[a-z]
