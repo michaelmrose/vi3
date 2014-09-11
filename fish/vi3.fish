@@ -1,5 +1,4 @@
 #vi3.fish provides helper functions to provide vi like keybindings for the i3 window manager
-. /opt/vi3/fish/utilities.fish
 
 function defop
     set -U operation $argv[1]_op
@@ -92,8 +91,6 @@ function focus-primary
 end
 
 function restore-workspaces
-    # vi3_workspace $workspaceleft 
-    # vi3_workspace $workspaceright
     for i in $workspaces
         i3-msg workspace $i
     end
@@ -148,8 +145,6 @@ function vi3_trans
     vi3_take-2 $argv[1] vi3_trans-set
 end
 
-# defop vi3_trans-set 2 'trans .{$combolist[1]}{$combolist[2]}'
-
 function vi3_vol-set
     setvol {$combolist[1]}{$combolist[2]}
 end
@@ -157,8 +152,6 @@ end
 function vi3_vol
     vi3_take-2 $argv[1] vi3_vol-set
 end
-
-# defop vi3_vol 2 'setvol {$combolist[1]}{$combolist[2]}'
 
 function vi3_workspace
     i3-msg workspace $argv
@@ -248,6 +241,8 @@ function app-switch
             set returnval "vlc"
         case "n"
             set returnval "ff noteit"
+        case "N"
+            set returnval "nvidia-settings"
         case "o"
             set returnval "systemsettings"
         case "O"
@@ -259,7 +254,7 @@ function app-switch
         case "r"
             set returnval "nil"
         case "s"
-            set returnval "nil"
+            set returnval "steam"
         case "t"
             set returnval "konsole"
         case "u"
@@ -327,12 +322,10 @@ end
 
 function saveme
     i3-save-tree --workspace (getCurrentWorkspace) | sed 's-^\([[:blank:]]*\)//\([[:blank:]]"class".*\),$-\1\2-' > ~/.i3/sessions/{$argv}.json
-    echo '#!/usr/bin/fish' > ~/sessions/{$argv}
-    chmod +x ~/sessions/{$argv}
-    session-edit $argv
-    # set sessionname ~/sessions/{$argv}
-    # makescript $sessionname
-    # eval $EDITOR $sessionname
+    set sessionscript ~/sessions/{$argv}
+    echo '#!/usr/bin/fish' > $sessionscript
+    chmod +x $sessionscript
+    eval $EDITOR $sessionscript
 end
 
 function restoreme
@@ -352,21 +345,12 @@ function vi3_firstrun
     update-vi3-config
 end
 
-function pi3
-   echo "import i3"\n{$argv} | python
-end 
-
-function getCurrentWorkspace
-    pi3 "print i3.filter(i3.get_workspaces(), focused=True)[0]['name']"
-end
-
 function makescript
     set f $argv
     touch $f
     echo '#!/usr/bin/fish' > $f
     chmod +x $f
 end
-
 
 function new-open-app
     set target (app-switch $argv)

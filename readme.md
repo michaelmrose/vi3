@@ -51,6 +51,8 @@ Additionally commonly used apps are bound to letter and any function that needs 
 #### example usage 2vot open a small terminal window below current focused window
 
 ##Audio Mode
+This functionality requires playerctl and requires that you set the global environmental variable PLAYER to the player of your choice 
+
 - h prev track
 - l next track
 - j volume down 5%
@@ -68,7 +70,7 @@ Additionally commonly used apps are bound to letter and any function that needs 
 
 
 == installation ==
-vi3 requires fish shell 2.x and python.  Functionality is enhansed by installing feh imagemagick xdotool xmodmap xcape.
+vi3 requires fish shell 2.x and python.  Functionality is enhansed by installing feh imagemagick xdotool xmodmap xcape playerctl.
 
 To install clone this repo to /opt/vi3 and run ff vi3_first-run
 THIS WILL OVERWRITE YOUR CURRENT I3 CONFIG BACK IT UP

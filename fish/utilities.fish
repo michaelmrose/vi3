@@ -11,13 +11,12 @@ function wp
 end
 
 function lock
-    i3lock -i ~/.bgimage/img.png -t
-    # xscreensaver-command -lock
+    # i3lock -i ~/.bgimage/img.png -t
+    xscreensaver-command -lock
 end
 
 function focus
-    set winclass (capitalize $argv)   
-    i3-msg [class=$winclass] focus
+    i3-msg [class=(capitalize $argv)] focus
 end
 
 function new-session
@@ -28,33 +27,9 @@ function setme
     set -U $argv[1] $argv[2]
 end
 
-function setvol
-    pactl -- set-sink-volume $default_sink {$argv}%
-    set vol (getvol)
-    killall notify-osd
-    notify-send --expire-time=1 "volume set to $vol"
-end
 
 function clemctl
     qdbus org.mpris.clementine /Player org.freedesktop.MediaPlayer.{$argv}
-end
-
-function capitalize
-    echo $argv | sed 's/\([a-z]\)\([a-z]*\)/\U\1\L\2/g'
-end
-
-function audio-next
-    clemctl Next
-end
-
-function audio-prev
-    clemctl Prev
-end
-
-#does NOT work
-function audio-play
-    clemctl Pause
-    xdotool key XF86AudioPlay
 end
 
 function get-connected-displays
@@ -65,13 +40,27 @@ function get-number-of-displays
     count (get-connected-displays)
 end
 
+function unset-fullscreen
+    if is-fullscreen
+        i3-msg fullscreen > /dev/null
+    end
+end
+
+function is-fullscreen
+    xwininfo -id (mywin) -all | grep -i fullscreen > /dev/null
+end
+
 function get-primary-display
     xrandr --verbose | grep primary | cut -d " " -f1
 end
 
+function get-secondary-display
+    xrandr --verbose | grep " connected 1" | cut -d " " -f1
+end
+
+
 function trans
-    currentapp
-    transset -i $mywin $argv
+    transset -i (currentapp) $argv
 end
 
 function another-trans
@@ -79,22 +68,19 @@ function another-trans
 end
 
 function currentapp
-    set -U mywin (xdotool getactivewindow)
+    echo (xdotool getactivewindow)
 end
 
 function transparent
-    currentapp
-    transset -i $mywin .86
+    transset -i (currentapp) .86
 end
 
 function solid
-    currentapp
-    transset -i $mywin 1.0
+    transset -i (currentapp) 1.0
 end
 
 function nextwindow
-    currentapp
-    set currentclass (xprop -id $mywin | grep WM_CLASS | cut -d '"' -f4)
+    set currentclass (xprop -id (currentapp) | grep WM_CLASS | cut -d '"' -f4)
     nextmatch $currentclass
 end
 
@@ -104,4 +90,8 @@ end
 
 function getCurrentWorkspace
     pi3 "print i3.filter(i3.get_workspaces(), focused=True)[0]['name']"
+end
+
+function capitalize
+    echo $argv | sed 's/\([a-z]\)\([a-z]*\)/\U\1\L\2/g'
 end

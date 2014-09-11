@@ -55,11 +55,12 @@
     # reload the configuration file
         bindsym $mod+Shift+c reload
         bindsym $mod+Shift+r restart
+        #bindsym F10 exec "gnome-screenshot"
         bindsym F12 exec "ff update-vi3-config"
 
     #other keybindings
         bindsym XF86LaunchB mode "command"
-        bindsym XF86Launch2 $op ws
+        bindsym XF86Launch2 mode "command"
         bindsym XF86Launch1 $op ws
         bindsym Control+Mod1+l exec "ff lock"
         bindsym Control+Mod1+s exec "suspend"
@@ -71,6 +72,11 @@
         bindsym $mod+f fullscreen
         bindsym $mod+n exec "ff nextwindow"
         bindsym $mod+s scratchpad show
+        bindsym $mod+w exec "ff show-winclass"
+        #bindsym --release mod1+h exec "xdotool key Left"
+        #bindsym --release mod1+j exec "xdotool key Down"
+        #bindsym --release mod1+k exec "xdotool key Up"
+        #bindsym --release mod1+l exec "xdotool key Right"
 
  
 #-----------------------modes------------------------------
@@ -192,15 +198,15 @@ mode "kill" {
 
 mode "audio" {
     #keybindings
-        bindsym j exec "ff setvol -5"
-        bindsym k exec "ff setvol +5"
-        bindsym h exec "ff audio-prev"
-        bindsym l exec "ff audio-next"
-        bindsym p exec "ff audio-play"
-        bindsym space exec "ff audio-play"
-        bindsym t exec xdotool key XF86AudioNext
-        bindsym n exec "~/scripts/switchaudio.sh"
-        bindsym m exec "ff setvol 0"
+        bindsym j exec     " ff media-ctl vol -5            "
+        bindsym k exec     " ff media-ctl vol +5            "
+        bindsym h exec     " ff media-ctl previous          "
+        bindsym l exec     " ff media-ctl next              "
+        bindsym space exec " ff media-ctl play-pause        "
+        bindsym n exec     " ff media-ctl output next       "
+        bindsym s exec     " ff media-ctl output speakers   "
+        bindsym p exec     " ff media-ctl output headphones "
+        bindsym m exec     " ff media-ctl vol 0             "
 
         bindsym Escape $exit
 }

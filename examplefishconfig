@@ -3,7 +3,12 @@ function fish_prompt
     echo (~/bin/powerline-shell.py $status --shell bare)
 end
 
-. /opt/vi3/fish/vi3.fish
+source /opt/vi3/fish/utilities.fish
+source /opt/vi3/fish/vi3.fish
+source ~/fish/books.fish
+source ~/fish/general.fish
+source ~/fish/audio.fish
+
 
 alias ws vi3_workspace
 alias gws vi3_get-workspace
@@ -13,13 +18,21 @@ alias saw vi3_select-all-in-workspace
 alias mws vi3_move-window-to-workspace
 alias tws vi3_take-window-to-workspace
 
+set query blah
+set filenames blah
+
 
 
 function reload-config
-    . ~/.config/fish/config.fish
-    . ~/scripts/audio.fish
-    . /opt/vi3/fish/vi3.fish
+    source ~/.config/fish/config.fish
+    source /opt/vi3/fish/vi3.fish
+    source /opt/vi3/fish/utilities.fish
+    source ~/fish/books.fish
+    source ~/fish/general.fish
+    source ~/fish/audio.fish
 end
+
+alias rl reload-config
 
 function ip3
     ipython3 qtconsole --colors=linux --ConsoleWidget.font_family="DejaVu Sans Mono" --ConsoleWidget.font_size="12"
@@ -39,6 +52,15 @@ end
 
 function u
     cd ..
+end
+
+function fizzbuzz
+    for i in (seq $argv)
+        set result ""
+        cond "divisible $i 3" then "set result {$result}fizz" else nil
+        cond "divisible $i 5" then "set result {$result}buzz" else nil
+        cond "exists $result" then "echo $result" else "echo $i"
+    end
 end
 
 function h
@@ -161,7 +183,7 @@ function ppa
 end
 
 function here
-    ls -A | grep $argv
+    ls -A | grep -i $argv
 end
 
 function unins
@@ -192,7 +214,7 @@ function pdfkillcover
 end
 
 function winclass
-    xprop | grep WM_CLASS | cut -d '"' -f4 
+    xprop -id (mywin) | grep WM_CLASS | cut -d '"' -f4 
 end
 
 function wtfisthis
@@ -205,7 +227,8 @@ end
 
 
 function msg
-    notify-send --expire-time=1 $argv
+    # notify-send --expire-time=1 $argv
+    twmnc $argv
 end
 
 function getvol
@@ -311,8 +334,10 @@ function vplugname
 end
 
 function vimplug
+    cd dir (pwd)
     cd ~/.vim
     git submodule add $argv ./bundle/(vplugname $argv) 
+    cd $dir
 end 
 
 function fadetoblack
@@ -331,6 +356,13 @@ function gcalendar
     chromeless -new-window calendar.rosenetwork.net &
     sleep 2
     i3-msg fullscreen
+end
+
+function fm
+        set startingdir (pwd)
+        j $argv
+        open (pwd) &
+        cd $startingdir
 end
 
 function keyp
@@ -355,6 +387,10 @@ end
 
 function currentapp
     set -U mywin (xdotool getactivewindow)
+end
+
+function mywin
+   xdotool getactivewindow
 end
 
 function transparent
@@ -401,15 +437,62 @@ function why
     dpkg -S (which $argv)
 end
 
-function escape-spaces
-    echo $argv | sed 's/ /\\ /g' 
+function fz
+    fzf -1 -q "$argv" | pipetest | openpipe
 end
 
-function books
-    calibredb list -s title:"{$argv}"
-    # set targetbook (fzf -q "{$argv}")
-    # zathura $targetbook
+function fe
+  set tmp $TMPDIR/fzf.result
+  fzf --query="$argv[1]" --select-1 --exit-0 > $tmp
+  if [ (cat $tmp | wc -l) -gt 0 ]
+    set -U fquery (cat $tmp)
+  end
 end
+
+function fp
+  set tmp $TMPDIR/fzf.result
+  set ph ""
+  while read -l line
+    echo $line | fzf > $tmp
+    set ph $ph $line
+  end
+  echo $ph | fzf > tmp
+  # fzf --query="$argv[1]" --select-1 --exit-0 > $tmp
+  if [ (cat $tmp | wc -l) -gt 0 ]
+    set -U fquery (cat $tmp)
+  end
+end
+
+function inc
+    echo argv is $argv
+    set argv (math $argv + 1)
+    echo argv is $argv
+end
+
+function blist
+    echo in title
+    calibredb list -s title:$argv
+    echo in tag
+    calibredb list -s tag:$argv
+end
+
+function badd
+    calibredb add $argv
+end
+
+function bsrch
+    calibredb list -s $argv
+end
+
+function updatebookdb
+     sudo updatedb -o /home/michael/calibre/books.db -U /home/michael/calibre
+end
+
+function updateallbookdb
+    updatebookdb tech-select
+    updatebookdb fiction
+end
+
 
 function save-layout
     i3-save-tree --workspace (getCurrentWorkspace)   > ~/workspace.json
@@ -432,44 +515,59 @@ function bind-keys
     sxhkd -c ~/keybindings/$argv &
 end
 
-function pi3
-   echo "import i3"\n{$argv} | python
-end 
-
-function getCurrentWorkspace
-    pi3 "print i3.filter(i3.get_workspaces(), focused=True)[0]['name']"
+function xcow
+    xcowsay $argv --cow-size=large --monitor=0 --at=100,0 --font="DejaVu Sans Mon 60"
 end
 
-function makescript
-    set f $argv
-    touch $f
-    echo '#!/usr/bin/fish' > $f
-    chmod +x $f
+function er
+    set -e $argv
 end
 
-
-function new-open-app
-    set target (app-switch $argv)
-    set winclass (capitalize $target)
-    # set sizeof (math numkeyed \* 2)
-    set sizeof (math $numkeyed \* 2)
-
-    if [ $numkeyed = "0" ]
-        echo "no size chosen"
-    else
-        cat ~/.i3/sessions/template.json | sed "s/#size/$sizeof/g" | sed "s/#winclass/$winclass/g" > /tmp/template.json
-        i3-msg append_layout /tmp/template.json
-        set -U numkeyed 0
+function filtermatch
+    set fexpr $argv[1]
+    set match $argv[2]
+    for i in $$argv[3]
+        set val (echo $i | sed 's/(/\\\(/g' | sed 's/)/\\\)/g')
+        set toeval $fexpr $val
+        set result (eval $toeval)
+        if match $result $match
+            echo $i
+            set acc $acc $i
+        end
     end
-
-    eval $target
+    echo $acc
 end
 
-function set-size-of-next-window
-    set -U numkeyed $argv
+
+function has
+    set target $argv[1]
+    for i in $$argv[2]
+        echo $i
+        set acc $acc (tolower $i)
+    end
+    println $acc
 end
 
-function defaultmode
-    i3-msg mode "default"
-    set -U numkeyed 0
+
+function replace-str
+    echo $argv[3..-1] | sed 's/$argv[1]/$argv[2]/g'
+end
+
+function testf
+    echo $argv[1]
+    echo $argv[2..-1]
+end
+
+function removespaces-from-fnames
+        for i in (ls)
+            mv $i (echo $i | sed 's/ //g')
+        end
+end
+
+function show-winclass
+    msg (winclass)
+end    
+
+function update-calibre
+    sudo python -c "import sys; py3 = sys.version_info[0] > 2; u = __import__('urllib.request' if py3 else 'urllib', fromlist=1); exec(u.urlopen('http://status.calibre-ebook.com/linux_installer').read()); main()"
 end
