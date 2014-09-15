@@ -38,8 +38,6 @@ Additionally commonly used apps are bound to letter and any function that needs 
 - r enter resize mode same as default resize mode in i3
 - n cycle through all windows with the same window class as current window eg all firefox instances
 - q quit current app
-- dd kill all apps in workspace
-- da kill all apps on currently visible workspaces ie on all monitors
 - af toggle floating
 - ah arrange horizontally
 - av arrange verticly
@@ -60,6 +58,19 @@ This functionality requires playerctl and requires that you set the global envir
 - Space toggle playback
 - n make the next audio output the default and send all currently playing streams to it
 - m mute
+
+##Resize Mode
+This includes the default resize mode functionality mapped to shift+hjkl as well as the following
+- w set resizedim to width
+- h set resizedim to height
+- 1-9 sets resizedim of current window to 10-90% of current monitors dimention
+
+##Kill Mode
+Accessed via d in command mode
+- w kill window
+- d kill all windows in workspace
+- a kill all visible workspaces 
+- o kill all windows in workspace other than focused
 
 ##Convenience Functions
 - wp sets your background with feh and converts file via imagemagick for usage with i3lock

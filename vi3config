@@ -67,10 +67,12 @@
         bindsym Control+Mod1+r $dm
         bindsym $mod+a mode "audio"
         bindsym $mod+m mode "mouseset"
+        bindsym $mod+n exec "ff nextwindow"
         bindsym $mod+t $op vi3_trans
         bindsym $mod+v $op vi3_vol
+        bindsym mod1+h $op vi3_height
+        bindsym mod1+w $op vi3_width
         bindsym $mod+f fullscreen
-        bindsym $mod+n exec "ff nextwindow"
         bindsym $mod+s scratchpad show
         bindsym $mod+w exec "ff show-winclass"
         #bindsym --release mod1+h exec "xdotool key Left"
@@ -164,14 +166,21 @@ mode "command" {
 
 mode "resize" {
     #keybindings
-        bindsym k       resize grow   height 15 px or 15 ppt
-        bindsym Shift+k resize grow   height 30 px or 30 ppt
-        bindsym j       resize shrink height 15 px or 15 ppt
-        bindsym Shift+j resize shrink height 30 px or 30 ppt
-        bindsym h       resize shrink width  15 px or 15 ppt
-        bindsym Shift+h resize shrink width  30 px or 30 ppt
-        bindsym l       resize grow   width  15 px or 15 ppt
-        bindsym Shift+l resize grow   width  30 px or 30 ppt
+        bindsym Shift+k resize grow   height 10 px or 10 ppt
+        bindsym Shift+j resize shrink height 10 px or 10 ppt
+        bindsym Shift+h resize shrink width  10 px or 10 ppt
+        bindsym Shift+l resize grow   width  10 px or 10 ppt
+        bindsym w exec "ff set -U resizedim width" 
+        bindsym h exec "ff set -U resizedim height" 
+        bindsym 1 exec "ff set-window-size perc 10", $exit
+        bindsym 2 exec "ff set-window-size perc 20", $exit
+        bindsym 3 exec "ff set-window-size perc 30", $exit
+        bindsym 4 exec "ff set-window-size perc 40", $exit
+        bindsym 5 exec "ff set-window-size perc 50", $exit
+        bindsym 6 exec "ff set-window-size perc 60", $exit
+        bindsym 7 exec "ff set-window-size perc 70", $exit
+        bindsym 8 exec "ff set-window-size perc 80", $exit
+        bindsym 9 exec "ff set-window-size perc 90", $exit
 
         bindsym Escape $exit
 }
@@ -193,6 +202,7 @@ mode "kill" {
         bindsym d exec "ff kill-workspace", $exit
         bindsym w kill, $exit
         bindsym a exec "ff destroy-everything", $exit
+        bindsym o exec "ff kill-other-windows", $exit
         bindsym Escape $exit
 }
 

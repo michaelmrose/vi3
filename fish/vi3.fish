@@ -153,6 +153,22 @@ function vi3_vol
     vi3_take-2 $argv[1] vi3_vol-set
 end
 
+function vi3_width-set
+    set-window-size perc width {$combolist[1]}{$combolist[2]}
+end
+
+function vi3_width
+    vi3_take-2 $argv[1] vi3_width-set
+end
+
+function vi3_height-set
+    set-window-size perc height {$combolist[1]}{$combolist[2]}
+end
+
+function vi3_height
+    vi3_take-2 $argv[1] vi3_height-set
+end
+
 function vi3_workspace
     i3-msg workspace $argv
 end
@@ -276,9 +292,15 @@ function app-switch
 end
 
 function focus-app
+    set currentclass (winclass)
     set target (app-switch $argv)
-    set -U lasttarget $target
-    focus $target
+    if match $currentclass $target
+        nextwindow
+        msg next
+    else
+        set -U lasttarget $target
+        focus $target
+    end
 end
 
 function focus-next
@@ -300,6 +322,13 @@ function kill-workspace
     select-all-in-workspace
     i3-msg kill
 end
+
+function kill-other-windows
+    i3-msg move container to workspace keep
+    kill-workspace
+    vi3_get-workspace keep
+end
+    
 
 function destroy-everything
     set displays (get-connected-displays)
