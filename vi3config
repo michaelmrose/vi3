@@ -34,7 +34,6 @@
        workspace m output $primary_output
 
 #-----------------------variables-------------------------
-    set $exit exec "ff defaultmode"
     set $exit mode "default"
     set $backout exec "ff vi3_backout"
     set $selectall focus parent, focus parent, focus parent
@@ -47,8 +46,8 @@
 #-----------------------Keybindings------------------------
 
     # change focus 
-        bindsym $mod+j focus up
-        bindsym $mod+k focus down
+        bindsym $mod+j focus down
+        bindsym $mod+k focus up
         bindsym $mod+h focus left
         bindsym $mod+l focus right
 
@@ -59,7 +58,8 @@
         bindsym F12 exec "ff update-vi3-config"
 
     #other keybindings
-        bindsym XF86LaunchB mode "command"
+        #bindsym XF86LaunchB mode "command"
+        bindsym XF86LaunchB $dm
         bindsym XF86Launch2 mode "command"
         bindsym XF86Launch1 $op ws
         bindsym Control+Mod1+l exec "ff lock"
@@ -67,13 +67,15 @@
         bindsym Control+Mod1+r $dm
         bindsym $mod+a mode "audio"
         bindsym $mod+m mode "mouseset"
+        bindsym $mod+Shift+m exec "ff display-manual"
         bindsym $mod+n exec "ff nextwindow"
+        bindsym $mod+s mode "screenshot"
         bindsym $mod+t $op vi3_trans
         bindsym $mod+v $op vi3_vol
         bindsym mod1+h $op vi3_height
         bindsym mod1+w $op vi3_width
         bindsym $mod+f fullscreen
-        bindsym $mod+s scratchpad show
+        #bindsym $mod+s scratchpad show
         bindsym $mod+w exec "ff show-winclass"
         #bindsym --release mod1+h exec "xdotool key Left"
         #bindsym --release mod1+j exec "xdotool key Down"
@@ -89,6 +91,7 @@ mode "command" {
 
     # kill focused window
         bindsym q kill,$exit
+        bindsym Shift+q exec "ff really-quit",$exit
         bindsym d mode "kill"
     # alternatively, you can use the cursor keys:
         bindsym Up focus up
@@ -137,7 +140,9 @@ mode "command" {
         bindsym r mode "resize"           
         bindsym d mode "kill"
         bindsym m $op mws 
+        bindsym Shift+m mode "windowmove"
         bindsym n exec "ff nextwindow"
+        bindsym Shift+n exec "sudo /home/michael/bin/nm", $exit
         bindsym t $op tws
         bindsym g $op gws
         bindsym w $op ws
@@ -160,6 +165,16 @@ mode "command" {
         bindsym 7 $setsize 7
         bindsym 8 $setsize 8
         bindsym 9 $setsize 9
+
+        bindsym Escape $exit
+}
+
+mode "windowmove"{
+    #keybindings
+        bindsym h exec "ff windowmove left 200" 
+        bindsym j exec "ff windowmove down 200"
+        bindsym k exec "ff windowmove up 200"
+        bindsym l exec "ff windowmove right 200"
 
         bindsym Escape $exit
 }
@@ -217,6 +232,7 @@ mode "audio" {
         bindsym s exec     " ff media-ctl output speakers   "
         bindsym p exec     " ff media-ctl output headphones "
         bindsym m exec     " ff media-ctl vol 0             "
+        bindsym v $op vi3_vol
 
         bindsym Escape $exit
 }
@@ -313,6 +329,14 @@ mode transparency {
 
         bindsym Escape $exit
 
+}
+
+mode screenshot {
+    #keybindings
+        bindsym w exec "ff screenshot window", $exit
+        bindsym d exec "ff screenshot display", $exit
+        bindsym e exec "ff screenshot everything", $exit
+        bindsym Escape $exit
 }
 
 exec "~/scripts/autostart.sh" 

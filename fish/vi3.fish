@@ -76,23 +76,20 @@ function vi3_change-all-workspaces
 end
 
 function get-active-workspaces
-    set -e workspaces
     for i in (get-connected-displays) 
-        set -U workspaces $workspaces (getCurrentWorkspace)
-        i3-msg focus output right
+        echo (getCurrentWorkspace)
+        im focus output right
     end
-    echo (count $workspaces)
-    echo $workspaces
 end
    
 
 function focus-primary
-    i3-msg focus output (get-primary-display) 
+    im focus output (get-primary-display) 
 end
 
 function restore-workspaces
     for i in $workspaces
-        i3-msg workspace $i
+        im workspace $i
     end
 end
 
@@ -103,7 +100,7 @@ function evalandrestore
 end
 
 function vi3_kill
-    i3-msg kill
+    im kill
 end
 
 function vi3_take-n
@@ -117,10 +114,10 @@ function vi3_take-n
         eval $argv[2]
         echo "done!"
         set -e combolist
-        i3-msg mode "default"
+        im mode "default"
     else
         echo "not yet"
-        i3-msg mode "op"
+        im mode "op"
     end
 end
 
@@ -170,21 +167,21 @@ function vi3_height
 end
 
 function vi3_workspace
-    i3-msg workspace $argv
+    im workspace $argv
 end
 
 function vi3_take-window-to-workspace
-    i3-msg move container to workspace $argv
+    im move container to workspace $argv
     vi3_workspace $argv
 end
 
 function vi3_move-window-to-workspace
-    i3-msg move container to workspace $argv
+    im move container to workspace $argv
 end
 
 function vi3_operator-mode
     setme vi3op $argv  
-    i3-msg mode "op"
+    im mode "op"
 end
 
 function vi3_fetch-window
@@ -193,29 +190,39 @@ function vi3_fetch-window
 end
 
 function vi3_take-back
-    i3-msg move container to workspace back_and_forth
-    i3-msg workspace back_and_forth
+    im move container to workspace back_and_forth
+    im workspace back_and_forth
 end
 
 function vi3_backout
     set -e vi3op
     set -e combolist
     set -U numkeyed 0
-    i3-msg mode "default"
+    im mode "default"
 end
 
 function vi3_get-workspace
+    checkpoint-ws
     vi3_workspace $argv 
     vi3_select-all-in-workspace
     vi3_take-back
+    restore-ws
+end
+
+function checkpoint-ws
+    set -U current_ws (get-active-workspaces)
+end
+
+function restore-ws
+    for i in $current_ws;im workspace $i;end
 end
 
 function vi3_select-all-in-workspace
-    i3-msg focus parent
-    i3-msg focus parent
-    i3-msg focus parent
-    i3-msg focus parent
-    i3-msg focus parent
+    im focus parent
+    im focus parent
+    im focus parent
+    im focus parent
+    im focus parent
 end
 
 function append-and-eval
@@ -313,18 +320,18 @@ function open-app
 end
 
 function select-all-in-workspace
-    i3-msg focus parent
-    i3-msg focus parent
-    i3-msg focus parent
+    im focus parent
+    im focus parent
+    im focus parent
 end
 
 function kill-workspace
     select-all-in-workspace
-    i3-msg kill
+    im kill
 end
 
 function kill-other-windows
-    i3-msg move container to workspace keep
+    im move container to workspace keep
     kill-workspace
     vi3_get-workspace keep
 end
@@ -333,7 +340,7 @@ end
 function destroy-everything
     set displays (get-connected-displays)
     for i in $displays
-        i3-msg focus output right
+        im focus output right
         kill-workspace
     end
 end
@@ -341,7 +348,7 @@ end
 function update-vi3-config
     rm ~/.i3/config
     cat /opt/vi3/header.txt ~/.i3/colors/{$colors} ~/.i3/personalconfig /opt/vi3/vi3config > ~/.i3/config
-    i3-msg restart
+    im restart
 end
 
 function colorscheme
@@ -358,7 +365,7 @@ function saveme
 end
 
 function restoreme
-    i3-msg append_layout ~/.i3/sessions/{$argv}.json
+    im append_layout ~/.i3/sessions/{$argv}.json
     ff ~/sessions/{$argv}
 end
 
@@ -390,7 +397,7 @@ function new-open-app
         echo "no size chosen"
     else
         cat ~/.i3/sessions/template.json | sed "s/#size/$sizeof/g" | sed "s/#winclass/$winclass/g" > /tmp/template.json
-        i3-msg append_layout /tmp/template.json
+        im append_layout /tmp/template.json
         set -U numkeyed 0
     end
 
@@ -402,8 +409,12 @@ function set-size-of-next-window
 end
 
 function defaultmode
-    i3-msg mode "default"
+    im mode "default"
     set -U numkeyed 0
+end
+
+function im
+    eval i3-msg $argv > /dev/null
 end
 
 alias ws vi3_workspace

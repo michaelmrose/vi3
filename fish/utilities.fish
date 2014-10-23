@@ -6,8 +6,8 @@ function dm
 end
 
 function wp
-    feh --bg-scale $argv
-    convert $argv -resize 1920x1080\! ~/.bgimage/img.png
+    feh --bg-{$argv[1]} $argv[2]
+    convert $argv[2] -resize 1920x1080\! ~/.bgimage/img.png
 end
 
 function lock
@@ -33,7 +33,7 @@ function clemctl
 end
 
 function get-connected-displays
-    xrandr | grep " connected" | cut -d "c" -f1
+    xrandr | grep " connected" | cut -d "c" -f1 | trim
 end
 
 function get-number-of-displays
@@ -77,6 +77,28 @@ function get-focused-display-resolution
     set res $res[-1]
     echo $res
 end
+
+function get-focused-display-x-offset
+    xrandr | grep (get-focused-display) | cut -d "+" -f2-3 | cut -d " " -f1 | cut -d "+" -f1
+end
+
+function get-focused-display-y-offset
+    xrandr | grep (get-focused-display) | cut -d "+" -f2-3 | cut -d " " -f1 | cut -d "+" -f2
+end
+
+function screenshot
+    set target ~/screenshots/(date +%T-%F).png
+    switch $argv
+        case "everything"
+            maim $target
+        case "window"
+            maim -x (get-window-x-pos) -y (get-window-y-pos) -w (get-window-width) -h (get-window-height) $target
+        case "display"
+            maim -x (get-focused-display-x-offset) -y (get-focused-display-y-offset) -w (get-focused-display-width) -h (get-focused-display-height) $target
+   end
+   echo $target
+end
+            
 
 function get-focused-display-width
     get-focused-display-resolution | cut -d "x" -f1
@@ -136,6 +158,25 @@ function set-window-size
     eval $command
 end
 
+function resize-window
+    set dim $argv[1]
+    set num (abs $argv[2])
+    if test $argv[2] -gt 0
+        set direction grow
+    else
+        set direction shrink
+    end
+    im resize $direction $dim {$num}px or {$num}pc
+end
+
+function adjust-height
+    resize-window height $argv
+end
+
+function adjust-width
+   resize-window width $argv
+end
+
 function trans
     transset -i (currentapp) $argv
 end
@@ -192,3 +233,49 @@ end
 function explode
     echo $argv | sed 's/ /\n/g'
 end
+
+function xdc
+    xdotool getactivewindow $argv
+end
+
+function windowmove
+    set directions left right down up
+    if contains $argv[1] $directions
+        windowmove-relative $argv
+    else
+        xdc windowmove $argv
+    end
+end
+
+function get-window-x-pos
+    xwininfo -id (mywin) | grep "Absolute upper-left X" | cut -d ":" -f2 | trim
+end
+
+function get-window-y-pos
+    xwininfo -id (mywin) | grep "Absolute upper-left Y" | cut -d ":" -f2 | trim
+end
+
+function windowmove-relative
+    set xpos (get-window-x-pos)
+    set ypos (get-window-y-pos)
+    set direction $argv[1]
+    set distance $argv[2]
+    switch $direction
+        case "left"
+            set xpos (math "$xpos - $distance")
+        case "right"
+            set xpos (math "$xpos + $distance")
+        case "up"
+            set ypos (math "$ypos - $distance")
+        case "down"
+            set ypos (math "$ypos + $distance")
+    end
+    if test $xpos -lt 0
+        set xpos 0
+    end
+    if test $ypos -lt 0
+        set ypos 0
+    end
+    xdc windowmove $xpos $ypos
+end
+

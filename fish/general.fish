@@ -163,3 +163,17 @@ function divisible
         return 1
     end
 end
+
+function scd
+    set numargs (count $argv)
+    switch $numargs
+        case "1"
+            cd $argv
+        case "2"
+            cd (echo (pwd) | sed "s/$argv[1]/$argv[2]/g")
+   end
+end
+
+function endswith
+    echo $argv[2] | grep -i --regexp "$argv[1]" > /dev/null
+end

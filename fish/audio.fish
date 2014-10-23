@@ -36,12 +36,13 @@ function set-default-sink
 end
 
 function switch-output
-    set ndx (get-output-index $argv)
-    set-default-sink $ndx
-    move-all-audio-streams $ndx
-    set -U default_sink $ndx
-    set op (current-output)
-    msg --id 7 -t "output changed to $op"
+    # set ndx (get-output-index $argv)
+    # set-default-sink $ndx
+    # move-all-audio-streams $ndx
+    # set -U default_sink $ndx
+    # set op (current-output)
+    # msg --id 7 -t "output changed to $op"
+    switchaudio.sh
 end
 
 function list-outputs
@@ -53,8 +54,21 @@ function list-outputs
         else
             echo $i
         end
-        set cnt (math "$cnt+1")
+        # inc cnt
+        set cnt (math cnt + 1)
     end
+end
+
+function list-displays
+   set displays (get-connected-displays)
+   set primary (get-primary-display)
+   for i in $displays
+       if match $i $primary 
+           echo \* $i
+       else
+           echo " " $i
+       end
+   end
 end
 
 function current-output
@@ -65,8 +79,14 @@ end
 
 function setvol
     pactl -- set-sink-volume $default_sink {$argv}%
-    set vol (getvol)
+    set vol (getvolume)
     msg --id 8 -t "volume set to $vol"
+end
+
+function getvolume
+    set vols (pactl list sinks | grep "Volume: 0: " | cut -c13-16 | trim)
+    set ndx (math "$default_sink + 1")
+    echo $vols[$ndx]
 end
 
 function clear-playlist
@@ -79,10 +99,16 @@ function lyrics
 end
     
 function media-ctl
+    set nargs (count $argv)
     switch $argv[1] 
-        case add 
-            #add results matching query to current playlist
-            beet play $argv[2..-1]
+        case play 
+            if [ $nargs = 1 ]
+                playerctl --player=$PLAYER play-pause
+            else
+                #add results matching query to current playlist
+                beet play $argv[2..-1]
+            end
+
         case clear
             clear-playlist
         case vol
@@ -97,7 +123,8 @@ function media-ctl
             list-outputs
         case output
             switch-output $argv[2..-1]
-            #switchaudio.sh
+        case displays
+            list-displays 
         case read
             books $argv[2..-1]
         case "*"
