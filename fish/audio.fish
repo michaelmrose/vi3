@@ -115,7 +115,7 @@ function media-ctl
             setvol $argv[2]
         case playing
             #print title of playing track
-            pacmd list-sink-inputs | grep media.title | cut -d '"' -f2
+            playing
         case lyrics
             #print lyrics of playing tracks
             lyrics (media-ctl playing)
@@ -131,6 +131,10 @@ function media-ctl
             #handles play pause stop next previous
             playerctl --player=$PLAYER $argv
         end
+end
+
+function playing
+    echo (playerctl metadata title) by (playerctl metadata artist)
 end
 
 alias mm media-ctl 

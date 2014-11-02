@@ -51,6 +51,12 @@
         bindsym $mod+h focus left
         bindsym $mod+l focus right
 
+    # change focus 
+        bindsym XF86Launch3 focus left
+        bindsym XF86Launch4 focus down
+        bindsym XF86Launch5 focus up
+        bindsym XF86Launch6 focus right
+
     # reload the configuration file
         bindsym $mod+Shift+c reload
         bindsym $mod+Shift+r restart
@@ -153,7 +159,7 @@ mode "command" {
         bindsym Shift+a mode "audio"
         bindsym Shift+t $op vi3_trans
         bindsym Shift+s exec "ff solid", $exit
-        bindsym z mode "testop"
+        bindsym z exec "ff im focus mode_toggle", $exit
         
         set $setsize exec ff set-size-of-next-window
         bindsym 1 $setsize 1
@@ -215,8 +221,9 @@ mode "arrange" {
 mode "kill" {
     #keybindings
         bindsym d exec "ff kill-workspace", $exit
+        bindsym a $op kill-all-app
         bindsym w kill, $exit
-        bindsym a exec "ff destroy-everything", $exit
+        bindsym z exec "ff destroy-everything", $exit
         bindsym o exec "ff kill-other-windows", $exit
         bindsym Escape $exit
 }

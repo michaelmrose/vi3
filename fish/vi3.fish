@@ -19,6 +19,7 @@ end
 function vi3_start-vi3
     vi3_define-vars
     vi3_setup-keyboard
+    vi3_bind-shift-keys
 end
 
 function vi3_define-vars
@@ -31,26 +32,23 @@ end
 
 function vi3_setup-keyboard
     /opt/bin/xcape -e 'Super_L=XF86LaunchB'
+    /opt/bin/xcape -e 'Alt_L=Page_Up'
+    /opt/bin/xcape -e 'Control_L=Page_Down'
+    /opt/bin/xcape -e 'Alt_R=XF86Launch3'
+    /opt/bin/xcape -e 'Super_R=XF86Launch4'
+    /opt/bin/xcape -e 'Menu=XF86Launch5'
+    /opt/bin/xcape -e 'Control_R=XF86Launch6'
+end
+
+function vi3_bind-shift-keys
     /opt/bin/xcape -e 'Shift_L=XF86Launch1'
     /opt/bin/xcape -e 'Shift_R=XF86Launch2'
-
 end
 
 function vi3_kill-shift-keys
     killall xcape
-    /opt/bin/xcape -e 'Control_L=Page_Down'
-    /opt/bin/xcape -e 'Super_L=XF86LaunchB'
-    /opt/bin/xcape -e 'Alt_L=Page_Up'
-    /opt/bin/xcape -e 'Shift_R=XF86Launch2'
+    vi3_setup-keyboard
 end
-
-function vi3_restore-shift-keys
-    /opt/bin/xcape -e 'Shift_L=XF86Launch1'
-    /opt/bin/xcape -e 'Shift_R=XF86Launch2'
-    /opt/bin/xcape -e 'Control_L=Page_Down'
-    /opt/bin/xcape -e 'Alt_L=Page_Up'
-end
-
 
 function vi3_combo
     vi3_get-workspace $combolist[1]
@@ -81,7 +79,6 @@ function get-active-workspaces
         im focus output right
     end
 end
-   
 
 function focus-primary
     im focus output (get-primary-display) 
@@ -93,8 +90,13 @@ function restore-workspaces
     end
 end
 
+function save-workspaces
+    set -U workspaces (get-active-workspaces)
+end
+
 function evalandrestore
-    get-active-workspaces
+   # set -U workspaces (get-active-workspaces)
+    save-workspaces
     eval $argv
     restore-workspaces
 end
@@ -279,7 +281,7 @@ function app-switch
         case "s"
             set returnval "steam"
         case "t"
-            set returnval "konsole"
+            set returnval "urxvtc"
         case "u"
             set returnval "nil"
         case "v"
@@ -308,6 +310,19 @@ function focus-app
         set -U lasttarget $target
         focus $target
     end
+end
+
+function kill-app
+    save-workspaces
+    focus-app $argv
+    sleep 0.5
+    im kill
+    restore-workspaces
+end
+
+function kill-all-app
+    set target (app-switch $argv)
+    killall (tolower $target)
 end
 
 function focus-next
@@ -415,6 +430,11 @@ end
 
 function im
     eval i3-msg $argv > /dev/null
+end
+
+function get-focused-workspace
+    set list (get-active-workspaces)
+    echo $list[1]
 end
 
 alias ws vi3_workspace

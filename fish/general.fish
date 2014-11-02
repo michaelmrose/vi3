@@ -132,7 +132,6 @@ function findall
     end
     set middle (condense $middle)
     set middle (echo $middle | rev | cut -d '|' -f2- | rev)
-    echo $middle
     eval (condense $start $middle $ending)
 
 end

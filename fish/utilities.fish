@@ -16,8 +16,50 @@ function lock
 end
 
 function focus
-    i3-msg [class=(capitalize $argv)] focus
+    set numargs (count $argv)
+    switch $numargs
+        case "1"
+            set target (return-windowclass $argv)
+            i3-msg [class=$target] focus
+        case "2"
+            set cmd $argv[1]
+            switch $cmd
+                case "id"
+                    im [id=$argv[2]] focus
+                case "distinct"
+                    focus-distinct $argv[2]
+            end
+    end
 end
+
+function return-windowclass
+    switch $argv
+        case calibre
+            set returnval libprs500
+        case urxvt
+            set returnval URxvt
+        case urxvtc
+            set returnval URxvt
+        case "*"
+            set returnval (capitalize $argv)
+    end
+    echo $returnval
+end
+
+function focus-distinct
+    set current_class (winclass)
+    set current_id (mywin)
+    while true
+        im focus $argv
+        set next_class (winclass)
+        if not match $current_class $next_class
+            set new_id (mywin)
+            break
+        end
+    end
+    focus id $current_id
+    focus id $new_id
+end        
 
 function new-session
     kdmctl reserve
