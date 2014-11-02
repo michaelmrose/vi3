@@ -14,9 +14,11 @@ Additionally commonly used apps are bound to letter and any function that needs 
 - Super + v ?? -> Set volume to ??
 - Super + t ?? -> Set transparency of current window to ??
 - Super + a enter audio mode
-- Tap Super_L to go to command mode
+- Alt + h [number][number] set height to [number] percentage of current display height
+- Alt + w [number][number] set width to [number] percentage of current display width
+- Tap Shift_R to go to command mode
 - Super + hjkl change focus
-- Tap either shift to immediately enter Command Mode and select a workspace to shift to, this is accomplished via xcape which provides a different keysym for hitting a key alone rather than as a modifier
+- Tap Shift_L to immediately enter Command Mode and select a workspace to shift to, this is accomplished via xcape which provides a different keysym for hitting a key alone rather than as a modifier
 
 ##Command Mode
 ### Operations which do NOT terminate command mode 
@@ -58,6 +60,7 @@ This functionality requires playerctl and requires that you set the global envir
 - Space toggle playback
 - n make the next audio output the default and send all currently playing streams to it
 - m mute
+- v [number][number] set volume to number
 
 ##Resize Mode
 This includes the default resize mode functionality mapped to shift+hjkl as well as the following
@@ -69,7 +72,8 @@ This includes the default resize mode functionality mapped to shift+hjkl as well
 Accessed via d in command mode
 - w kill window
 - d kill all windows in workspace
-- a kill all visible workspaces 
+- a[a-z] kill all windows of window class designated by [a-z] 
+- z kill all visible workspaces 
 - o kill all windows in workspace other than focused
 
 ##Convenience Functions
