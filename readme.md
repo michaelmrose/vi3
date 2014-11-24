@@ -76,6 +76,15 @@ Accessed via d in command mode
 - z kill all visible workspaces 
 - o kill all windows in workspace other than focused
 
+##Menu Mode
+Accessed via tapping super in normal mode
+- s choose choose ssh connection via rofi
+- r or tap super again run a program via rofi
+- w chose window via rofi
+- l lock
+- Shift+e shutdown or end
+- Shift+r reboot
+
 ##Convenience Functions
 - wp sets your background with feh and converts file via imagemagick for usage with i3lock
 - lock will run i3lock with the image created with wp

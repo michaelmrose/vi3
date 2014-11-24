@@ -13,10 +13,10 @@ fi
 pacmd "set-default-sink ${next_sink_index}"
 
 #move all inputs to the new sink
-# for app in $(pacmd list-sink-inputs | sed -n -e 's/index:[[:space:]]\([[:digit:]]\)/\1/p');
-#     do
-#         pacmd "move-sink-input $app $next_sink_index"
-# done
+ for app in $(pacmd list-sink-inputs | sed -n -e 's/index:[[:space:]]\([[:digit:]]\)/\1/p');
+     do
+         pacmd "move-sink-input $app $next_sink_index"
+ done
 
 ff setme default_sink $next_sink_index
 

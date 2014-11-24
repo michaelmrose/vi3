@@ -1,11 +1,3 @@
-alias ws vi3_workspace
-alias gws vi3_get-workspace
-alias cws vi3_combine-workspaces
-alias rws vi3_rearrange-workspaces
-alias saw vi3_select-all-in-workspace
-alias mws vi3_move-window-to-workspace
-alias tws vi3_take-window-to-workspace
-
 set query blah
 set filenames blah
 
@@ -235,7 +227,7 @@ end
 
 function ctof
     set temp $argv
-    mth temp "$temp * 1.8 + 32"
+    set temp (math "$temp * 1.8 + 32")
     echo $argv º celcius is $temp º fahrenheit
 end
 
@@ -254,50 +246,8 @@ function extractfilename
 end
 
 function msg
-    # notify-send --expire-time=1 $argv
     twmnc $argv
 end
-
-function getvol
-    pactl list sinks | sed -n -e '/State: RUNNING/,$p' | grep "Volume: 0" | cut -d " " -f4 | head -c3
-end
-
-function getvol2
-    set vol (pactl list sinks | grep -i "volume: 0: ")
-    set ndx (math "$default_sink + 1")
-    set vol (echo $vols[$ndx] | cut -d ":" -f3 | cut -d " " -f3) 
-    echo $vol
-end
-
-function trackname
-    qdbus org.mpris.clementine /Player org.freedesktop.MediaPlayer.GetMetadata | grep album | cut -d ":" -f2 | cut -d " " -f2-7
-end
-
-function appendtoplaylist
-    clementine -a $argv
-end
-
-function testthis
-    set -U lengthofgv (size-of-getvol)
-    echo $lengthofgv
-    if test 2 = 2
-        echo "yes"
-    end
-end
-    
-
-function setlastvol
-    set -U lastvolume (getvol)
-end
-
-function restorelastvol
-    setvol $lastvolume
-end
-
-function size-of-getvol
-    lengthofgetvol.sh
-end
-
 
 alias netflix netflix-desktop
 
@@ -386,10 +336,12 @@ function gcal
     google calendar add "{$argv}"
 end
 
+function work
+    gcal "work $argv"
+end
+
 function gcalendar
     chromeless -new-window calendar.rosenetwork.net &
-    sleep 2
-    i3-msg fullscreen
 end
 
 function fm
@@ -442,10 +394,20 @@ function nextwindow
     nextmatch $currentclass
 end
 
-function chromeless
+function chromeless3
     firefox -P chromeless -no-remote $argv &
-    sleep 2
-    i3-msg fullscreen
+    sleep 3
+    unset-fullscreen
+end
+
+function chromeless2
+    firefox -new-window $argv
+    sleep 3
+    keyp colon c h r o m e l e s s Return Control+z
+end
+
+function chromeless
+    chromium-browser --kiosk $argv
 end
     
 function arrangeme

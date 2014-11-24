@@ -74,7 +74,7 @@ end
 function current-output
     set op (list-outputs)
     set ndx (math $default_sink+1)
-    echo $op[$ndx] | sed 's/\t//g' | sed 's/*//g'
+    echo $op[$ndx] | sed 's/\t//g' | sed 's/*//g' | trim
 end
 
 function setvol
@@ -135,6 +135,14 @@ end
 
 function playing
     echo (playerctl metadata title) by (playerctl metadata artist)
+end
+
+function show-playing
+    msg (playing)
+end
+
+function get-volumes
+    pactl list sinks | sed -n -e '/State: RUNNING/,$p' | grep "Volume: 0" | cut -d ":" -f3 | cut -d "%" -f1 | trim
 end
 
 alias mm media-ctl 

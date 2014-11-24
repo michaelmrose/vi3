@@ -65,7 +65,7 @@
 
     #other keybindings
         #bindsym XF86LaunchB mode "command"
-        bindsym XF86LaunchB $dm
+        bindsym XF86LaunchB mode "menu"
         bindsym XF86Launch2 mode "command"
         bindsym XF86Launch1 $op ws
         bindsym Control+Mod1+l exec "ff lock"
@@ -81,7 +81,7 @@
         bindsym mod1+h $op vi3_height
         bindsym mod1+w $op vi3_width
         bindsym $mod+f fullscreen
-        #bindsym $mod+s scratchpad show
+        bindsym $mod+b mode "brightness"
         bindsym $mod+w exec "ff show-winclass"
         #bindsym --release mod1+h exec "xdotool key Left"
         #bindsym --release mod1+j exec "xdotool key Down"
@@ -129,9 +129,6 @@ mode "command" {
 
     # focus the parent container
         bindsym p focus parent
-
-    # focus the child container
-        #bindsym c focus child
 
     # reload the configuration file
         bindsym $mod+Shift+c reload
@@ -230,19 +227,56 @@ mode "kill" {
 
 mode "audio" {
     #keybindings
-        bindsym j exec     " ff media-ctl vol -5            "
-        bindsym k exec     " ff media-ctl vol +5            "
-        bindsym h exec     " ff media-ctl previous          "
-        bindsym l exec     " ff media-ctl next              "
-        bindsym space exec " ff media-ctl play-pause        "
-        bindsym n exec     " ff media-ctl output next       "
-        bindsym s exec     " ff media-ctl output speakers   "
-        bindsym p exec     " ff media-ctl output headphones "
-        bindsym m exec     " ff media-ctl vol 0             "
+        bindsym j exec        " ff media-ctl vol -5            "
+        bindsym k exec        " ff media-ctl vol +5            "
+        bindsym h exec        " ff media-ctl previous          "
+        bindsym l exec        " ff media-ctl next              "
+        bindsym space exec    " ff media-ctl play-pause        "
+        bindsym n exec        " ff media-ctl output next       "
+        bindsym s exec        " ff media-ctl output speakers   "
+        bindsym p exec        " ff media-ctl output headphones "
+        bindsym m exec        " ff media-ctl vol 0             "
+        bindsym Shift+m exec  " ff media-ctl vol 100           "
         bindsym v $op vi3_vol
+        bindsym i exec        " ff show-playing                "
 
         bindsym Escape $exit
 }
+
+mode "menu" {
+    #keybindings
+        bindsym s           exec "ff rofimenu ssh",     $exit
+        bindsym d           exec "ff dm",               $exit
+        bindsym r           exec "ff rofimenu run",     $exit
+        bindsym l           exec "ff lock",             $exit
+        bindsym n           exec "ff new-session",      $exit
+        bindsym shift+e     exec "ff theend",           $exit
+        bindsym Shift+r     exec "ff rboot",            $exit
+        bindsym XF86LaunchB exec "ff rofimenu run",     $exit
+        bindsym w           exec "ff rofimenu window",  $exit
+
+        bindsym Escape $exit
+}
+
+mode "brightness" {
+    #keybindings
+        bindsym j exec       " ff bright -10 "
+        bindsym k exec       " ff bright +10 "
+        bindsym m exec       " ff bright 0   " , $exit
+        bindsym Shift+m exec " ff bright 100 " , $exit
+        bindsym 1 exec       " ff bright 10  " , $exit
+        bindsym 2 exec       " ff bright 20  " , $exit
+        bindsym 3 exec       " ff bright 30  " , $exit
+        bindsym 4 exec       " ff bright 40  " , $exit
+        bindsym 5 exec       " ff bright 50  " , $exit
+        bindsym 6 exec       " ff bright 60  " , $exit
+        bindsym 7 exec       " ff bright 70  " , $exit
+        bindsym 8 exec       " ff bright 80  " , $exit
+        bindsym 9 exec       " ff bright 90  " , $exit
+
+        bindsym Escape $exit
+}
+
 
 mode "op" {
     #keybindings
@@ -318,21 +352,24 @@ mode mouseset {
     #keybindings
         bindsym f exec "ff freespin",$exit
         bindsym c exec "ff clickit",$exit
+        bindsym k exec "ff toggle-shift-keys",$exit
         bindsym Escape $exit
 }
 
 mode transparency {
     #keybindings
-        bindsym 1 exec "ff trans .1",$exit
-        bindsym 2 exec "ff trans .2",$exit
-        bindsym 3 exec "ff trans .3",$exit
-        bindsym 4 exec "ff trans .4",$exit
-        bindsym 5 exec "ff trans .5",$exit
-        bindsym 6 exec "ff trans .6",$exit
-        bindsym 7 exec "ff trans .7",$exit
-        bindsym 8 exec "ff trans .86",$exit
-        bindsym 9 exec "ff trans .9",$exit
-        bindsym 0 exec "ff trans 1.0",$exit
+        bindsym 1       exec "ff trans .1"  , $exit
+        bindsym 2       exec "ff trans .2"  , $exit
+        bindsym 3       exec "ff trans .3"  , $exit
+        bindsym 4       exec "ff trans .4"  , $exit
+        bindsym 5       exec "ff trans .5"  , $exit
+        bindsym 6       exec "ff trans .6"  , $exit
+        bindsym 7       exec "ff trans .7"  , $exit
+        bindsym 8       exec "ff trans .86" , $exit
+        bindsym 9       exec "ff trans .9"  , $exit
+        bindsym 0       exec "ff trans 1.0" , $exit
+        bindsym m       exec "ff trans 0.0" , $exit
+        bindsym Shift+m exec "ff trans 1.0" , $exit
 
         bindsym Escape $exit
 

@@ -107,9 +107,9 @@ end
 function get-focused-display
     set xcorner (xwininfo -id (mywin) -all | grep -i "corners" | cut -d '+' -f2 | trim) 
     if test $xcorner -gt (get-dividing-line)
-        get-secondary-display
-    else
         get-primary-display
+    else
+        get-secondary-display
     end
 end
 
