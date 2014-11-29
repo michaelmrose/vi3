@@ -213,6 +213,11 @@ function coverit
    mv temp.pdf $argv
 end
 
+function replace-cover
+    pdfkillcover $argv
+    coverit $argv
+end
+
 function winclass
     xprop -id (mywin) | grep WM_CLASS | cut -d '"' -f4 
 end

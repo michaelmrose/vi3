@@ -50,7 +50,7 @@
         bindsym $mod+k focus up
         bindsym $mod+h focus left
         bindsym $mod+l focus right
-
+    
     # change focus 
         bindsym XF86Launch3 focus left
         bindsym XF86Launch4 focus down
@@ -82,7 +82,8 @@
         bindsym mod1+w $op vi3_width
         bindsym $mod+f fullscreen
         bindsym $mod+b mode "brightness"
-        bindsym $mod+w exec "ff show-winclass"
+        #bindsym $mod+w exec "ff show-winclass"
+        bindsym $mod+w $op vi3_op_workspace2
         #bindsym --release mod1+h exec "xdotool key Left"
         #bindsym --release mod1+j exec "xdotool key Down"
         #bindsym --release mod1+k exec "xdotool key Up"
@@ -138,7 +139,7 @@ mode "command" {
         bindsym c exec "xdotool key Caps_Lock" , $exit
         
         bindsym f $op focus-app
-        bindsym Shift+f $op vi3_fetch-window
+        bindsym Shift+f eop vi3_fetch-window
         bindsym o $op new-open-app             
         bindsym r mode "resize"           
         bindsym d mode "kill"

@@ -26,8 +26,6 @@ function focus
             switch $cmd
                 case "id"
                     im [id=$argv[2]] focus
-                case "distinct"
-                    focus-distinct $argv[2]
             end
     end
 end
@@ -319,5 +317,9 @@ function windowmove-relative
         set ypos 0
     end
     xdc windowmove $xpos $ypos
+end
+
+function alphabet
+    echo a b c d e f g h i j k l m n o p q r s t u v w x y z A B C D E F G H I J K L M N O P Q R S T U V W X Y Z
 end
 

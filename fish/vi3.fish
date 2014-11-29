@@ -67,11 +67,17 @@ end
 function vi3_combo
     vi3_get-workspace $combolist[1]
     vi3_get-workspace $combolist[2]
+    er vi3op
+    update-op-status
 end
 
 function vi3_rearrange
+    save-workspaces
     vi3_workspace $combolist[1]
     vi3_take-window-to-workspace $combolist[2]
+    restore-workspaces
+    er vi3op
+    update-op-status
 end
 
 function vi3_change-all
@@ -80,11 +86,15 @@ function vi3_change-all
         vi3_workspace $combolist[$num]
         set num (math $num + 1)
     end
+    er vi3op
+    update-op-status
 end
 
 function vi3_change-all-workspaces
     set numdisplays (get-number-of-displays)
     eval vi3_take-{$numdisplays} $argv[1] vi3_change-all
+    er vi3op
+    update-op-status
 end
 
 function get-active-workspaces
@@ -135,6 +145,12 @@ function vi3_take-n
         echo "not yet"
         im mode "op"
     end
+    er vi3op
+    update-op-status
+end
+
+function vi3_take-1
+    vi3_take-n $argv[1] $argv[2] 1
 end
 
 function vi3_take-2
@@ -144,14 +160,20 @@ end
 
 function vi3_combine-workspaces
     evalandrestore vi3_take-2 $argv[1] vi3_combo
+    er vi3op
+    update-op-status
 end
 
 function vi3_rearrange-workspaces
     evalandrestore vi3_take-2 $argv[1] vi3_rearrange
+    er vi3op
+    update-op-status
 end
 
 function vi3_trans-set
     trans .{$combolist[1]}{$combolist[2]}
+    er vi3op
+    update-op-status
 end
 
 function vi3_trans
@@ -160,6 +182,8 @@ end
 
 function vi3_vol-set
     setvol {$combolist[1]}{$combolist[2]}
+    er vi3op
+    update-op-status
 end
 
 function vi3_vol
@@ -168,6 +192,8 @@ end
 
 function vi3_width-set
     set-window-size perc width {$combolist[1]}{$combolist[2]}
+    er vi3op
+    update-op-status
 end
 
 function vi3_width
@@ -176,6 +202,8 @@ end
 
 function vi3_height-set
     set-window-size perc height {$combolist[1]}{$combolist[2]}
+    er vi3op
+    update-op-status
 end
 
 function vi3_height
@@ -184,25 +212,43 @@ end
 
 function vi3_workspace
     im workspace $argv
+    er vi3op
+    update-op-status
+end
+
+function vi3_op_workspace2
+    vi3_take-1 $argv[1] vi3_workspace2
+end
+
+function vi3_workspace2
+    im workspace $combolist[1]
 end
 
 function vi3_take-window-to-workspace
     im move container to workspace $argv
     vi3_workspace $argv
+    er vi3op
+    update-op-status
 end
 
 function vi3_move-window-to-workspace
     im move container to workspace $argv
+    er vi3op
+    update-op-status
 end
 
 function vi3_operator-mode
     setme vi3op $argv  
+    pkill -RTMIN+1 i3blocks
+    update-op-status
     im mode "op"
 end
 
 function vi3_fetch-window
     focus-app $argv
     vi3_take-back
+    er vi3op
+    update-op-status
 end
 
 function vi3_take-back
@@ -215,6 +261,11 @@ function vi3_backout
     set -e combolist
     set -U numkeyed 0
     im mode "default"
+    update-op-status
+end
+
+function update-op-status
+    pkill -RTMIN+1 i3blocks
 end
 
 function vi3_get-workspace
@@ -223,6 +274,8 @@ function vi3_get-workspace
     vi3_select-all-in-workspace
     vi3_take-back
     restore-ws
+    er vi3op
+    update-op-status
 end
 
 function checkpoint-ws
@@ -250,70 +303,6 @@ function evalvi3op
     append-and-eval $vi3op $argv
 end
 
-function app-switch
-    switch $argv
-        case "b"
-            set returnval "firefox"
-        case "c"
-            set returnval "speedcrunch"
-        case "d"
-            set returnval "qbittorrent"
-        case "e"
-            set returnval "nvpy"
-        case "f"
-            set returnval "dolphin"
-        case "g"
-            set returnval "gcalendar"
-        case "h"
-            set returnval "hexchat"
-        case "i"
-            set returnval "idea"
-        case "j"
-            set returnval "nil"
-        case "k"
-            set returnval "kmix"
-        case "l"
-            set returnval "calibre"
-        case "m"
-            set returnval "clementine"
-        case "M"
-            set returnval "vlc"
-        case "n"
-            set returnval "ff noteit"
-        case "N"
-            set returnval "nvidia-settings"
-        case "o"
-            set returnval "systemsettings"
-        case "O"
-            set returnval "kdesudo systemsettings"
-        case "p"
-            set returnval "kdesudo synaptic "
-        case "q"
-            set returnval "nil"
-        case "r"
-            set returnval "nil"
-        case "s"
-            set returnval "steam"
-        case "t"
-            set returnval "urxvtc"
-        case "u"
-            set returnval "nil"
-        case "v"
-            set returnval "qvim"
-        case "w"
-            set returnval "libreoffice"
-        case "x"
-            set returnval "ksnapshot"
-        case "y"
-            set returnval "nil"
-        case "z"
-            set returnval "zathura"
-        case "*"
-            set returnval "msg invalid selection"
-        end
-    echo $returnval
-end
-
 function focus-app
     set currentclass (winclass)
     set target (app-switch $argv)
@@ -324,6 +313,8 @@ function focus-app
         set -U lasttarget $target
         focus $target
     end
+    er vi3op
+    update-op-status
 end
 
 function kill-app
@@ -332,11 +323,15 @@ function kill-app
     sleep 0.5
     im kill
     restore-workspaces
+    er vi3op
+    update-op-status
 end
 
 function kill-all-app
     set target (app-switch $argv)
     killall (tolower $target)
+    er vi3op
+    update-op-status
 end
 
 function focus-next
@@ -346,6 +341,8 @@ end
 function open-app
     set target (app-switch $argv)
     eval $target
+    er vi3op
+    update-op-status
 end
 
 function select-all-in-workspace
@@ -449,6 +446,68 @@ end
 function get-focused-workspace
     set list (get-active-workspaces)
     echo $list[1]
+end
+
+function show-op
+    if exists $vi3op
+        switch $vi3op
+            case "ws"
+                set msg "switch workspace [a-z]"
+            case "vi3_trans"
+                set msg "set transparency [0-99]"
+            case "gws"
+                set msg "get windows from [a-z]"
+            case "mws"
+                set msg "move window to [a-z]"
+            case "tws"
+                set msg "take window to [a-z]"
+            case "vi3_vol"
+                set msg "set volume [0-99]"
+            case "focus-app"
+                set msg "focus appkey [a-zA-Z]"
+            case "vi3_fetch-window"
+                set msg "fetch appkey[a-zA-Z]"
+            case "new-open-app"
+                set msg "open appkey [a-zA-Z]"
+            case "rws"
+                set msg "relocate windows from [a-z] to [a-z]"
+            case "kill-all-app"
+                set msg "kill all instances of appkey [a-zA-Z]"
+            case "*"
+                set msg "some other op"
+        end
+    
+        echo $msg
+    else
+        echo none
+    end
+    
+end
+
+function show-appkeys
+    for i in $alphabet
+        set var app_key_$i
+        echo result $i: $$var
+    end
+end
+
+function app-switch
+    set var appkey_$argv
+    echo $$var
+end
+
+function appkey
+    switch (count $argv)
+        case "1"
+        app-switch $argv
+        case "2"
+            set value appkey_$argv[1]
+            set -U $value $argv[2]
+    end
+end
+
+function erase_appkey
+    er appkey_$argv
 end
 
 alias ws vi3_workspace
