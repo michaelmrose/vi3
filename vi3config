@@ -2,6 +2,7 @@
 # This portion of the file provided by vi3 and
 # will be overwritten upon update.To add your own bindings
 # and settingsplease edit ~/.i3/personalconfig instead.
+# i3 config file (v4)
 #-------------------------------------------------------- 
 
 #----------------assign workspaces to outputs------------
@@ -34,13 +35,14 @@
        workspace m output $primary_output
 
 #-----------------------variables-------------------------
-    set $exit mode "default"
+    set $exit exec ff vi3_mode default
     set $backout exec "ff vi3_backout"
     set $selectall focus parent, focus parent, focus parent
-    set $dm exec "ff dm"
+    set $dm exec "ff dm run"
     set $killall focus parent, focus parent, focus parent, kill
     set $next focus output right
     set $op exec ff vi3_operator-mode
+    set $mode exec ff vi3_mode
     floating_modifier $mod
 
 #-----------------------Keybindings------------------------
@@ -60,53 +62,63 @@
     # reload the configuration file
         bindsym $mod+Shift+c reload
         bindsym $mod+Shift+r restart
-        #bindsym F10 exec "gnome-screenshot"
         bindsym F12 exec "ff update-vi3-config"
 
     #other keybindings
         #bindsym XF86LaunchB mode "command"
-        bindsym XF86LaunchB mode "menu"
-        bindsym XF86Launch2 mode "command"
+        bindsym XF86LaunchB $mode menu
+        bindsym XF86Launch2 $mode command
+        #bindsym XF86Launch2 exec "ff toggle-sxhkd"
+        #bindsym XF86Launch1 $op vi3_workspace-tracked
         bindsym XF86Launch1 $op ws
         bindsym Control+Mod1+l exec "ff lock"
         bindsym Control+Mod1+s exec "suspend"
         bindsym Control+Mod1+r $dm
-        bindsym $mod+a mode "audio"
-        bindsym $mod+m mode "mouseset"
+        bindsym $mod+a $mode audio
+        bindsym $mod+m $mode mouseset
         bindsym $mod+Shift+m exec "ff display-manual"
         bindsym $mod+n exec "ff nextwindow"
-        bindsym $mod+s mode "screenshot"
-        bindsym $mod+t $op vi3_trans
-        bindsym $mod+v $op vi3_vol
+        bindsym $mod+Shift+n exec "ff new-session"
+        bindsym Print $mode screenshot
+        #bindsym $mod+t $op vi3_trans
+        bindsym $mod+t exec "ff choose-trans"
+        #bindsym $mod+v $op vi3_vol
+        bindsym $mod+v exec "ff choose-volume"
         bindsym mod1+h $op vi3_height
         bindsym mod1+w $op vi3_width
         bindsym $mod+f fullscreen
-        bindsym $mod+b mode "brightness"
+        bindsym $mod+b $mode brightness
+        bindsym mod1+b exec "ff books"
+        bindsym mod1+v exec "ff choose-video"
         #bindsym $mod+w exec "ff show-winclass"
-        bindsym $mod+w $op vi3_op_workspace2
-        #bindsym --release mod1+h exec "xdotool key Left"
-        #bindsym --release mod1+j exec "xdotool key Down"
-        #bindsym --release mod1+k exec "xdotool key Up"
-        #bindsym --release mod1+l exec "xdotool key Right"
-
+        #bindsym $mod+w $op vi3_op_workspace2
+        bindsym $mod+w exec "ff keysd toggle"
+        bindsym $mod+p exec "ff choose-window visible"
+        bindsym $mod+s exec "ff choose-session"
+        bindsym $mod+c $mode configure
+        bindsym $mod+z $mode command
+        bindsym Mod1+l exec "ff lockme"
  
 #-----------------------modes------------------------------
 mode "command" {
     #Keybindings
     bindsym F13 $dm
     bindsym XF86LaunchB $dm,$exit
+    bindsym a+b exec "konsole"
 
     # kill focused window
-        bindsym q kill,$exit
+        bindsym q kill, exec "ff vi3_set_lastcom im kill", $exit
         bindsym Shift+q exec "ff really-quit",$exit
-        bindsym d mode "kill"
+        #bindsym d $mode kill
+        bindsym d $op vi3_kill
     # alternatively, you can use the cursor keys:
         bindsym Up focus up
         bindsym Down focus down
         bindsym Left focus left
         bindsym Right focus right
         
-        bindsym k focus up
+        #bindsym k focus up
+        bindsym --release k exec "ff typeforme"
         bindsym j focus down
         bindsym h focus left
         bindsym l focus right
@@ -117,6 +129,9 @@ mode "command" {
         bindsym Shift+j move down
         bindsym Shift+h move left
         bindsym Shift+l move right
+    #back and forth through history
+        bindsym Next exec "ff vi3_workspace-next"
+        bindsym Prior exec "ff vi3_workspace-last"
         
     
     # split in horizontal orientation
@@ -136,28 +151,31 @@ mode "command" {
         bindsym $mod+Shift+r restart
 
         bindsym $mod+Shift+s move scratchpad
-        bindsym c exec "xdotool key Caps_Lock" , $exit
+        #bindsym c exec "xdotool key Caps_Lock" , $exit
         
         bindsym f $op focus-app
+        bindsym u [urgent=latest] focus, $exit
         bindsym Shift+f eop vi3_fetch-window
-        bindsym o $op new-open-app             
-        bindsym r mode "resize"           
-        bindsym d mode "kill"
+        bindsym o $op open-app             
+        bindsym r $mode resize           
+        bindsym d $mode kill
         bindsym m $op mws 
-        bindsym Shift+m mode "windowmove"
+        bindsym Shift+m $mode windowmove
         bindsym n exec "ff nextwindow"
         bindsym Shift+n exec "sudo /home/michael/bin/nm", $exit
         bindsym t $op tws
         bindsym g $op gws
+        #bindsym w $op vi3_workspace-tracked
         bindsym w $op ws
         bindsym Shift+w $op vi3_change-all-workspaces
-        bindsym a mode "arrange"
+        bindsym a $mode arrange
         bindsym Shift+c $op cws
         bindsym Shift+r $op rws
-        bindsym Shift+a mode "audio"
+        bindsym Shift+a $mode audio
         bindsym Shift+t $op vi3_trans
         bindsym Shift+s exec "ff solid", $exit
         bindsym z exec "ff im focus mode_toggle", $exit
+        bindsym c $mode configure
         
         set $setsize exec ff set-size-of-next-window
         bindsym 1 $setsize 1
@@ -169,6 +187,7 @@ mode "command" {
         bindsym 7 $setsize 7
         bindsym 8 $setsize 8
         bindsym 9 $setsize 9
+        bindsym period exec "ff vi3_repeat", $exit
 
         bindsym Escape $exit
 }
@@ -185,10 +204,10 @@ mode "windowmove"{
 
 mode "resize" {
     #keybindings
-        bindsym Shift+k resize grow   height 10 px or 10 ppt
-        bindsym Shift+j resize shrink height 10 px or 10 ppt
-        bindsym Shift+h resize shrink width  10 px or 10 ppt
-        bindsym Shift+l resize grow   width  10 px or 10 ppt
+        bindsym Shift+k resize grow   height 20 px or 20 ppt
+        bindsym Shift+j resize shrink height 20 px or 20 ppt
+        bindsym Shift+h resize shrink width  20 px or 20 ppt
+        bindsym Shift+l resize grow   width  20 px or 20 ppt
         bindsym w exec "ff set -U resizedim width" 
         bindsym h exec "ff set -U resizedim height" 
         bindsym 1 exec "ff set-window-size perc 10", $exit
@@ -216,16 +235,6 @@ mode "arrange" {
         bindsym Escape $exit
 }
 
-mode "kill" {
-    #keybindings
-        bindsym d exec "ff kill-workspace", $exit
-        bindsym a $op kill-all-app
-        bindsym w kill, $exit
-        bindsym z exec "ff destroy-everything", $exit
-        bindsym o exec "ff kill-other-windows", $exit
-        bindsym Escape $exit
-}
-
 mode "audio" {
     #keybindings
         bindsym j exec        " ff media-ctl vol -5            "
@@ -246,15 +255,15 @@ mode "audio" {
 
 mode "menu" {
     #keybindings
-        bindsym s           exec "ff rofimenu ssh",     $exit
-        bindsym d           exec "ff dm",               $exit
-        bindsym r           exec "ff rofimenu run",     $exit
-        bindsym l           exec "ff lock",             $exit
-        bindsym n           exec "ff new-session",      $exit
-        bindsym shift+e     exec "ff theend",           $exit
-        bindsym Shift+r     exec "ff rboot",            $exit
-        bindsym XF86LaunchB exec "ff rofimenu run",     $exit
-        bindsym w           exec "ff rofimenu window",  $exit
+        bindsym s           exec "ff roficmd ssh",           $exit
+        bindsym r           exec "ff dm run",                $exit
+        bindsym l           exec "ff lock",                  $exit
+        bindsym n           exec "ff new-session",           $exit
+        bindsym shift+e     exec "ff theend",                $exit
+        bindsym Shift+r     exec "ff rboot",                 $exit
+        bindsym XF86LaunchB exec "ff dm run",                $exit
+        bindsym w           exec "ff choose-window all" ,       $exit
+        bindsym v           exec "ff choose-window visible", $exit
 
         bindsym Escape $exit
 }
@@ -353,7 +362,7 @@ mode mouseset {
     #keybindings
         bindsym f exec "ff freespin",$exit
         bindsym c exec "ff clickit",$exit
-        bindsym k exec "ff toggle-shift-keys",$exit
+
         bindsym Escape $exit
 }
 
@@ -381,9 +390,77 @@ mode screenshot {
         bindsym w exec "ff screenshot window", $exit
         bindsym d exec "ff screenshot display", $exit
         bindsym e exec "ff screenshot everything", $exit
+
         bindsym Escape $exit
 }
 
+mode configure {
+    #keybindings
+        bindsym a $mode audio
+        bindsym k exec "ff toggle-shift-keys",$exit
+        bindsym m $mode mouseset 
+        bindsym c exec "xdotool key Caps_Lock" , $exit
+        bindsym v $op vi3_vol
+        bindsym t $op vi3_trans
+        bindsym g exec "ff game-mode toggle", $exit
+
+        bindsym Escape $exit
+}
+
+mode locked {
+    #keybindings
+        bindsym j exec        " ff media-ctl vol -5            "
+        bindsym k exec        " ff media-ctl vol +5            "
+        bindsym h exec        " ff media-ctl previous          "
+        bindsym l exec        " ff media-ctl next              "
+        bindsym space exec    " ff media-ctl play-pause        "
+        bindsym n exec        " ff media-ctl output next       "
+        bindsym s exec        " ff media-ctl output speakers   "
+        bindsym p exec        " ff media-ctl output headphones "
+        bindsym m exec        " ff media-ctl vol 0             "
+        bindsym Shift+m exec  " ff media-ctl vol 100           "
+        bindsym Shift+n exec  " ff new-session"
+        bindsym Shift+e exec  " sudo shutdown -h now"
+        bindsym Shift+r exec  " sudo shutdown -r now"
+        bindsym o exec        " ff lightsout                   "
+        bindsym Return $mode password
+        bindsym Mod1+l exec  "  ff unlockme                    "
+}
+
+mode password {
+    #keybindings
+        bindsym a exec "ff mybuffer a"
+        bindsym b exec "ff mybuffer b"
+        bindsym c exec "ff mybuffer c"
+        bindsym d exec "ff mybuffer d"
+        bindsym e exec "ff mybuffer e"
+        bindsym f exec "ff mybuffer f"
+        bindsym g exec "ff mybuffer g"
+        bindsym h exec "ff mybuffer h"
+        bindsym i exec "ff mybuffer i"
+        bindsym j exec "ff mybuffer j"
+        bindsym k exec "ff mybuffer k"
+        bindsym l exec "ff mybuffer l"
+        bindsym m exec "ff mybuffer m"
+        bindsym n exec "ff mybuffer n"
+        bindsym o exec "ff mybuffer o"
+        bindsym p exec "ff mybuffer p"
+        bindsym q exec "ff mybuffer q"
+        bindsym r exec "ff mybuffer r"
+        bindsym s exec "ff mybuffer s"
+        bindsym t exec "ff mybuffer t"
+        bindsym u exec "ff mybuffer u"
+        bindsym v exec "ff mybuffer v"
+        bindsym w exec "ff mybuffer w"
+        bindsym x exec "ff mybuffer x"
+        bindsym y exec "ff mybuffer y"
+        bindsym z exec "ff mybuffer z"
+
+        bindsym Escape $mode locked
+        bindsym Return exec "ff unlock-with-buffer"
+}
+
+    
 exec "~/scripts/autostart.sh" 
 exec "ff . /opt/vi3/fish/vi3.fish"
 exec "ff vi3_start-vi3"

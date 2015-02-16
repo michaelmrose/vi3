@@ -1,0 +1,857 @@
+function fish_prompt
+    #z --add "$pwd"
+    echo (~/bin/powerline-shell.py $status --shell bare)
+end
+
+source /opt/vi3/fish/utilities.fish
+source /opt/vi3/fish/vi3.fish
+source /opt/vi3/fish/books.fish
+source /opt/vi3/fish/general.fish
+source /opt/vi3/fish/audio.fish
+source /opt/vi3/fish/misc.fish
+
+function system-menu
+    set options logout reboot shutdown "new session"
+    set choice (println $options | dm menu "system menu")
+    if exists $choice
+        switch $choice
+            case "logout"
+                i3-msg exit
+            case "reboot"
+                sudo shutdown -r now
+            case "shutdown"
+                sudo shutdown -h now
+            case "new session"
+                new-session 
+            case "*"
+                echo not an option
+        end
+    end
+end
+
+function set-brightness-current-display
+    set-brightness (get-focused-display) $argv
+end
+
+function set-brightness
+    set display $argv[1]
+    set number $argv[2]
+    set adjustment (stripsign $number)
+    set currentval (get-brightness $display)
+    if expr $number : +[0-9]\* > /dev/null
+        set adjustment (math $currentval + $adjustment)
+    end
+    if expr $number : -[0-9]\* > /dev/null
+        set adjustment (math $currentval - $adjustment)
+    end
+    xrandr  --output $display  --brightness (dividebyten $adjustment)
+end
+
+alias bright set-brightness-all-displays
+
+function stripsign
+    echo $argv | cut -d '-' -f2 | cut -d '+' -f2
+end
+
+function set-brightness-all-displays
+    set displays (get-connected-displays)
+    for i in $displays
+        set-brightness $i $argv
+        # xrandr --output $i --brightness $argv
+    end
+end
+
+function get-brightness-of-all
+    set result (xrandr --verbose | grep -i brightness |  cut -d " " -f2)
+    for i in $result
+        echo (multiplybyten $i)
+    end
+end
+
+function get-brightness
+    set displays (get-connected-displays)
+    set values (get-brightness-of-all)
+    set ndx (findindex $argv $displays)
+    echo $values[$ndx]
+end
+
+function get-brightness-current-display
+    get-brightness (get-focused-display)
+end
+
+function dividebyten
+    if test $argv -ge 100
+        echo 1
+    else
+        echo "0."$argv
+    end
+end
+
+function multiplybyten
+    if [ $argv = 1.0 ]
+        echo 100
+    else
+        set result (echo $argv | cut -d '.' -f2)
+        if test (expr length $result) -lt 2
+            set result {$result}0 
+        end
+        echo $result
+    end
+end
+
+function findindex
+    set target $argv[1]
+    set list $argv[2..-1]
+    set cnt 1
+    for i in $list
+        if [ $i = $target ]
+            echo $cnt
+            return 0
+        else
+            set cnt (math "$cnt + 1")
+        end
+    end
+end
+
+function fed
+    switch $argv[1]
+        case "-i"
+            funced -i $argv[2..-1]
+        case "*"
+            set fname $argv[1]
+            set file (defined-in $fname)
+            set line (ag "function $fname -d|function $fname\$" $file | cut -d ":" -f1)
+
+            qvim +$line $file
+    end
+end
+
+function defined-in
+    set fn "function $argv\$"
+    set fn2 "function $argv -d"
+    set al "alias $argv "
+    set fishpaths /opt/vi3/fish ~/fish ~/.config/fish/functions
+    for i in $fishpaths
+        set results $results (ag -f $fn $i | cut -d ':' -f1)
+        set results $results (ag -f $fn2 $i | cut -d ':' -f1)
+        set results $results (ag -f $al $i | cut -d ':' -f1)
+    end
+    echo $results
+    set -e results
+end
+
+function defined
+    set pth (defined-in $argv)
+    if test (sizeof $pth) -ne 0
+        return 0
+    else
+        return 1
+    end
+end
+
+function open-book
+    set fullpath (pwd)/$argv
+    set ext (cutlast "." $argv)
+    if substr $HOME/calibre $fullpath
+        add-to-recent-reads (echo $argv | extract-title | cut -d '-' -f1 | trim)
+    end
+    
+    switch $ext
+        case "pdf"
+            zathura "$argv"
+        case "*"
+            ebook-viewer "$argv"
+    end
+end
+    
+
+function vpn -d "run vpn list show down reset choose or to location [up,down]"
+    switch $argv[1]
+        case list
+             nmcli connection | grep vpn | cut -d " " -f3-5
+        case show
+            set result (nm-tool | grep -i vpn | cut -d " " -f7 | cut -d ']' -f1)
+            if exists $result
+                echo $result
+            else
+                echo None
+            end
+        case down
+            vpn to (vpn show) down
+        case reset
+            set con (vpn show)
+            vpn down
+            vpn to $con up
+        case choose
+            vpn (println (vpn list) | dm menu "VPN Connections") up
+        case "*"
+            #vpn to $location $command
+            set location $argv[2]
+            set command $argv[3]
+
+            set fieldnumber 14
+            set result ""
+            while test (sizeof $result) -ne 36
+                set result (nmcli connection | grep vpn | grep -i "$location" | cut -d " " -f$fieldnumber)
+                set fieldnumber (math "$fieldnumber - 1")
+            end
+            sudo nmcli connection $command uuid $result
+            signal-i3blocks vpn
+    end
+
+end
+
+function seperate
+    set ndx 1
+    set word $argv
+    set length (sizeof $word)
+    while test $ndx -le $length
+        echo (expr substr $word $ndx 1)
+        set ndx (math "$ndx + 1" )
+    end
+end
+
+function display-in-editor
+    set tmp /tmp/view
+    rm $tmp
+    for i in $argv 
+        echo $i >> $tmp
+    end
+    eval $EDITOR $tmp
+end
+
+function viewable
+    xwininfo -id $argv | grep "Map State: IsViewable" > /dev/null
+end
+
+function window-name
+    set winid $argv
+    set winid (ensure-hex $winid )
+    set window (wmctrl -lx | grep $winid)
+    set classname (echo $window | cut -d " " -f4 | cut -d "." -f2)
+    set title (echo $window | cut -d "-" -f2- | cut -d " " -f2-)
+    echo $classname $title
+end
+
+function ensure-hex
+    set val $argv
+    if not substr 0x $val
+        echo (dectohex $val)
+    else
+        echo $val
+    end
+end
+
+function ensure-dec
+    set val $argv
+    if substr 0x $val
+        echo (hextodec $val)
+    else
+        echo $val
+    end
+end
+
+function window-title
+    xwininfo -id (mywin) | cut -d \n -f2 | cut -d '"' -f2
+end
+
+function show-title
+    msg (window-title)
+end
+
+set windows (wmctrl -l | cut -d " " -f1)
+
+function list-windows
+
+    # transform-with apply function to list replacing list with the result of applying function
+
+    # filter-with apply function to every element of list removing those in which it returned 1
+
+    # apply apply function to every element of a list returning modified list
+
+    set windows (wmctrl -l | cut -d " " -f1)
+
+    if contains "dec" $argv 
+        transform-with hextodec windows
+    end
+    
+    if contains "visible" $argv 
+        filter-with viewable windows
+    end
+    
+    if contains "names" $argv 
+        transform-with window-name windows
+    end
+    
+    println $windows
+    
+end
+
+function transform-with
+   set $argv[2] (apply $argv[1] $argv[2])
+end
+
+function filter-with
+    for i in $$argv[2]
+        if eval $argv[1] $i
+            set lst $lst $i
+        end
+    end
+    set $argv[2] $lst
+end
+
+function testfn
+    if test $argv -gt 3
+        return 0
+    else
+        return 1
+    end
+end
+            
+function choose-window
+    switch $argv
+        case "visible"
+            set ids (list-windows visible)
+            set names (list-windows visible names)
+        case "all"
+            set ids (list-windows)
+            set names (list-windows names)
+    end
+    set choice (println $names | dm menu "windows")
+    set ndx (findindex $choice $names)
+    focus id (hextodec $ids[$ndx])
+end
+
+function cpu-freq
+    cpufreq-info | grep -i "current CPU" | cut -d " " -f7-
+end
+
+function cpu-set
+    sudo cpufreq-set -c 1 -f $argv GHz
+    sudo cpufreq-set -c 0 -f $argv GHz
+end
+
+function smartnav
+    set title (window-title)
+    switch $argv
+        case "up"
+            set key k
+        case "down"
+            set key j
+        case "left"
+            set key h
+        case "right"
+            set key l
+    end
+    set vimmod Shift
+    set i3mod Super
+    set class (tolower (winclass))
+    switch $class
+        case "qvim"
+            set mod $vimmod
+        case "*"
+            set mod $i3mod
+   end
+   xdotool keydown $mod;xdotool key $key;xdotool keyup $mod
+   echo mod is $mod
+   sleep 1
+   set newtitle (window-title)
+   if match $title $newtitle
+        # msg vim nav
+        xdotool keydown $i3mod
+        xdotool key $key
+        xdotool keyup $i3mod
+    end
+end
+
+function choose-session
+    restoreme (list-sessions | dm menu "choose session")
+end
+
+function list-sessions
+    set sessions (ls ~/.i3/sessions)
+    for i in $sessions
+        echo $i | cut -d "." -f1
+    end
+end
+
+function freespace
+    df $argv -h | grep dev | tr -s ' ' | cut -d " " -f4
+end
+
+function compt
+    compton --backend glx --vsync opengl-swc -c -r 16 -l -24 -t -12 -G -b --glx-no-stencil --glx-no-rebind-pixmap &
+end
+
+function process-book-rar
+    uz $argv
+    if ls $argv
+        set name (get-filename $argv)
+        cd $name
+        badd *.pdf *.epub --duplicates
+        cd ..
+        rm $argv
+        rm -rf $name
+    else
+        echo not found
+    end
+end
+
+function choose-trans
+    trans (dividebyten (dm choice "set opacity")) > /dev/null
+end
+
+function choose-volume
+    setvol (dm choice "set volume")
+end
+
+function get-filename
+    set size (sizeof $argv)
+    set head (math $size - 4)
+    echo $argv | cut -c 1-$head
+end
+
+function mime-set
+    gvfs-mime --set x-scheme-handler/$argv[1] $argv[2].desktop
+end
+
+function openurl
+    focus $BROWSER
+    firefox $argv
+end
+
+function typeforme
+    xdotool key k
+end
+
+function smart-pick
+    set result (ls | grep -i "$argv")
+    switch (count $result)
+        case "1"
+            echo $result
+        case "*"
+            fuzzymenu $result
+            echo $fquery
+    end
+end
+
+function smart-open
+    set result (ls | grep -i "$argv")
+    switch (count $result)
+        case "1"
+            open $result
+        case "*"
+            fuzzymenu $result
+            open $fquery
+    end
+end
+
+function echofun
+    set value (toilet $argv -f future)
+    println $value
+end
+
+function weather-here
+    echo (weather $geo) in $geo
+end
+ 
+function transwindows
+    for i in (list-windows)
+        transset -i $i .77
+    end
+end
+
+function keysd
+    switch $argv[1]
+        case "toggle"   
+            if pgrep sxhkd
+                keysd stop
+                msg --id 1 -t "sxhkd disabled"
+            else
+                keysd mode default
+                sxhkd &
+                msg --id 1 -t "sxhkd enabled"
+            end
+        case "mode"
+            set mode $argv[2]
+            set cfg sxhkdrc
+            set dir ~/.config/sxhkd
+            rm $dir/$cfg
+            ln -s $dir/$mode $dir/$cfg 
+            kill -10 (pgrep sxhkd)
+        case "stop"
+            killall sxhkd
+        case "start"
+            keysd mode default
+            sxhkd &
+    end
+end
+
+function sxmode
+    set mode $argv
+    set cfg sxhkdrc
+    set dir ~/.config/sxhkd
+    rm $dir/$cfg
+    ln -s $dir/$mode $dir/$cfg 
+    kill -10 (pgrep sxhkd)
+end
+
+function kmd
+    keysd mode default
+end
+
+function show-mouse-battery
+    solaar-cli show 1 -v | grep Battery | cut -d ":" -f2 | trim | cut -d "," -f1
+end
+
+function clem
+    clementine &
+    while note pgrep clementine
+    end
+    update-now-playing.py
+end
+
+function game-mode
+    switch $argv
+        case "on"
+            killall compton
+            switchconfig single
+            toggle-shift-keys
+            wp scale
+            set -U game_mode on
+        case "off"
+            compt
+            switchconfig dual
+            toggle-shift-keys
+            wp scale
+            set -U game_mode off
+        case "toggle"
+            if match $game_mode on
+                game-mode off
+            else
+                game-mode on
+            end
+        end
+end
+
+function switchconfig
+    switch $argv
+        case "single"
+            xrandr --output DVI-I-0 --off --output HDMI-0 --auto
+        case "dual"
+            xrandr --output DVI-I-0 --auto --output HDMI-0 --auto --right-of DVI-I-0
+    end
+end
+
+alias xrr switchconfig
+
+function display-appkeys
+    set tmp /tmp/appkeys
+    show-appkeys > $tmp
+    eval $EDITOR $tmp
+end
+
+function matches
+    set com "echo $argv[1] | grep -E --regexp '^$argv[2..-1]\$'"
+    eval $com > /dev/null
+end
+
+function pathof
+    set partialpath (pwd)/$argv
+    set fullpath $argv
+    if test -f $partialpath
+        echo $partialpath
+    else if test -f $fullpath
+        echo $fullpath
+    else
+        echo not a file!
+    end
+end
+
+function now-playing
+    while not pgrep clementine
+        sleep 1
+    end
+    sleep 3
+    update-now-playing.py &
+end
+
+function players-exist
+    set result (playerctl -l)
+    if [ $result = "No players were found" ]
+        return 1
+    else
+        return 0
+    end
+end
+
+function zp
+    sudo zpool $argv
+end
+
+function zf
+    sudo zfs $argv
+end
+
+function seconds
+    date +%s
+end
+
+function show
+    set tmp /tmp/show-(seconds)
+    eval $argv > $tmp
+    qvim $tmp
+end
+
+function watch-video
+    set pth (pwd)
+    cd /mnt/ext/Videos
+    set files (findall avi mkv mp4 wmv)
+    set words $argv
+
+    for i in $words
+        set files (println $files | grep -i $i)
+    end
+
+    if test (count $files) -gt 1
+        # set files (apply "cutlast '/'" files)
+        # set files (apply "extract-filename" files)
+        set files (println $files | dm menu "pick a movie")
+    end
+    open $files
+    cd $pth
+end
+
+function find-video
+    set pth (pwd)
+    cd /mnt/ext/Videos
+    set files (findall avi mkv mp4 wmv)
+    set words $argv
+
+    for i in $words
+        set files (println $files | grep -i $i)
+    end
+    
+    println $files
+end
+
+function intersection -d "prints the common elements of n lists"
+    set max (count $argv)
+    set first 0
+    set second 1
+    set rest 2
+    set result $$argv[1]
+    switch (count $argv)
+        case 0
+        case 1
+            echo $$argv[1]
+        case 2
+            set lsta $$argv[1]
+            set lstb $$argv[2]
+            for i in $lsta
+                if contains $i $lstb
+                    if not contains $i $finalresult
+                        set result $finalresult $i
+                    end
+                end
+            end
+            echo $result
+        case "*"
+            #echo (count $argv)
+            set rest (math "$rest + 1")
+            set first (math "$first + 1")
+            set second (math "$second + 1")
+            set intermediateresult (intersection $argv[$first] $argv[$second])
+            intersection intermediateresult $argv[$rest..-1]
+    end
+end
+
+
+function intersect-2 -d "prints the common elements of 2 lists"
+    set lsta $$argv[1]
+    set lstb $$argv[2]
+    for i in $lsta
+        if contains $i $lstb
+            if not contains $i $result
+                set result $result $i
+            end
+        end
+    end
+    echo $result
+end
+
+function contains-all
+    set str $argv[1]  
+    set words $argv[2..-1]
+    for i in $words
+        if substr $i $str
+        else
+            return 1
+        end
+    end
+end
+    
+
+function range
+    set cnt 1
+    set max $argv
+    echo $cnt
+    while test $cnt -ne $max
+        set cnt (math "$cnt +1")
+        echo $cnt
+    end
+end
+
+function choose-video
+    mm watch (dm choice "enter search query")
+end
+
+function signal-i3blocks
+    switch $argv
+        case vi3
+            set val 1
+        case output
+            set val 2
+        case playing
+            set val 3
+        case vpn
+            set val 4
+        case volume
+            set val 5
+        case "*"
+            set val $argv
+    end
+    pkill -RTMIN+$val i3blocks
+end
+
+function new_tab
+    set win (mywin)
+    im layout tabbed
+    urxvtc
+    sleep 1
+    msg $win
+    focus id $win
+end
+
+function memusage
+    eval smem -k -c uss -P \'\^$argv\$\' -H \| trim
+end
+
+function memusage-current
+    memusage (tolower (winclass))
+end
+
+function show-memusage
+    msg (memusage-current)
+end
+
+function lockme
+    save-workspaces
+    vi3_mode locked
+    for i in (get-connected-displays)
+        im focus output $i
+        im workspace {$i}_is_locked
+    end
+    im bar mode invisible
+    # lightsout
+end
+
+function unlockme
+    vi3_mode default
+    restore-workspaces
+    im bar mode dock
+
+end
+
+function unlock-with-buffer
+    if checkpw $buffer
+        unlockme
+    end
+    mybuffer erase
+end
+
+function mybuffer
+    switch $argv
+        case "erase"
+           set buffer "" 
+        case "*"
+            set buffer $buffer$argv
+    end
+end
+
+function checkpw
+    if [ $argv = "foobar" ]
+        return 0
+    else
+        return 1
+    end
+end
+
+function lightsout
+    xset dpms force off
+end
+
+function choose-music
+    mm play (dm choice "enter a query")
+end
+
+function transfer
+    curl --upload-file ./$argv https://transfer.sh/
+end
+
+function mydate
+    set adate (date '+%I:%M:%S %b %d %Y')
+    if startswith 0 $adate
+        echo $adate | cut -c2-
+    else
+        echo $adate
+    end
+end
+
+function startswith
+    set tst $argv[1]
+    set char (echo $argv[2..-1] | cut -c1)
+    match $tst $char
+end
+
+function return-program-name
+    set words (explode $argv)
+    switch $words[1]
+        case kdesudo
+            echo $words[2..-1]
+        case sudo
+            echo $words[2..-1]
+        case "*"
+            echo $words
+    end
+end
+
+function get-cpu-utilization
+    top -bn 2 -d 0.01 | grep '^%Cpu' | tail -n 1 | gawk '{print $2+$4+$6}'
+end
+
+function pidof
+    unique (wmctrl -lxp | grep -iE ".*\.$argv | $argv\..*" | cut -d " " -f4)
+end
+
+function cpuusage
+    set pid (pidof $argv)
+    set cnt 1
+    for i in $pid
+        set result (ps aux|awk  '{print $2,$3,$4}'| grep $pid[$cnt] | cut -d " " -f2)
+        echo {$result}%
+        set cnt (math "$cnt + 1")
+    end
+end
+
+function watch-cpu-usage
+    while true
+        cpuusage $argv
+        sleep 1
+    end
+end
+
+# alias gargoyle gargoyle-free
+alias so smart-open
+alias sp smart-pick
+alias htp 'sudo htop'

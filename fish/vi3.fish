@@ -22,20 +22,28 @@ function vi3_start-vi3
     vi3_bind-shift-keys
 end
 
+function vi3_destroy-workspace
+    save-workspaces
+    vi3_workspace $argv
+    vi3_kill d
+    restore-workspaces
+end
+
 function vi3_define-vars
     set -U vi3_targetMode default # valid values default and command
-    set -U vi3_currentDesktop 1
-    set -U vi3_lastDesktop 1
-    set -U vi3_workspaceOperation # valid values lws sws saw law
+    # set -U vi3_currentDesktop 1
+    # set -U vi3_lastDesktop 1
+    # set -U vi3_workspaceOperation # valid values lws sws saw law
     set -U vi3_currentmode default
 end
 
 function vi3_setup-keyboard
+    killall xcape
     /opt/bin/xcape -e 'Super_L=XF86LaunchB'
+    /opt/bin/xcape -e 'Super_R=XF86LaunchA'
     /opt/bin/xcape -e 'Alt_L=Page_Up'
     /opt/bin/xcape -e 'Control_L=Page_Down'
     /opt/bin/xcape -e 'Alt_R=XF86Launch3'
-    /opt/bin/xcape -e 'Super_R=XF86Launch4'
     /opt/bin/xcape -e 'Menu=XF86Launch5'
     /opt/bin/xcape -e 'Control_R=XF86Launch6'
 end
@@ -67,8 +75,6 @@ end
 function vi3_combo
     vi3_get-workspace $combolist[1]
     vi3_get-workspace $combolist[2]
-    er vi3op
-    update-op-status
 end
 
 function vi3_rearrange
@@ -76,8 +82,6 @@ function vi3_rearrange
     vi3_workspace $combolist[1]
     vi3_take-window-to-workspace $combolist[2]
     restore-workspaces
-    er vi3op
-    update-op-status
 end
 
 function vi3_change-all
@@ -86,15 +90,11 @@ function vi3_change-all
         vi3_workspace $combolist[$num]
         set num (math $num + 1)
     end
-    er vi3op
-    update-op-status
 end
 
 function vi3_change-all-workspaces
     set numdisplays (get-number-of-displays)
     eval vi3_take-{$numdisplays} $argv[1] vi3_change-all
-    er vi3op
-    update-op-status
 end
 
 function get-active-workspaces
@@ -109,8 +109,8 @@ function focus-primary
 end
 
 function restore-workspaces
-    for i in $workspaces
-        im workspace $i
+    for i in (reverse $workspaces)
+        vi3_workspace $i
     end
 end
 
@@ -125,10 +125,6 @@ function evalandrestore
     restore-workspaces
 end
 
-function vi3_kill
-    im kill
-end
-
 function vi3_take-n
 
 # takes a letter which is added to a list a function to eval
@@ -141,12 +137,12 @@ function vi3_take-n
         echo "done!"
         set -e combolist
         im mode "default"
+        er vi3op
+        update-op-status
     else
         echo "not yet"
         im mode "op"
     end
-    er vi3op
-    update-op-status
 end
 
 function vi3_take-1
@@ -172,8 +168,6 @@ end
 
 function vi3_trans-set
     trans .{$combolist[1]}{$combolist[2]}
-    er vi3op
-    update-op-status
 end
 
 function vi3_trans
@@ -182,8 +176,6 @@ end
 
 function vi3_vol-set
     setvol {$combolist[1]}{$combolist[2]}
-    er vi3op
-    update-op-status
 end
 
 function vi3_vol
@@ -239,7 +231,7 @@ end
 
 function vi3_operator-mode
     setme vi3op $argv  
-    pkill -RTMIN+1 i3blocks
+    signal-i3blocks vi3
     update-op-status
     im mode "op"
 end
@@ -253,7 +245,7 @@ end
 
 function vi3_take-back
     im move container to workspace back_and_forth
-    im workspace back_and_forth
+    vi3_workspace back_and_forth
 end
 
 function vi3_backout
@@ -265,7 +257,7 @@ function vi3_backout
 end
 
 function update-op-status
-    pkill -RTMIN+1 i3blocks
+    signal-i3blocks vi3
 end
 
 function vi3_get-workspace
@@ -283,7 +275,7 @@ function checkpoint-ws
 end
 
 function restore-ws
-    for i in $current_ws;im workspace $i;end
+    for i in $current_ws;vi3_workspace $i;end
 end
 
 function vi3_select-all-in-workspace
@@ -300,12 +292,21 @@ function append-and-eval
 end
 
 function evalvi3op
+    set -U lastcom $vi3op $argv
     append-and-eval $vi3op $argv
+end
+
+function vi3_set_lastcom
+    set -U lastcom $argv
+end
+
+function vi3_repeat
+    eval $lastcom
 end
 
 function focus-app
     set currentclass (winclass)
-    set target (app-switch $argv)
+    set target (appkey $argv)
     if match $currentclass $target
         nextwindow
         msg next
@@ -328,8 +329,8 @@ function kill-app
 end
 
 function kill-all-app
-    set target (app-switch $argv)
-    killall (tolower $target)
+    set target (trim (return-program-name (appkey $argv)))
+    sudo killall $target
     er vi3op
     update-op-status
 end
@@ -339,7 +340,8 @@ function focus-next
 end
 
 function open-app
-    set target (app-switch $argv)
+    set target (appkey $argv) \& 
+    echo $target
     eval $target
     er vi3op
     update-op-status
@@ -415,7 +417,7 @@ function makescript
 end
 
 function new-open-app
-    set target (app-switch $argv)
+    set target (appkey $argv)
     set winclass (capitalize $target)
     set sizeof (math $numkeyed \* 2)
 
@@ -426,8 +428,10 @@ function new-open-app
         im append_layout /tmp/template.json
         set -U numkeyed 0
     end
-
     eval $target
+    sleep 0.5
+    er vi3op
+    update-op-status
 end
 
 function set-size-of-next-window
@@ -448,66 +452,187 @@ function get-focused-workspace
     echo $list[1]
 end
 
-function show-op
+function show-menu
     if exists $vi3op
-        switch $vi3op
-            case "ws"
-                set msg "switch workspace [a-z]"
-            case "vi3_trans"
-                set msg "set transparency [0-99]"
-            case "gws"
-                set msg "get windows from [a-z]"
-            case "mws"
-                set msg "move window to [a-z]"
-            case "tws"
-                set msg "take window to [a-z]"
-            case "vi3_vol"
-                set msg "set volume [0-99]"
-            case "focus-app"
-                set msg "focus appkey [a-zA-Z]"
-            case "vi3_fetch-window"
-                set msg "fetch appkey[a-zA-Z]"
-            case "new-open-app"
-                set msg "open appkey [a-zA-Z]"
-            case "rws"
-                set msg "relocate windows from [a-z] to [a-z]"
-            case "kill-all-app"
-                set msg "kill all instances of appkey [a-zA-Z]"
-            case "*"
-                set msg "some other op"
-        end
-    
-        echo $msg
+        set msg (show-op) 
     else
-        echo none
+        set msg (show-mode)
     end
+    
+    echo $msg
     
 end
 
-function show-appkeys
-    for i in $alphabet
-        set var app_key_$i
-        echo result $i: $$var
-    end
+function show-op
+      if exists $vi3op
+          switch $vi3op
+              case "ws"
+                  set msg "switch workspace [a-z]"
+              case "vi3_trans"
+                  set msg "set transparency [00-99]"
+              case "gws"
+                  set msg "get windows from [a-z]"
+              case "mws"
+                  set msg "move window to [a-z]"
+              case "tws"
+                  set msg "take window to [a-z]"
+              case "vi3_vol"
+                  set msg "set volume [00-99]"
+              case "focus-app"
+                  set msg "focus appkey [a-zA-Z]"
+              case "vi3_fetch-window"
+                  set msg "fetch appkey[a-zA-Z]"
+              case "open-app"
+                  set msg "open appkey [a-zA-Z]"
+              case "rws"
+                  set msg "relocate windows from [a-z] to [a-z]"
+              case "kill-all-app"
+                  set msg "kill all instances of appkey [a-zA-Z]"
+              case "vi3_height"
+                  set msg 'set window height [01-99]'
+              case "vi3_width"
+                  set msg 'set window width [01-99]'
+              case "vi3_vol"
+                  set msg 'set volume [01-99]'
+              case "*"
+                  set msg "some other op"
+          end
+      end
+      
+      echo $msg
 end
 
-function app-switch
-    set var appkey_$argv
-    echo $$var
+function show-mode
+    switch $vi3mode
+        case "kill"
+            set msg '(a) all appkey (d) workspace (o) others in workspace (w) window (z) all visible'
+        case "default"
+            set msg '(mod+hjkl change focus (RShift) command (Lshift) switch workspace (mod+a) audio (PrintScreen) screenshot'
+            set msg 'vi3'
+        case "command"
+            set msg "command"
+        case "screenshot"
+            set msg 'Screenshot (w)indow (d)isplay (e)verything'
+        case "*"
+            set msg $vi3mode
+    end
+    echo $msg
 end
 
 function appkey
-    switch (count $argv)
-        case "1"
-        app-switch $argv
-        case "2"
+    if matches "$argv" '[a-zA-Z]'                # view
+        set var appkey_$argv
+        echo $$var
+    else if matches "$argv" 'erase [a-zA-Z]'     # erase
+        er appkey_$argv[2]
+    else if matches "$argv" 'show'               # show
+        for i in (alphabet)
+            echo $i: (appkey $i)
+        end
+    else if matches "$argv" '[a-zA-Z] [a-zA-Z]+' # set
+        set value appkey_$argv[1]
+        set -U $value $argv[2]
+    end
+end
+
+function testswitch
+    set result match-list $argv 'a-zA-Z' view 'erase [a-zA-Z]' erase 'show' show '[a-zA-Z] [a-zA-Z]+' set
+    switch $result
+        case view
+            set var appkey_$argv; echo $$var
+        case erase
+            er appkey_$argv[2] 
+        case show
+            for i in (alphabet);echo $i: (appkey $i);end
+        case set
             set value appkey_$argv[1]
             set -U $value $argv[2]
     end
 end
 
-function erase_appkey
-    er appkey_$argv
+function sset
+    set $argv
+    echo $argv[-1]
+end
+        
+        
+
+function vi3_mode
+    im mode $argv
+    set -U vi3mode $argv
+    update-op-status
+end
+
+function vi3_kill
+    switch $argv
+        case "d" #kill workspace
+           select-all-in-workspace 
+           im kill
+        case "a" #all of a given appkey
+            vi3_operator-mode kill-all-app
+        case "w" #window
+            im kill
+        case "e" #all visiable eg everything
+            set displays (get-connected-displays)
+            for i in $displays
+                im focus output $i
+                select-all-in-workspace 
+                im kill
+            end
+        case "o" #other windows on workspace
+            im move container to workspace keep
+            vi3_kill d
+            vi3_get-workspace keep
+        case "t"
+            vi3_operator-mode vi3_destroy-workspace
+        end 
+end
+
+function show-keys
+    xev | grep --line-buffered keysym | sed -u 's/[),]//g' | stdbuf cut -d " " -f11
+end
+
+function cut-while
+    while read -l line
+        echo $line | cut -d " " -f11 | cut -d ')' -f1
+    end
+end
+
+function commandn
+    switch $argv
+        case "a"
+        case "b"
+        case "c"
+        case "d"
+        case "e"
+        case "f"
+        case "g"
+        case "h"
+        case "i"
+        case "j"
+        case "k"
+        case "l"
+        case "m"
+        case "n"
+        case "o"
+        case "p"
+        case "q"
+            set thecommand "im kill"
+        case "r"
+        case "s"
+        case "t"
+        case "u"
+        case "v"
+        case "w"
+        case "x"
+        case "y"
+        case "z"
+    end
+end
+
+function reverse
+    set size (count $argv)
+    println $argv[$size..1]
 end
 
 alias ws vi3_workspace

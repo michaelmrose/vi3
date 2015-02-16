@@ -1,18 +1,72 @@
 function dm
-    set lastws (getCurrentWorkspace)
-    focus-primary
-    dmenu_run -p "Command: " -nb "black" -sf "#036300" -sb "#A6CD01" -nf "grey" -fn Inconsolata-12 -b
-    ws $lastws
+    switch $argv[1]
+        case "run"
+            dmenu_run -nb "black" -sf "#036300" -sb "#A6CD01" -nf "grey" -fn Inconsolata-13 -b -l 10 -i -p "Command: "
+        case "menu"
+                dmenu -nb "black" -sf "#036300" -sb "#A6CD01" -nf "grey" -fn Inconsolata-13 -b -l 10 -i -p $argv[2]   
+        case "choice"
+            echo "" | dm menu "$argv[2]"
+    end
 end
 
-function wp
-    feh --bg-{$argv[1]} $argv[2]
-    convert $argv[2] -resize 1920x1080\! ~/.bgimage/img.png
+    
+
+function wp -d 'usage: [max,scale,tile] path-to-image or path-to-image or [max,scale,tile]'
+    set dest ~/.bgimage/img.png
+    switch (count $argv)
+        case "2"
+            set style $argv[1]
+            set image (pathof $argv[2])
+        case "1"
+            set image ~/.bgimage/img.png
+            switch $argv[1]
+                case "max"
+                    set style max
+                case "scale"
+                    set style scale
+                case "tile"
+                    set style tile
+                case "*"
+                    set style scale
+                    set image (pathof $argv[1])
+           end
+    end
+    feh --bg-$style $image
+    if not match $image $bgpath
+        echo converting...
+        convert $image -resize 1920x1080\! $dest
+    end
+    set -U bgpath $image
+end
+
+function wp2
+    set dest ~/.bgimage/img.png
+    set resolution 1920x1080
+
+    if matches $argv "max|scale|tile" 
+        echo first
+        set style $argv
+        set image $dest
+    else if matches "$argv" "max|tile|scale \S*"
+        echo second
+        set style $argv[1]
+        set image (pathof $argv[2])
+    else if matches $argv "\S*" 
+        echo third
+        set style scale
+        set image (pathof $argv[1])
+    end
+    
+    echo i is $image s is $style 
+    feh --bg-$style $image
+    echo converting...
+    convert $image -resize 1920x1080\! $dest
 end
 
 function lock
     # i3lock -i ~/.bgimage/img.png -t
     xscreensaver-command -lock
+    xset dpms force off
 end
 
 function focus
@@ -31,13 +85,19 @@ function focus
 end
 
 function return-windowclass
-    switch $argv
+    switch $argv[1]
         case calibre
             set returnval libprs500
         case urxvt
             set returnval URxvt
         case urxvtc
             set returnval URxvt
+        case clem
+            set returnval Clementine
+        case mpv
+            set returnval mpv
+        case kdesudo
+            set returnval (return-windowclass $argv[2..-1])
         case "*"
             set returnval (capitalize $argv)
     end
@@ -104,11 +164,16 @@ end
 
 function get-focused-display
     set xcorner (xwininfo -id (mywin) -all | grep -i "corners" | cut -d '+' -f2 | trim) 
-    if test $xcorner -gt (get-dividing-line)
-        get-primary-display
-    else
-        get-secondary-display
-    end
+    switch (get-number-of-displays)
+        case "1"
+            get-primary-display
+        case "*"
+            if test $xcorner -gt (get-dividing-line)
+                get-primary-display
+            else
+                get-secondary-display
+            end
+        end
 end
 
 function get-focused-display-resolution
@@ -127,7 +192,7 @@ function get-focused-display-y-offset
 end
 
 function screenshot
-    set target ~/screenshots/(date +%T-%F).png
+    set target ~/screenshots/(mydate).png
     switch $argv
         case "everything"
             maim $target
@@ -319,7 +384,29 @@ function windowmove-relative
     xdc windowmove $xpos $ypos
 end
 
-function alphabet
-    echo a b c d e f g h i j k l m n o p q r s t u v w x y z A B C D E F G H I J K L M N O P Q R S T U V W X Y Z
+
+function center-window
+    set width (get-focused-display-width)
+    set height (get-focused-display-height)
+    set winwidth (get-window-width)
+    set winheight (get-window-height)
+    set xcord (math (math "$width / 2") - (math "$winwidth / 2"))
+    set ycord (math (math "$height / 2") - (math "$winheight / 2"))
+    xdotool getactivewindow windowmove $xcord $ycord
 end
 
+function alphabet
+    set lst a b c d e f g h i j k l m n o p q r s t u v w x y z A B C D E F G H I J K L M N O P Q R S T U V W X Y Z
+    println $lst
+end
+
+function command-for-window
+end
+
+function dectohex
+    printf 0x0'%x\n' $argv
+end
+
+function hextodec
+    printf '%d\n' $argv
+end

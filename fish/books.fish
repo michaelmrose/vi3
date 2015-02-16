@@ -5,6 +5,11 @@ function books
         show-recent-reads
         return 0
     end
+    
+    if substr $argv $HOME/calibre
+        open-book $argv
+        return 0
+    end
 
     # selector is going to be the first arg and if it turns out to be a valid criteria
     # like author we are going to end up assuming the rest is the query
@@ -78,10 +83,12 @@ function books
             add-to-recent-reads (echo $target | extract-title)
             open $target
         else
-            fuzzymenu (println $books | sed 's/_/:/g')
-            println $books
-            #fuzzymenu sets global fquery variable because fzf is broken within variable sub in fish
-            books $fquery
+            set choice (println $books | sed 's/_/:/g' | dm menu "books")
+            if exists $choice
+                books $choice
+            else
+                return 0
+            end
         end
 end
 
@@ -115,8 +122,12 @@ function extract-filetype
 end
 
 function show-recent-reads
-    fuzzymenu (println $recent_reads)
-    books $fquery
+    set choice (println $recent_reads | dm menu "books")
+    if exists $choice
+        books $choice
+    else
+        return 0
+    end
 end
 
 function totitle
@@ -132,7 +143,7 @@ function add-to-recent-reads
     set -l ndx (math "$maxreads +1")
     set realtitle (totitle $argv)
     set -U recent_reads $recent_reads $realtitle
-    set recent_reads (unique $recent_reads)
+    set recent_reads (println $recent_reads | sort | uniq)
     if test (count $recent_reads) -gt $maxreads
         set recent_reads $recent_reads[2..$ndx]
     end

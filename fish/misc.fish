@@ -55,6 +55,7 @@ end
 
 function reset-net
     sudo ifconfig eth0 down
+    sleep 3
     sudo ifconfig eth0 up
 end
 
@@ -107,7 +108,9 @@ function clickit
 end
 
 function uz
-    atool -x $argv
+    for i in $argv
+        atool -x $i
+    end
 end
 
 function v
@@ -338,7 +341,8 @@ function trackedvplug
 end
 
 function gcal
-    google calendar add "{$argv}"
+    # google calendar add "{$argv}"
+    gcalcli --calendar 'michael@rosenetwork.net' quick $argv
 end
 
 function work
@@ -416,14 +420,19 @@ function chromeless
 end
     
 function arrangeme
+    if not pgrep urxvt
+        urxvtc &
+    end
     focus firefox
-    i3-msg move container to workspace k
+    mws k
     focus dolphin
-    i3-msg move container to workspace d
+    mws d
     focus qvim
-    i3-msg move container to workspace j
+    mws j
     focus urxvt
-    i3-msg move container to workspace f
+    mws f
+    focus hexchat
+    mws a
     i3-msg workspace k
     i3-msg workspace a
 end
@@ -640,7 +649,7 @@ function mth
 end
 
 function inc
-    mth $argv[1] self+1
+    mth $argv[1] "self+1"
 end
 
 function choose
@@ -733,6 +742,17 @@ function really-quit
     xkill -id (mywin)
 end
 
+function pinfo-choose
+    set pkgs (psearch $argv)
+    switch (count $pkgs)
+        case "1"
+            pinfo $pkgs
+        case "*"
+            fuzzymenu $pkgs
+            pinfo (echo $fquery | cut -d "-" -f1)
+    end
+end
+
 function pinfo
     set pkgs (psearch $argv)
     for i in $pkgs 
@@ -789,13 +809,22 @@ function focus-distinct
 end        
 
 function starton
-    ws $argv[1]
-    eval $argv[2..-1]
-    while not running $argv[2]
+    set ws $argv[1]
+    set program $argv[2..-1] &
+    set num (instances-of $program)
+    ws $ws
+    eval $program &
+    while test (instances-of $program) -le $num
+        sleep 0.25
     end
 end
 
-function running
+function instances-of
+    count (wmctrl -lxp | grep -i $argv)
+end
+
+
+function window-exists
     set result (xwininfo -tree -root | grep $argv)
     if exists $result
         return 0
@@ -804,8 +833,41 @@ function running
     end
 end
 
+function runningp
+    set app $argv[1]
+    set com bash -c \"pgrep $app\" \> /dev/null
+    switch (count $argv)
+        case 1 #ex runningp app
+            eval $com
+        case 3 #ex runningp app on host
+            set host $argv[3]
+            ssh $host -q -t "$com"
+        case 4 #ex runningp app local or host
+            set host $argv[4]
+            test (runningp $app) -o (runningp $app on $host)
+    end
+end
+
+
 function xc
     xclip -o
+end
+
+function ensure-started
+    if not runningp $argv
+        bash -c $argv &
+    end
+    while not pgrep $argv
+    end
+end
+
+function urxvtt
+    if not pgrep urxvtd
+        urxvtd &
+    end
+    while not pgrep urxvtd
+    end
+    urxvtc
 end
 
 alias libprs500 calibre

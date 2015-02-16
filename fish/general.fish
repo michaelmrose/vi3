@@ -32,9 +32,13 @@ function foreach
 end
 
 function trim
-    while read -l line
-        # echo $line | sed 's/ *$//'
-        echo $line | sed -e 's/^ *//' -e 's/ *$//'
+    if exists $argv
+        echo $argv | sed -e 's/^ *//' -e 's/ *$//'
+    else
+        while read -l line
+            # echo $line | sed 's/ *$//'
+            echo $line | sed -e 's/^ *//' -e 's/ *$//'
+        end
     end
 end
 
@@ -133,6 +137,31 @@ function findall
     set middle (condense $middle)
     set middle (echo $middle | rev | cut -d '|' -f2- | rev)
     eval (condense $start $middle $ending)
+
+end
+
+function findall2
+    if [ $argv[1] = -p ]
+        set target $argv[2]
+        set types $argv[3..-1]
+    else
+        set target (pwd)
+        set types $argv
+    end
+    
+    set pth (pwd)
+    cd $target
+    set start 'find ./ -regextype posix-extended -regex ".*\.('
+    set ending ')"'
+    set pipe '|'
+    for i in $types
+        set middle $i $pipe $middle
+    end
+    set middle (condense $middle)
+    set middle (echo $middle | rev | cut -d '|' -f2- | rev)
+    set results (eval (condense $start $middle $ending))
+    cd $pth
+    println $results
 
 end
 

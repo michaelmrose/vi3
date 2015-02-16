@@ -25,8 +25,6 @@ declare -i ndx=0
 pacmd list-sinks | sed -n -e 's/device.description[[:space:]]=[[:space:]]"\(.*\)"/\1/p' | while read line;
 do
     if [ $next_sink_index -eq $ndx ] ; then
-        #notify-send -i notification-audio-volume-high "Sound output switched to" "$line"
-        ff msg --id 8 -t "Sound output switched to $line"
         exit
     fi
     ndx+=1

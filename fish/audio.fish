@@ -43,6 +43,8 @@ function switch-output
     # set op (current-output)
     # msg --id 7 -t "output changed to $op"
     switchaudio.sh
+    signal-i3blocks volume
+    signal-i3blocks output
 end
 
 function list-outputs
@@ -75,12 +77,22 @@ function current-output
     set op (list-outputs)
     set ndx (math $default_sink+1)
     echo $op[$ndx] | sed 's/\t//g' | sed 's/*//g' | trim
+    return 0
+end
+
+function output-type
+    switch (current-output)
+        case "Clear Chat Comfort USB Headset Analog Stereo"
+            echo headphones
+        case "Built-in Audio Analog Stereo"
+            echo speakers
+    end
 end
 
 function setvol
     pactl -- set-sink-volume $default_sink {$argv}%
     set vol (getvolume)
-    msg --id 8 -t "volume set to $vol"
+    signal-i3blocks volume
 end
 
 function getvolume
@@ -90,7 +102,9 @@ function getvolume
 end
 
 function clear-playlist
-    clementine -l nil
+    set tmp /tmp/empty
+    touch $tmp
+    clementine -l $tmp 
     mm stop
 end    
     
@@ -127,6 +141,8 @@ function media-ctl
             list-displays 
         case read
             books $argv[2..-1]
+        case watch
+            watch-video $movie $argv[2..-1]
         case "*"
             #handles play pause stop next previous
             playerctl --player=$PLAYER $argv
@@ -134,7 +150,13 @@ function media-ctl
 end
 
 function playing
-    echo (playerctl metadata title) by (playerctl metadata artist)
+    set title (playerctl metadata title)
+    set artist (playerctl metadata artist)
+    if exists $title
+        echo $title by $artist
+    else
+        echo None
+    end
 end
 
 function show-playing
