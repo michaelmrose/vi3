@@ -46,5 +46,3 @@ function create_desktop_file
     set target ~/.local/share/applications/{$app}.desktop
     println $text > $target
 end
-    
-    

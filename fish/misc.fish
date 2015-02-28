@@ -8,6 +8,7 @@ function reload-config
     source /opt/vi3/fish/books.fish
     source /opt/vi3/fish/general.fish
     source /opt/vi3/fish/audio.fish
+    source /opt/vi3/fish/mime.fish
 end
 
 function scd
@@ -47,9 +48,17 @@ end
 function fizzbuzz
     for i in (seq $argv)
         set result ""
-        cond "divisible $i 3" then "set result {$result}fizz" else nil
-        cond "divisible $i 5" then "set result {$result}buzz" else nil
-        cond "exists $result" then "echo $result" else "echo $i"
+        if divisible $i 3
+            set result {$result}fizz
+        end
+        if divisible $i 5
+            set result {$result}buzz
+        end
+        if match $result ""
+            echo $i
+        else
+            echo $result
+        end
     end
 end
 
@@ -234,9 +243,10 @@ function wtfisthis
 end
 
 function ctof
-    set temp $argv
+    set temp $argv[1]
     set temp (math "$temp * 1.8 + 32")
-    echo $argv º celcius is $temp º fahrenheit
+    # echo $argv º celcius is $temp º fahrenheit
+    echo {$temp}º 
 end
 
 function pdftoimages
@@ -423,26 +433,27 @@ function arrangeme
     if not pgrep urxvt
         urxvtc &
     end
-    focus firefox
+    focus class firefox
     mws k
-    focus dolphin
+    focus class dolphin
     mws d
-    focus qvim
+    focus class qvim
     mws j
-    focus urxvt
+    focus class urxvt
     mws f
-    focus hexchat
+    focus class hexchat
     mws a
     i3-msg workspace k
     i3-msg workspace a
 end
 
 function pman
-    if man $argv > /dev/null
-        man -t $argv | ps2pdf - /tmp/{$argv}.pdf
+    set app $argv
+    if man $app > /dev/null
+        man -t $app | ps2pdf - /tmp/{$app}.pdf
         open /tmp/{$argv}.pdf &
     else
-        msg "no manual for $argv"
+        msg "no manual for $app"
     end
 end
 
@@ -644,12 +655,32 @@ end
 
 function mth
     set varname $argv[1]; set varvalue $$argv[1]; set opstring $argv[2]
-    # eval (echo "set $varname (math \"$opstring\")" | sed "s/self/$varvalue/g")
-    eval (echo "set $varname (math \"$opstring\")" | replace-str self $varvalue)
+    set expression (echo "set $varname (math \"$opstring\")" | sed "s/self/$varvalue/g")
+    eval $expression
+    echo $$argv[1]
+end
+
+function mwrapwrap
+    eval mthwrap
+end
+
+function mthwrap
+    set cnt 1
+    echo (mth cnt "self+3")
 end
 
 function inc
     mth $argv[1] "self+1"
+end
+
+function incr
+    math $argv +1
+end
+
+function mth2
+    math "$argv"
+    set val (math $val + 1)
+    set val (inc $val)
 end
 
 function choose
