@@ -15,12 +15,26 @@ function mime-set
     set ext $argv[1]
     set mimetype (mimet file.$ext)
     set command $argv[2]
+
+    set video mkv wmv avi mov mp4
+    set audio mp3 flac ogg
     
     if not desktop_file_exists $command
         create_desktop_file $command $mimetype 
     end
-        
-    gvfs-mime --set $mimetype $command.desktop
+    
+    switch $ext
+        case "video"
+            for i in $video
+                mime-set $i $command
+            end
+        case "audio"
+            for i in $audio
+                mime-set $i $command
+            end
+        case "*"
+            gvfs-mime --set $mimetype $command.desktop
+    end
 end
 
 function mimeq
@@ -45,4 +59,15 @@ function create_desktop_file
     
     set target ~/.local/share/applications/{$app}.desktop
     println $text > $target
+end
+
+function mime
+    switch $argv[1]
+        case set
+            mime-set $argv[2..-1]
+        case query
+            mimeq $argv[2..-1]
+        case type
+            mimet $argv[2..-1]
+    end
 end
