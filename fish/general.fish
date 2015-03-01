@@ -1,10 +1,22 @@
+function match-seq
+    set frst 1
+    set scnd 2
+    for i in $argv
+        if not match $argv[$frst] $argv[$scnd]
+            return 1
+        else
+            set frst (incr $frst)
+            set scnd (incr $scnd)
+            if test $scnd -gt (count $argv)
+                return 0
+            end
+        end
+    end
+end
+
 function match
-    set str1 (tolower $argv[1])
-    set str2 (tolower $argv[2])
-    if [ $str1 = $str2 ]
-        return 0
-    else
-        return 1
+    # expr match (tolower $argv[1]) (tolower $argv[2]) > /dev/null
+    if [ (tolower $argv[1]) = (tolower $argv[2]) ]
     end
 end
 
@@ -102,11 +114,7 @@ end
 
 
 function substr
-    if expr match $argv[2] .\*$argv[1].\* > /dev/null
-        return 0
-    else
-        return 1
-    end
+    expr match $argv[2] .\*$argv[1].\* > /dev/null
 end
 
 function filter
@@ -166,10 +174,10 @@ function findall2
 end
 
 function cond
-    if eval $argv[1] 
-        eval $argv[-3]
+    if eval $argv[1]
+        eval $argv[2]
     else
-        eval $argv[-1]
+        eval $argv[3]
     end
 end
 
@@ -185,11 +193,7 @@ function empty
 end
 
 function divisible
-    if [ (math "$argv[1]%$argv[2]") = 0 ]
-        return 0
-    else
-        return 1
-    end
+    test (math "$argv[1]%$argv[2]") -eq 0
 end
 
 function scd
@@ -203,5 +207,9 @@ function scd
 end
 
 function endswith
-    echo $argv[2] | grep -i --regexp "$argv[1]" > /dev/null
+    echo $argv[2] | grep -i -E --regexp "$argv[1]\$" > /dev/null
+end
+
+function lastchar
+    echo $argv | cut -c(sizeof $argv)
 end

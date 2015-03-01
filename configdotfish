@@ -821,6 +821,8 @@ function return-program-name
             echo $words[2..-1]
         case sudo
             echo $words[2..-1]
+        case libprs500
+            echo calibre
         case "*"
             echo $words
     end

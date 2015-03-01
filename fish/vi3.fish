@@ -529,7 +529,9 @@ function appkey
         for i in (alphabet)
             echo $i: (appkey $i)
         end
-    else if matches "$argv" '[a-zA-Z] [a-zA-Z]+' # set
+    else if matches "$argv"  'find [a-zA-Z\-]+'
+        appkey show | grep -i --color=never $argv[2..-1]
+    else if matches "$argv" '[a-zA-Z] [a-zA-Z\-]+' # set
         set value appkey_$argv[1]
         set -U $value $argv[2]
     end

@@ -1,0 +1,6 @@
+[Desktop Entry]
+Exec=thecommand
+MimeType=thetype
+Name=thename
+NoDisplay=true
+Type=Application

@@ -75,7 +75,6 @@
         bindsym Control+Mod1+s exec "suspend"
         bindsym Control+Mod1+r $dm
         bindsym $mod+a $mode audio
-        bindsym $mod+m $mode mouseset
         bindsym $mod+Shift+m exec "ff display-manual"
         bindsym $mod+n exec "ff nextwindow"
         bindsym $mod+Shift+n exec "ff new-session"
@@ -154,7 +153,8 @@ mode "command" {
         #bindsym c exec "xdotool key Caps_Lock" , $exit
         
         bindsym f $op focus-app
-        bindsym u [urgent=latest] focus, $exit
+        #bindsym u [urgent=latest] focus, $exit
+        bindsym u exec "ff focus urgent"
         bindsym Shift+f eop vi3_fetch-window
         bindsym o $op open-app             
         bindsym r $mode resize           
@@ -188,6 +188,7 @@ mode "command" {
         bindsym 8 $setsize 8
         bindsym 9 $setsize 9
         bindsym period exec "ff vi3_repeat", $exit
+        bindsym Return exec "ff dm run", $exit
 
         bindsym Escape $exit
 }
@@ -255,14 +256,13 @@ mode "audio" {
 
 mode "menu" {
     #keybindings
-        bindsym s           exec "ff roficmd ssh",           $exit
-        bindsym r           exec "ff dm run",                $exit
-        bindsym l           exec "ff lock",                  $exit
+        bindsym shift+s     exec "sudo pm-suspend",          $exit
+        bindsym l           exec "ff lockme",                $exit
         bindsym n           exec "ff new-session",           $exit
         bindsym shift+e     exec "ff theend",                $exit
         bindsym Shift+r     exec "ff rboot",                 $exit
         bindsym XF86LaunchB exec "ff dm run",                $exit
-        bindsym w           exec "ff choose-window all" ,       $exit
+        bindsym w           exec "ff choose-window all" ,    $exit
         bindsym v           exec "ff choose-window visible", $exit
 
         bindsym Escape $exit
@@ -358,14 +358,6 @@ mode "op" {
 
 
 
-mode mouseset {
-    #keybindings
-        bindsym f exec "ff freespin",$exit
-        bindsym c exec "ff clickit",$exit
-
-        bindsym Escape $exit
-}
-
 mode transparency {
     #keybindings
         bindsym 1       exec "ff trans .1"  , $exit
@@ -396,13 +388,16 @@ mode screenshot {
 
 mode configure {
     #keybindings
-        bindsym a $mode audio
-        bindsym k exec "ff toggle-shift-keys",$exit
-        bindsym m $mode mouseset 
-        bindsym c exec "xdotool key Caps_Lock" , $exit
-        bindsym v $op vi3_vol
-        bindsym t $op vi3_trans
-        bindsym g exec "ff game-mode toggle", $exit
+        bindsym a       exec "ff vi3_mode" audio
+        bindsym k       exec "ff toggle-shift-keys"  , $exit
+        bindsym c       exec "xdotool key Caps_Lock" , $exit
+        bindsym v       exec "ff choose-volume"      , $exit
+        bindsym Shift+v exec "ff choose-video"       , $exit
+        bindsym m       exec "ff choose-music"       , $exit
+        bindsym t       exec "ff choose-trans"       , $exit
+        bindsym g       exec "ff game-mode toggle"   , $exit
+        bindsym s       exec "ff choose-session"     , $exit
+        bindsym b       exec "ff books"              , $exit
 
         bindsym Escape $exit
 }
@@ -423,44 +418,9 @@ mode locked {
         bindsym Shift+e exec  " sudo shutdown -h now"
         bindsym Shift+r exec  " sudo shutdown -r now"
         bindsym o exec        " ff lightsout                   "
-        bindsym Return $mode password
         bindsym Mod1+l exec  "  ff unlockme                    "
 }
 
-mode password {
-    #keybindings
-        bindsym a exec "ff mybuffer a"
-        bindsym b exec "ff mybuffer b"
-        bindsym c exec "ff mybuffer c"
-        bindsym d exec "ff mybuffer d"
-        bindsym e exec "ff mybuffer e"
-        bindsym f exec "ff mybuffer f"
-        bindsym g exec "ff mybuffer g"
-        bindsym h exec "ff mybuffer h"
-        bindsym i exec "ff mybuffer i"
-        bindsym j exec "ff mybuffer j"
-        bindsym k exec "ff mybuffer k"
-        bindsym l exec "ff mybuffer l"
-        bindsym m exec "ff mybuffer m"
-        bindsym n exec "ff mybuffer n"
-        bindsym o exec "ff mybuffer o"
-        bindsym p exec "ff mybuffer p"
-        bindsym q exec "ff mybuffer q"
-        bindsym r exec "ff mybuffer r"
-        bindsym s exec "ff mybuffer s"
-        bindsym t exec "ff mybuffer t"
-        bindsym u exec "ff mybuffer u"
-        bindsym v exec "ff mybuffer v"
-        bindsym w exec "ff mybuffer w"
-        bindsym x exec "ff mybuffer x"
-        bindsym y exec "ff mybuffer y"
-        bindsym z exec "ff mybuffer z"
-
-        bindsym Escape $mode locked
-        bindsym Return exec "ff unlock-with-buffer"
-}
-
-    
 exec "~/scripts/autostart.sh" 
 exec "ff . /opt/vi3/fish/vi3.fish"
 exec "ff vi3_start-vi3"
