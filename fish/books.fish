@@ -1,5 +1,9 @@
 function books
-    open-book-by-title (select-book (query-calibre-title (return-query $argv)))
+    if exists $argv
+        open-book-by-title (select-book (query-calibre-title (return-query $argv)))
+    else
+        show-recent-reads
+    end
 end
 
 function query-calibre
@@ -90,7 +94,7 @@ function select-book
 end
 
 function add-to-recent-reads
-    #totally rewrite this
+    set -U recent_reads (take 10 (unique (println $argv $recent_reads)))
 end
 
 function show-recent-reads
