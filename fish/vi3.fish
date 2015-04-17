@@ -35,17 +35,14 @@ function vi3_define-vars
     # set -U vi3_lastDesktop 1
     # set -U vi3_workspaceOperation # valid values lws sws saw law
     set -U vi3_currentmode default
+    set -U symbollock true
 end
 
 function vi3_setup-keyboard
     killall xcape
     /opt/bin/xcape -e 'Super_L=XF86LaunchB'
-    /opt/bin/xcape -e 'Super_R=XF86LaunchA'
     /opt/bin/xcape -e 'Alt_L=Page_Up'
     /opt/bin/xcape -e 'Control_L=Page_Down'
-    /opt/bin/xcape -e 'Alt_R=XF86Launch3'
-    /opt/bin/xcape -e 'Menu=XF86Launch5'
-    /opt/bin/xcape -e 'Control_R=XF86Launch6'
 end
 
 function vi3_bind-shift-keys
@@ -217,10 +214,10 @@ function vi3_workspace2
 end
 
 function vi3_take-window-to-workspace
-    im move container to workspace $argv
-    vi3_workspace $argv
     er vi3op
     update-op-status
+    im move container to workspace $argv
+    vi3_workspace $argv
 end
 
 function vi3_move-window-to-workspace
@@ -237,10 +234,18 @@ function vi3_operator-mode
 end
 
 function vi3_fetch-window
-    focus-app $argv
-    vi3_take-back
     er vi3op
     update-op-status
+    save-workspaces
+    focus-app $argv
+    vi3_take-back
+    restore-workspaces
+end
+
+function vi3_fetch-to-target
+    "todo"
+    "this should allow you to press 2 keys an appkey and then a destination ws"
+    "eg b r should take appkey b to workspace r"
 end
 
 function vi3_take-back
@@ -261,13 +266,13 @@ function update-op-status
 end
 
 function vi3_get-workspace
+    er vi3op
+    update-op-status
     checkpoint-ws
     vi3_workspace $argv 
     vi3_select-all-in-workspace
     vi3_take-back
     restore-ws
-    er vi3op
-    update-op-status
 end
 
 function checkpoint-ws
@@ -306,13 +311,17 @@ end
 
 function focus-app
     set currentclass (winclass)
-    set target (appkey $argv)
+    set command (appkey $argv)
+    set class (return-windowclass $command)
     if match $currentclass $target
         nextwindow
         msg next
     else
-        set -U lasttarget $target
-        focus $target
+        set -U lasttarget $class
+        if focus class (tolower $class)
+        else
+            focus $command
+        end
     end
     er vi3op
     update-op-status
@@ -377,6 +386,8 @@ function update-vi3-config
     rm ~/.i3/config
     cat /opt/vi3/header.txt ~/.i3/colors/{$colors} ~/.i3/personalconfig /opt/vi3/vi3config > ~/.i3/config
     im restart
+    sleep 3
+    apply-transparency
 end
 
 function colorscheme
@@ -418,7 +429,7 @@ end
 
 function new-open-app
     set target (appkey $argv)
-    set winclass (capitalize $target)
+    set winclass (return-windowclass $target)
     set sizeof (math $numkeyed \* 2)
 
     if [ $numkeyed = "0" ]
@@ -428,10 +439,10 @@ function new-open-app
         im append_layout /tmp/template.json
         set -U numkeyed 0
     end
-    eval $target
-    sleep 0.5
     er vi3op
     update-op-status
+    eval $target
+    sleep 0.5
 end
 
 function set-size-of-next-window
@@ -484,6 +495,10 @@ function show-op
                   set msg "fetch appkey[a-zA-Z]"
               case "open-app"
                   set msg "open appkey [a-zA-Z]"
+              case "new-open-app"
+                  set msg "open appkey [a-zA-Z]"
+              case "vi3_kill"
+                  set msg "kill (d)elete all in ws (a)pp (e)verything visible (o)ther windows (t) another ws"
               case "rws"
                   set msg "relocate windows from [a-z] to [a-z]"
               case "kill-all-app"
@@ -531,24 +546,9 @@ function appkey
         end
     else if matches "$argv"  'find [a-zA-Z\-]+'
         appkey show | grep -i --color=never $argv[2..-1]
-    else if matches "$argv" '[a-zA-Z] [a-zA-Z\-]+' # set
+    else if matches "$argv" '[a-zA-Z] .+' # set
         set value appkey_$argv[1]
-        set -U $value $argv[2]
-    end
-end
-
-function testswitch
-    set result match-list $argv 'a-zA-Z' view 'erase [a-zA-Z]' erase 'show' show '[a-zA-Z] [a-zA-Z]+' set
-    switch $result
-        case view
-            set var appkey_$argv; echo $$var
-        case erase
-            er appkey_$argv[2] 
-        case show
-            for i in (alphabet);echo $i: (appkey $i);end
-        case set
-            set value appkey_$argv[1]
-            set -U $value $argv[2]
+        set -U $value $argv[2..-1]
     end
 end
 

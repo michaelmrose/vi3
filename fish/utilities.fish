@@ -70,6 +70,7 @@ function lock
 end
 
 function focus
+    set original (mywin)
     switch $argv[1]
         case "id"
             set criteria id
@@ -98,6 +99,10 @@ function focus
             end
     end
     im [$criteria=$choice] focus
+    set final (mywin)
+    if [ $final = $original ]
+        return 1
+    end
 end
 
 function return-windowclass
@@ -107,6 +112,8 @@ function return-windowclass
         case urxvt
             set returnval URxvt
         case urxvtc
+            set returnval URxvt
+        case urxvtt
             set returnval URxvt
         case clem
             set returnval Clementine
@@ -197,6 +204,10 @@ function get-focused-display-resolution
     set res (explode $res)
     set res $res[-1]
     echo $res
+end
+
+function get-focused-display-offset
+    xrandr --verbose | grep " connected" | grep (get-focused-display) | cut -d "x" -f1-2 | cut -d "+" -f2
 end
 
 function get-focused-display-x-offset
@@ -334,10 +345,10 @@ function solid
     transset -i (currentapp) 1.0
 end
 
-function nextwindow
-    set currentclass (xprop -id (currentapp) | grep WM_CLASS | cut -d '"' -f4)
-    nextmatch $currentclass
-end
+# function nextwindow
+#     set currentclass (xprop -id (currentapp) | grep WM_CLASS | cut -d '"' -f4)
+#     nextmatch $currentclass
+# end
 
 function pi3
    echo "import i3"\n{$argv} | python

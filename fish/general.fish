@@ -114,7 +114,9 @@ end
 
 
 function substr
-    expr match $argv[2] .\*$argv[1].\* > /dev/null
+    set e1 (tolower $argv[1])
+    set e2 (tolower $argv[2])
+    expr match $e1 .\*$e2.\* > /dev/null
 end
 
 function filter
@@ -128,10 +130,8 @@ function filter
 end
 
 function exists
-    if test (count $argv) -eq 0
-        return 1
-    else
-        return 0
+    if test (count $argv) -gt 0
+        test (sizeof $argv[1]) -gt 0
     end
 end
 
@@ -207,8 +207,19 @@ function scd
 end
 
 function endswith
-    echo $argv[2] | grep -i -E --regexp "$argv[1]\$" > /dev/null
+    set lst (echo $argv[2..-1] | rev)
+    startswith $argv[1] $lst
 end
+
+function unique
+    for i in $argv
+        if not contains $acc $i
+            set acc $acc $i
+        end
+    end
+    println $acc
+end
+    
 
 function lastchar
     echo $argv | cut -c(sizeof $argv)

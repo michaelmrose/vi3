@@ -1,10 +1,226 @@
-set path /opt/vi3/bin $PATH
-. /opt/vi3/fish/vi3.fish
+function fish_prompt
+    #z --add "$pwd"
+    echo (~/bin/powerline-shell.py $status --shell bare)
+end
 
-alias ws vi3_workspace
-alias gws vi3_get-workspace
-alias cws vi3_combine-workspaces
-alias rws vi3_rearrange-workspaces
-alias saw vi3_select-all-in-workspace
-alias mws vi3_move-window-to-workspace
-alias tws vi3_take-window-to-workspace
+function set-path
+    set javapaths /usr/lib/jvm/java-8-oracle/bin /usr/lib/jvm/java-8-oracle/db/bin /usr/lib/jvm/java-8-oracle/jre/bin/
+
+    set builtinpaths /usr/local/sbin /usr/local/bin /usr/sbin /usr/bin /sbin /bin /usr/games /usr/local/games
+
+    set mypaths /opt/firefox35 /opt/vi3/bin /opt/bin /opt/dmenu /opt/scala/bin /opt/vim-qt/bin /home/michael/bin /home/michael/scripts  /opt/cxoffice/bin ~/games/dustaet/ /opt/popcorntime /home/michael/proj/contrib ~/.autojump/bin
+
+    set PATH $mypaths $javapaths $builtinpaths
+end
+
+set-path
+
+function remove-pdf-watermark
+    set file $argv
+    set watermarks[1] "Licensed to michael rose <Michael@rosenetwork.net>"
+    set watermarks[2] "www.it-ebooks.info"
+    set watermarks[3] "https://forums.manning.com/forums/clojure-in-action-second-edition"
+    set watermarks[4] "These will be cleaned up during production of the book by copyeditors and proofreaders."
+    # set watermarks[5] "@Manning Publications Co. We welcome reader comments about anything in the manuscript - other than typos and other simple mistakes"
+    set tmp1 /tmp/pdf1_{$file}
+    set tmp2 /tmp/pdf2_{$file}
+    echo w is $watermarks
+    # set file $argv[1]
+    echo f is $file
+    echo t is $tmp1 $tmp2
+    pdftk $file output $tmp1 uncompress
+    for i in $watermarks
+        set wm (echo $i | sed 's%\/%\\\/%g')
+        set replace "cat $tmp1 | sed -e \"s/$wm//g\" > $tmp2"
+        eval $replace
+        cp $tmp2 $tmp1
+    end
+    pdftk $tmp1 output $file compress
+    rm $tmp1
+    rm $tmp2
+end
+
+function remove-pdf-watermark2
+    set watermark "Licensed to michael rose <Michael@rosenetwork.net>"
+    set file $argv[1]
+    set tmp /tmp/pdf_{$file}
+    pdftk $argv output $tmp uncompress
+    replacestr $watermark '' $tmp
+    cp $tmp out.pdf
+    pdftk $tmp output $file compress
+    rm $tmp
+end
+
+function choose-library
+    switch-library (ls ~/calibre | dm menu "select a library")
+end
+
+function choose-image
+    set current (pwd)
+    set path $argv
+    cd $path
+    echo $path/(sxiv -to *.jpg *.png *.bmp)
+    cd $current
+end
+
+function choose-background
+    wp scale (choose-image /mnt/ext/Images/backgrounds)
+end
+
+function replacestr
+    set com perl -0777 -i.original -pe \'s/$argv[1]/$argv[2]/igs\' $argv[3]
+    eval $com
+end
+
+function on_i3_events --description "watches the events described and evaluates the function with the same name as events if it exists"
+    i3subscribe $argv | while read -l line
+                            if defined $line
+                                eval $line
+                            end
+                        end
+end
+
+function tstfn
+end
+
+function workspace:focus
+    echo ws focus
+end
+
+function window:focus
+    signal-i3blocks windowtitle
+end
+
+function window:new
+    echo win new
+end
+
+function evaluate
+    if defined $argv[1]
+        eval $argv
+    end
+end
+
+function apply-transparency
+    for i in (list-windows id)
+        transset -i $i (return-trans-value (return-winclass $i))
+    end
+    for i in (get-i3bar-ids)
+        transset -i $i 0.9
+    end
+end
+
+function set-trans
+    transset -i (mywin) (return-trans-value (return-winclass (mywin)))
+end
+
+function return-winclass
+    xprop  WM_CLASS -id $argv | cut -d '"' -f4
+end
+
+
+function return-trans-value
+    set app (echo $argv | cut -d " " -f4 | cut -d "." -f1)
+    switch $app
+        case Qvim
+            echo 0.9
+        case Clementine
+            echo 0.89
+        case Dolphin
+            echo 0.9
+        case Hexchat
+            echo 1.0
+        case i3bar
+            echo 0.9
+        case "*"
+            echo 1.0
+    end
+end
+
+function remap
+    switch $argv[1]
+        case key
+            set type keysym
+            set key1 $argv[2]
+            set key2 $argv[3..-1]
+        case code
+            set type keycode
+            set key1 $argv[2]
+            set key2 $argv[3..-1]
+        case "*"
+            set type keysym
+            set key1 $argv[1]
+            set key2 $argv[2..-1]
+    end
+    xmodmap -e "$type $key1 = $key2"
+end
+
+function toggle-symbol-lock
+    if [ $symbollock = true ]
+        remap code 10 1 exclam
+        remap code 11 2 at
+        remap code 12 3 numbersign
+        remap code 13 4 dollar
+        remap code 14 5 percent
+        remap code 15 6 asciicircum
+        remap code 16 7 ampersand
+        remap code 17 8 asterisk
+        remap code 18 9 parenleft
+        remap code 19 0 parenright
+        set symbollock false
+    else
+        remap code 10 exclam 1
+        remap code 11 at 2
+        remap code 12 numbersign 3
+        remap code 13 dollar 4
+        remap code 14 percent 5
+        remap code 15 asciicircum 6
+        remap code 16 ampersand 7
+        remap code 17 asterisk 8
+        remap code 18 parenleft 9
+        remap code 19 parenright 0
+        set symbollock true
+    end
+end
+
+function inbg
+    ff $argv &
+    bg %(echo (jobs)[-1] | cut -f1)
+end
+
+function window-title-status-line
+    echo (center-text (window-title | cut -c1-120))
+end
+
+function diffcom
+    diff (write-file (eval $argv[1])) (write-file (eval $argv[2]))
+end
+
+function get-i3-setting
+    cat ~/.i3/config | grep "$argv" | condense_spaces | cut -d " " -f2-
+end
+
+function get-i3bar-ids
+    xwininfo -all -root | grep 'i3bar for output' | condense_spaces | cut -d " " -f1
+end
+
+function process-schedule
+    for i in (cat $argv)
+        work $i
+    end
+end
+
+function update-penta
+    set dir (pwd)
+    cd ~/proj/dactyl
+    make -C pentadactyl install
+    cd $dir
+end
+
+source /opt/vi3/fish/utilities.fish
+source /opt/vi3/fish/vi3.fish
+source /opt/vi3/fish/books.fish
+source /opt/vi3/fish/general.fish
+source /opt/vi3/fish/audio.fish
+source /opt/vi3/fish/misc.fish
+source /opt/vi3/fish/mime.fish

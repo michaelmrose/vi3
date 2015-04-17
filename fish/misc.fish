@@ -263,8 +263,20 @@ function extractfilename
     echo $argv | cut -d '.' -f1
 end
 
+function center-text
+    set msize (sizeof "$argv")
+    set buffer (math "280 / 2 - $msize")
+    set message (spaces $buffer) $argv (spaces $buffer)
+    echo $message
+end
+
 function msg
-    twmnc $argv
+    twmnc (center-text $argv)
+end
+
+function spaces
+    set spaces "                                                                                                                                                                                                                                                                                                                                                                                                                                    "
+    echo $spaces | cut -c1-$argv
 end
 
 alias netflix netflix-desktop
@@ -444,14 +456,36 @@ end
 
 function pman
     set app $argv
+    set pdf /tmp/{$app}.pdf
+
     if man $app > /dev/null
-        man -t $app | ps2pdf - /tmp/{$app}.pdf
+        man -t $app | ps2pdf - $pdf
     else
         help2man $app > /tmp/{$app}.txt   
-        man -lt /tmp/{$app}.txt | ps2pdf - /tmp/{$app}.pdf
+        man -lt /tmp/{$app}.txt | ps2pdf - $pdf
     end
     open /tmp/{$argv}.pdf &
 end
+
+function pman2 --argument-names app --description 'opens pdf version of man page or help'
+    set pdf /tmp/{$app}.pdf
+    if man $app > /dev/null
+        set com man $app
+    else
+        set com help2man $app
+    end
+    man -lt (write-file $com) | ps2pdf - $pdf
+    open $pdf
+end
+
+
+function write-file
+    set tmp /tmp/(seconds)
+    eval $argv > $tmp
+    echo $tmp
+end
+    
+
 
 function display-manual
     pman (tolower (return-program-name (winclass)))
@@ -465,6 +499,7 @@ function why
         echo $argv was installed as part of $result
     else
         echo $argv is not part of a package
+        return 1
     end
 end
 
@@ -1030,7 +1065,7 @@ end
 
 function defined-in
     set fn "function $argv\$"
-    set fn2 "function $argv -d"
+    set fn2 "function $argv -"
     set al "alias $argv "
     set fishpaths /opt/vi3/fish ~/fish ~/.config/fish/functions
     set fishconfig ~/.config/fish/config.fish
@@ -1045,12 +1080,7 @@ function defined-in
 end
 
 function defined
-    set pth (defined-in $argv)
-    if test (sizeof $pth) -ne 0
-        return 0
-    else
-        return 1
-    end
+    type $argv > /dev/null
 end
 
 function open-book
@@ -1080,6 +1110,8 @@ function vpn -d "run vpn list show down reset choose or to location [up,down]"
             else
                 echo None
             end
+        case up
+             vpn to $vpn_location up
         case down
             vpn to (vpn show) down
         case reset
@@ -1087,10 +1119,11 @@ function vpn -d "run vpn list show down reset choose or to location [up,down]"
             vpn down
             vpn to $con up
         case choose
-            vpn (println (vpn list) | dm menu "VPN Connections") up
+            vpn to (println (vpn list) | dm menu "VPN Connections") up
         case "*"
             #vpn to $location $command
             set location $argv[2]
+            set -U vpn_location $location
             set command $argv[3]
 
             set fieldnumber 14
@@ -1371,13 +1404,28 @@ function echofun
 end
 
 function weather-here
-    echo (weather $geo) in $geo
+    echo (weather-icon) (weather $geo) in $geo
+end
+
+function weather-icon
+    weather $geo --iconify | rev | cut -c1-3
 end
  
 function transwindows
     for i in (list-windows)
         transset -i $i .77
     end
+end
+
+function vpn-status-line
+    set vpnstatus (vpn show)
+    switch $vpnstatus
+        case None
+            set symbol 
+        case "*"
+            set symbol 
+    end
+    echo $symbol $vpnstatus
 end
 
 function keysd
@@ -1637,6 +1685,8 @@ function signal-i3blocks
             set val 4
         case volume
             set val 5
+        case windowtitle
+            set val 6
         case "*"
             set val $argv
     end
@@ -2141,6 +2191,45 @@ end
 
 function stripquotes
     echo $argv | sed 's/"//g'
+end
+
+function start-quietly
+    set com \'$argv '2>' ''/dev/null\'
+    eval bash -c $com
+end
+
+function ternary
+    if eval $argv[1]
+        eval $argv[2]
+    else
+        eval $argv[2]
+    end
+end
+
+function many
+    test $argv -gt 1
+end
+
+function vman
+    man $argv | col -b | qvim -R -c 'set ft=man nolist' -c 'colorscheme distinguished' -c 'set number! relativenumber!' -c 'set guifont=Source\ Code\ Pro\ for\ Powerline\ 13' -
+end
+
+function not-in-package
+    set -e $notinpackage
+    for i in $PATH
+        set execs $execs (find $i -executable -type f)
+    end
+    for i in $execs
+        if not why $i > /dev/null
+            set notinpackage $notinpackage $i
+        end
+    end
+end
+
+function lsf
+    for i in $argv
+        ls $i
+    end
 end
 
 alias rfm "urxvtc -e ranger"

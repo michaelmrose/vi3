@@ -53,12 +53,6 @@
         bindsym $mod+h focus left
         bindsym $mod+l focus right
     
-    # change focus 
-        bindsym XF86Launch3 focus left
-        bindsym XF86Launch4 focus down
-        bindsym XF86Launch5 focus up
-        bindsym XF86Launch6 focus right
-
     # reload the configuration file
         bindsym $mod+Shift+c reload
         bindsym $mod+Shift+r restart
@@ -76,7 +70,7 @@
         bindsym Control+Mod1+r $dm
         bindsym $mod+a $mode audio
         bindsym $mod+Shift+m exec "ff display-manual"
-        bindsym $mod+n exec "ff nextwindow"
+        bindsym $mod+n exec "ff nextwin"
         bindsym $mod+Shift+n exec "ff new-session"
         bindsym Print $mode screenshot
         #bindsym $mod+t $op vi3_trans
@@ -91,12 +85,24 @@
         bindsym mod1+v exec "ff choose-video"
         #bindsym $mod+w exec "ff show-winclass"
         #bindsym $mod+w $op vi3_op_workspace2
-        bindsym $mod+w exec "ff keysd toggle"
+        #bindsym $mod+w exec "ff keysd toggle"
+        bindsym $mod+w exec "ff choose-window all", $exit
         bindsym $mod+p exec "ff choose-window visible"
         bindsym $mod+s exec "ff choose-session"
         bindsym $mod+c $mode configure
         bindsym $mod+z $mode command
         bindsym Mod1+l exec "ff lockme"
+        bindsym Mod1+Tab exec "ff cycle_windows visible"
+        bindsym XF86LaunchA exec "ff cycle_windows visible"
+        bindsym Mod1+s scratchpad show
+   #audio keys
+        bindsym XF86AudioRaiseVolume exec "ff setvol +5"
+        bindsym XF86AudioLowerVolume exec "ff setvol -5"
+        bindsym XF86AudioPrev exec "ff mm previous"
+        bindsym XF86AudioNext exec "ff mm next"
+        bindsym XF86AudioPlay exec "ff mm play"
+        bindsym XF86AudioMute exec "ff mm mute"
+
  
 #-----------------------modes------------------------------
 mode "command" {
@@ -155,13 +161,13 @@ mode "command" {
         bindsym f $op focus-app
         #bindsym u [urgent=latest] focus, $exit
         bindsym u exec "ff focus urgent"
-        bindsym Shift+f eop vi3_fetch-window
-        bindsym o $op open-app             
+        bindsym Shift+f $op vi3_fetch-window
+        bindsym o $op new-open-app             
         bindsym r $mode resize           
         bindsym d $mode kill
         bindsym m $op mws 
         bindsym Shift+m $mode windowmove
-        bindsym n exec "ff nextwindow"
+        bindsym n exec "ff nextwin"
         bindsym Shift+n exec "sudo /home/michael/bin/nm", $exit
         bindsym t $op tws
         bindsym g $op gws
@@ -189,6 +195,7 @@ mode "command" {
         bindsym 9 $setsize 9
         bindsym period exec "ff vi3_repeat", $exit
         bindsym Return exec "ff dm run", $exit
+        bindsym Tab exec "ff cycle_windows visible"
 
         bindsym Escape $exit
 }
@@ -205,10 +212,10 @@ mode "windowmove"{
 
 mode "resize" {
     #keybindings
-        bindsym Shift+k resize grow   height 20 px or 20 ppt
-        bindsym Shift+j resize shrink height 20 px or 20 ppt
-        bindsym Shift+h resize shrink width  20 px or 20 ppt
-        bindsym Shift+l resize grow   width  20 px or 20 ppt
+        bindsym Shift+k resize grow   height 5 px or 5 ppt
+        bindsym Shift+j resize shrink height 5 px or 5 ppt
+        bindsym Shift+h resize shrink width  5 px or 5 ppt
+        bindsym Shift+l resize grow   width  5 px or 5 ppt
         bindsym w exec "ff set -U resizedim width" 
         bindsym h exec "ff set -U resizedim height" 
         bindsym 1 exec "ff set-window-size perc 10", $exit
@@ -242,11 +249,11 @@ mode "audio" {
         bindsym k exec        " ff media-ctl vol +5            "
         bindsym h exec        " ff media-ctl previous          "
         bindsym l exec        " ff media-ctl next              "
-        bindsym space exec    " ff media-ctl play-pause        "
+        bindsym space exec    " ff media-ctl play              "
         bindsym n exec        " ff media-ctl output next       "
         bindsym s exec        " ff media-ctl output speakers   "
         bindsym p exec        " ff media-ctl output headphones "
-        bindsym m exec        " ff media-ctl vol 0             "
+        bindsym m exec        " ff media-ctl mute              "
         bindsym Shift+m exec  " ff media-ctl vol 100           "
         bindsym v $op vi3_vol
         bindsym i exec        " ff show-playing                "
@@ -396,7 +403,8 @@ mode configure {
         bindsym m       exec "ff choose-music"       , $exit
         bindsym t       exec "ff choose-trans"       , $exit
         bindsym g       exec "ff game-mode toggle"   , $exit
-        bindsym s       exec "ff choose-session"     , $exit
+        #bindsym s       exec "ff choose-session"     , $exit
+        bindsym s       exec "ff toggle-symbol-lock" , $exit
         bindsym b       exec "ff books"              , $exit
 
         bindsym Escape $exit
@@ -419,6 +427,13 @@ mode locked {
         bindsym Shift+r exec  " sudo shutdown -r now"
         bindsym o exec        " ff lightsout                   "
         bindsym Mod1+l exec  "  ff unlockme                    "
+   #audio keys
+        bindsym XF86AudioRaiseVolume exec "ff setvol +5"
+        bindsym XF86AudioLowerVolume exec "ff setvol -5"
+        bindsym XF86AudioPrev exec "ff mm previous"
+        bindsym XF86AudioNext exec "ff mm next"
+        bindsym XF86AudioPlay exec "ff mm play"
+        bindsym XF86AudioMute exec "ff mm mute"
 }
 
 exec "~/scripts/autostart.sh" 

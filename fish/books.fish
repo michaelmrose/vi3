@@ -29,6 +29,13 @@ function query-calibre-formats
     query-calibre exact $argv | jq .[].formats[]
 end
 
+function query-calibre-formats-by-title
+    set books (query-calibre-title $argv[1] $argv[2..-1])
+    for i in $books
+        query-calibre-formats title (stripquotes $i)
+    end
+end
+
 function return-query
     set selector $argv[1]
     set criteria author title publisher series tags
@@ -48,12 +55,13 @@ function open-book-file
     eval $com
 end
 
-
 function open-book-by-title
+    if not exists $argv
+        return 1
+    end
     set title (stripquotes $argv)
     set files (query-calibre-formats title $title)
     set name (stripquotes (get-fname-of-file $files[1]))
-    
     set com open (quote (choose-format $name))
     add-to-recent-reads $title
     eval $com

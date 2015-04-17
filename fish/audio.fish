@@ -6,7 +6,6 @@ function move-all-audio-streams
     # set targetop (math $argv-1)
     for i in $apps
         pacmd "move-sink-input $i $argv"
-        
     end
 end
 
@@ -43,7 +42,6 @@ function switch-output
     # set op (current-output)
     # msg --id 7 -t "output changed to $op"
     switchaudio.sh
-    signal-i3blocks volume
     signal-i3blocks output
 end
 
@@ -65,7 +63,7 @@ function list-displays
    set displays (get-connected-displays)
    set primary (get-primary-display)
    for i in $displays
-       if match $i $primary 
+       if match $i $primary
            echo \* $i
        else
            echo " " $i
@@ -81,52 +79,118 @@ function current-output
 end
 
 function output-type
-    switch (current-output)
-        case "Clear Chat Comfort USB Headset Analog Stereo"
-            echo headphones
-        case "Built-in Audio Analog Stereo"
-            echo speakers
+    match-lists (quote (current-output)) (quote-list (output-list)) "headphones speakers other"
+end
+
+function output-status-line
+    switch (output-type)
+        case headphones
+            set symbol 
+        case speakers
+            set symbol 
+    end
+    echo $symbol (getvolume)
+end
+
+function setvolume
+    ponymix (match-lists (car $argv) + - "increase decrease set-volume") (stripsign $argv)
+    signal-i3blocks output
+end
+
+function output-list
+    pacmd list-sinks | sed -n -e 's/device.description[[:space:]]=[[:space:]]"\(.*\)"/\1/p' | condense_spaces
+end
+
+function play-music
+    set tracks (beet ls $argv --path)
+    clementine -a $tracks
+    echo playing (count $tracks) tracks
+end
+
+function play-music2
+    if [ $argv[1] = -e ]
+        set criteria $argv[2]
+        set query $argv[3..-1]
+    else
+        set criteria title
+        set query $argv
+    end
+    set tracks (beet ls $query)
+
+    set artist (println $tracks | cut -d "-" -f1 | trim)
+    set album (println $tracks | cut -d "-" -f2 | trim)
+    set title (println $tracks | cut -d "-" -f3 | trim)
+    set c (println $$criteria)
+
+    #clementine -a $tracks
+    for i in (range (count $tracks))
+        # echo c is $c[$i] and q is $query
+        if substr $c[$i] $query
+            set queue $queue (echo $artist[$i] $album[$i] $title[$i])
+        end
+    end
+    println $queue
+    for i in $queue
+    end
+    echo playing (count $tracks) tracks
+end
+
+function renderstringplayable
+    echo $argv | sed 's/[()-]//g' | condense_spaces
+end
+
+function play-list
+        set count 0
+    for i in $argv
+        play-music $i
     end
 end
 
-function setvol
-    pactl -- set-sink-volume $default_sink {$argv}%
-    set vol (getvolume)
-    signal-i3blocks volume
-end
+alias setvol setvolume
 
 function getvolume
-    set vols (pactl list sinks | grep "Volume: 0: " | cut -c13-16 | trim)
-    set ndx (math "$default_sink + 1")
-    echo $vols[$ndx]
+    set result (ponymix get-volume)%
+    if ponymix is-muted
+        set result \($result\)
+    end
+    echo $result
 end
+
+function toggle-mute
+    ponymix toggle
+    signal-i3blocks output
+end
+
+alias getvol getvolume
 
 function clear-playlist
     set tmp /tmp/empty
     touch $tmp
-    clementine -l $tmp 
+    clementine -l $tmp
     mm stop
-end    
-    
+end
+
 function lyrics
     beet lyrics $argv -p | cut -d ';' -f12- | cut -d ';' -f1- | less
 end
-    
+
 function media-ctl
     set nargs (count $argv)
-    switch $argv[1] 
-        case play 
+    switch $argv[1]
+        case play
             if [ $nargs = 1 ]
                 playerctl --player=$PLAYER play-pause
             else
                 #add results matching query to current playlist
-                beet play $argv[2..-1]
+                play-music $argv[2..-1]
             end
 
         case clear
             clear-playlist
         case vol
             setvol $argv[2]
+        case mute
+            toggle-mute
         case playing
             #print title of playing track
             playing
@@ -137,12 +201,14 @@ function media-ctl
             list-outputs
         case output
             switch-output $argv[2..-1]
+        case status
+            playerctl status
         case displays
-            list-displays 
+            list-displays
         case read
             books $argv[2..-1]
         case watch
-            watch-video $movie $argv[2..-1]
+            watch-video $argv[2..-1]
         case "*"
             #handles play pause stop next previous
             playerctl --player=$PLAYER $argv
@@ -159,12 +225,35 @@ function playing
     end
 end
 
+function player-status-line
+    switch (playerctl status)
+        case Paused
+            set symbol "  "
+        case Playing
+            set symbol "  "
+    end
+    echo $symbol (playing)
+end
+
+function is-muted
+    ponymix is-muted
+end
+
 function show-playing
     msg (playing)
+end
+
+function volume-status-line
+    set vol (getvolume)
+    if is-muted
+        echo  $vol
+    else
+        echo  $vol
+    end
 end
 
 function get-volumes
     pactl list sinks | sed -n -e '/State: RUNNING/,$p' | grep "Volume: 0" | cut -d ":" -f3 | cut -d "%" -f1 | trim
 end
 
-alias mm media-ctl 
+alias mm media-ctl

@@ -1,39 +1,38 @@
 #---------------------user variables-----------------------
 
     set $mod Mod4
-    set $primary_output  HDMI-0 
-    set $secondary_output DVI-I-0
+    set $primary_output  DVI-I-0 
+    set $secondary_output DVI-I-1
     font pango:DejaVu Sans Mono 10
     #colorscheme - greenandyellow
 
 #--Assign windows to workspaces and workspaces to outputs--
 
     #windows
-        assign [class=Clementine    ] s
-        assign [class=Calibre-gui   ] i
-        assign [class=Hexchat       ] a
-        assign [class=jetbrains-ide ] u
-        assign [class=Vmware        ] r
-        assign [class=Thunderbird   ] l
-        assign [class=Screenkey     ] f
+        assign [class=Clementine     ] s
+        assign [instance=calibre-gui ] i
+        assign [class=Hexchat        ] a
+        assign [class=jetbrains-ide  ] u
+        assign [class=Thunderbird    ] l
+        assign [class=Screenkey      ] f
+        assign [class=Qbittorrent    ] y
         
 for_window [class="Qalculate"] floating enable
+#for_window [Class=Master-pdf-editor] floating disable
 for_window [class="Speedcrunch"] floating enable
-for_window [class="Main.py"] floating enable
-for_window [class="Screenkey"] floating enable
-for_window [class="Calibre-gui" window_role="dialog"] floating enable
 for_window [class="feh"] floating enable
-#for_window [class="Sxiv"] floating enable
 for_window [class="firefox.exe"] fullscreen
-for_window [class="Lxterminal"] exec "ff trans .80"
-for_window [class="Konsole"] exec "ff trans .80"
-for_window [class="Calibre-ebook-viewer"] fullscreen 
+for_window [class="Firefox" title="Passwords$"] floating disable
+for_window [class="Chromium-browser"] exec "ff unset-fullscreen"
+for_window [class="Qvim"] exec "ff set-trans"
+for_window [class="i3bar"] exec "ff set-trans"
+for_window [class="Clementine"] exec "ff set-trans"
+for_window [class="Dolphin"] exec "ff set-trans"
+for_window [class="libprs500" title="E-book viewer$"] exec "ff unset-fullscreen"
 mouse_warping none
 # vim:filetype=i3
 
 #-----------------------Keybindings------------------------
 
-        bindsym F15 exec "ff setvol +5" 
-        bindsym F21 exec "ff setvol -5" 
 
 # vim:filetype=i3

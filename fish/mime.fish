@@ -12,8 +12,8 @@ function mimet
 end
 
 function mime-set
-    set ext $argv[1]
-    set mimetype (mimet file.$ext)
+    set type $argv[1]
+    set mimetype (mimet $type)
     set command $argv[2]
 
     set video mkv wmv avi mov mp4
@@ -23,7 +23,7 @@ function mime-set
         create_desktop_file $command $mimetype 
     end
     
-    switch $ext
+    switch $type
         case "video"
             for i in $video
                 mime-set $i $command
