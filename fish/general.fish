@@ -26,7 +26,7 @@ end
 
 function println
     for i in $argv
-        echo $i
+        echo -e $i
     end
 end
 

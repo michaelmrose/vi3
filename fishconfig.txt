@@ -103,10 +103,10 @@ end
 
 function apply-transparency
     for i in (list-windows id)
-        transset -i $i (return-trans-value (return-winclass $i))
+        transset -i $i (return-trans-value (return-winclass $i)) > /dev/null
     end
     for i in (get-i3bar-ids)
-        transset -i $i 0.9
+        transset -i $i 0.9 > /dev/null
     end
 end
 
@@ -210,6 +210,70 @@ function process-schedule
     end
 end
 
+function mm-dmenu
+    eval media-ctl (dm choice "enter a command for media-ctl")
+end
+
+function take
+    set lst $argv[2..-1]
+    for i in (range (lesserof $argv[1] (count $lst)))
+        echo $lst[$i]
+    end
+end
+
+function lesserof
+    if test $argv[1] -lt $argv[2]
+        echo $argv[1]
+    else
+        echo $argv[2]
+    end
+end
+
+function greaterof
+    if test $argv[1] -gt $argv[2]
+        echo $argv[1]
+    else
+        echo $argv[2]
+    end
+end
+        
+
+function padded
+    set val $argv
+    for i in (range 30)
+        set val $val ""
+    end
+    println $val
+end
+
+function sxs
+    set xs (padded $xs)
+end
+
+function xs
+    if test (count $xs) -ge $argv
+        echo $xs[$argv]
+    end
+end
+
+function sopen
+    if test -f $argv
+        eval open (quote $argv)
+    end
+end
+
+function outerfn
+    set xs $argv
+    xs 2..-1
+    innerfn
+    # echo val of xs is $xs in outer
+end
+
+function innerfn
+    set xs fuck
+    # echo set xs in inner
+end
+
 function update-penta
     set dir (pwd)
     cd ~/proj/dactyl
@@ -217,6 +281,81 @@ function update-penta
     cd $dir
 end
 
+function doit
+    sudo $history[1]
+end
+
+function uid
+    # echo (seconds)(random)
+    uuidgen
+end
+
+# function startiton
+#     set layout /tmp/(echo (uid)-layout)
+#     set workspace $argv[1]
+#     set app $argv[2]
+#     set winclass (return-windowclass $app)
+#     save-workspaces
+#     cat ~/test.json | sed "s/#winclass/$winclass/g" > $layout
+#     ws $workspace
+#     im append_layout $layout
+#     fish -c $app &
+#     restore-workspaces
+#     rm $layout
+# end
+
+function startiton
+    set workspacelist (odds $argv)
+    set applist (evens $argv)
+    save-workspaces
+
+    for i in (range (count $workspacelist))
+        set layout /tmp/(echo (uid)-layout)
+        set workspace $workspacelist[$i]
+        set app $applist[$i]
+        set winclass (return-windowclass (explode $app))
+        echo w is $winclass and a is $app
+        cat ~/test.json | sed "s/#winclass/$winclass/g" > $layout
+        ws $workspace
+        im append_layout $layout
+        fish -c "$app &"
+        rm $layout
+    end
+    restore-workspaces
+    sleep 3
+    apply-transparency
+end
+
+function is-even
+    test (modulo $argv 2) -eq 0
+end
+
+function is-odd
+    test (modulo $argv 2) -ne 0
+end
+
+function modulo
+    math "$argv[1] % $argv[2]"
+end
+
+function odds
+    for i in (range (count $argv))
+        if is-odd $i
+            set acc $acc $argv[$i]
+        end
+    end
+    println $acc
+end
+
+function evens
+    for i in (range (count $argv))
+        if is-even $i
+            set acc $acc $argv[$i]
+        end
+    end
+    println $acc
+end
+        
 source /opt/vi3/fish/utilities.fish
 source /opt/vi3/fish/vi3.fish
 source /opt/vi3/fish/books.fish

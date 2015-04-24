@@ -1,12 +1,13 @@
 function books
     if exists $argv
-        open-book-by-title (select-book (query-calibre-title (return-query $argv)))
+        sopen (choose-format (get-fname-of-book (add-to-recent-reads (select-book (query-calibre-title (return-query $argv))))))
+        #threadback return-query query-calibre-title select-book get-fname-of-book choose-format open-book-by-title
     else
         show-recent-reads
     end
 end
 
-function query-calibre
+function query-calibre -d "usage: query-calibre [exact,contains] criteria query returns answer in json"
     set type $argv[1]
     set field $argv[2]
     set query $argv[3..-1]
@@ -19,7 +20,7 @@ function query-calibre
     eval $com
 end
 
-function query-calibre-title
+function query-calibre-title -d "returns list of titles, exact if present or list containing chosen phrase"
     set result (query-calibre contains $argv | jq .[].title)
     set exact (println $result | grep -i "$argv[2..-1]")
     if exists $exact
@@ -29,18 +30,17 @@ function query-calibre-title
     end
 end
 
-function query-calibre-formats
-    query-calibre exact $argv | jq .[].formats[]
-end
+# if you hit escape when narrowing a search 
+# this will be called with title "" and result 
+# in the first book found being returned 
 
-function query-calibre-formats-by-title
-    set books (query-calibre-title $argv[1] $argv[2..-1])
-    for i in $books
-        query-calibre-formats title (stripquotes $i)
+function query-calibre-formats -d "returns files for a given exact title"
+    if test (sizeof $argv[2]) -gt 0 
+        query-calibre exact $argv | jq .[].formats[]
     end
 end
 
-function return-query
+function return-query -d "returns a properly formated query for query-calibre-title"
     set selector $argv[1]
     set criteria author title publisher series tags
     
@@ -53,25 +53,14 @@ function return-query
     println $selector $query
 end
 
-function open-book-file
-    set com open (quote $argv)
-    add-to-recent-reads $argv
-    eval $com
-end
-
-function open-book-by-title
-    if not exists $argv
-        return 1
-    end
+function get-fname-of-book -d "get whole filename of book given its title"
     set title (stripquotes $argv)
     set files (query-calibre-formats title $title)
     set name (stripquotes (get-fname-of-file $files[1]))
-    set com open (quote (choose-format $name))
-    add-to-recent-reads $title
-    eval $com
+    echo $name
 end
 
-function choose-format
+function choose-format -d "for the given list of formats in preferential order return the first that exists for the given book"
     set formats pdf epub mobi djvu lit chm txt
     set name $argv
 
@@ -84,8 +73,7 @@ function choose-format
     return 1
 end
         
-
-function select-book
+function select-book -d "use dmenu to select a book if more than one is possible"
     if test (count $argv) -gt 1
         println $argv | dm menu "select book"
     else
@@ -93,14 +81,19 @@ function select-book
     end
 end
 
-function add-to-recent-reads
+function add-to-recent-reads -d "keep a list of the 10 most recent unique items opened via this script"
     set -U recent_reads (take 10 (unique (println $argv $recent_reads)))
+    echo $argv
 end
 
-function show-recent-reads
+function show-recent-reads -d "use dmenu to pick one of the items from recent_reads and open it with sopen if it is a file or books if it is a title"
     set choice (println $recent_reads | dm menu "books")
     if exists $choice
-        books $choice
+        if test -f $choice
+            sopen $choice
+        else
+            books $choice
+        end
     else
         return 0
     end

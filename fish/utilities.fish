@@ -106,7 +106,8 @@ function focus
 end
 
 function return-windowclass
-    switch $argv[1]
+    set first (explode $argv[1])[1]
+    switch $first
         case calibre
             set returnval libprs500
         case urxvt
@@ -121,6 +122,12 @@ function return-windowclass
             set returnval mpv
         case kdesudo
             set returnval (return-windowclass $argv[2..-1])
+        case sudo
+            set returnval (return-windowclass $argv[2..-1])
+        case books
+            set returnval Zathura
+        case ffs
+            set returnval Firefox
         case "*"
             set returnval (capitalize $argv)
     end

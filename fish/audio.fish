@@ -176,6 +176,7 @@ end
 
 function media-ctl
     set nargs (count $argv)
+    set xs (padded $argv)
     switch $argv[1]
         case play
             if [ $nargs = 1 ]
@@ -200,13 +201,13 @@ function media-ctl
         case outputs
             list-outputs
         case output
-            switch-output $argv[2..-1]
+            switch-output
         case status
             playerctl status
         case displays
             list-displays
         case read
-            books $argv[2..-1]
+            books $xs[2..-1]
         case watch
             watch-video $argv[2..-1]
         case "*"

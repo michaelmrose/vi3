@@ -131,10 +131,7 @@ function vs
 end
 
 function ffs
-    firefox
-    sleep 2
-    xdotool type ":sessionload $argv"
-    xdotool key Return 
+    eval firefox -pentadactyl \"+c \'sessionload $argv\'\"
 end
 
 function session-load
@@ -265,7 +262,7 @@ end
 
 function center-text
     set msize (sizeof "$argv")
-    set buffer (math "280 / 2 - $msize")
+    set buffer (math "480 / 2 - $msize")
     set message (spaces $buffer) $argv (spaces $buffer)
     echo $message
 end
@@ -334,9 +331,10 @@ function coursedl
 end
 
 function noteit
-    qvim
-    sleep 0.5
-    xdotool key e space s n n
+    # qvim
+    # sleep 0.5
+    # xdotool key e space s n n
+    qvim /tmp/note-(seconds) -c "Simplenote -n"
 end
 
 function vlcclip
@@ -534,10 +532,9 @@ function fp
 end
 
 function blist
-    echo in title
-    calibredb list -s title:$argv
-    echo in tag
-    calibredb list -s tag:$argv
+    for i in title tags;
+        println -e {$green}"resuts in $i" {$white}(calibredb list -f title -s $i:$argv)[2..-1]
+    end
 end
 
 function badd
@@ -946,7 +943,7 @@ function urxvtt
     end
     while not pgrep urxvtd
     end
-    urxvtc
+    urxvtc &
 end
 
 alias libprs500 calibre
@@ -1743,7 +1740,11 @@ function addmemsize
         set postfix "K"
     end
     set acc (echo $acc | head -c 5)
-    echo {$acc}{$postfix}
+    if test $acc -gt 0
+        echo {$acc}{$postfix}
+    else
+        echo not found
+    end
 end
 
 function addmemsize2
@@ -2230,6 +2231,10 @@ function lsf
     for i in $argv
         ls $i
     end
+end
+
+function open-remote
+   openurl (echo (git remote -v | condense_spaces | cut -d " " -f2)[1]) 
 end
 
 alias rfm "urxvtc -e ranger"

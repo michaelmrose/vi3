@@ -102,6 +102,7 @@
         bindsym XF86AudioNext exec "ff mm next"
         bindsym XF86AudioPlay exec "ff mm play"
         bindsym XF86AudioMute exec "ff mm mute"
+        bindsym $mod+m exec "ff mm-dmenu"
 
  
 #-----------------------modes------------------------------
