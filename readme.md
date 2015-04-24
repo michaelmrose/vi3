@@ -51,7 +51,7 @@ Additionally commonly used apps are bound to letter and any function that needs 
 #### example usage 2vot open a small terminal window below current focused window
 
 ##Audio Mode
-This functionality requires playerctl and requires that you set the global environmental variable PLAYER to the player of your choice 
+This functionality requires playerctl and ponymix and requires that you set the global environmental variable PLAYER to the player of your choice 
 
 - h prev track
 - l next track
@@ -75,6 +75,7 @@ Accessed via d in command mode
 - a[a-z] kill all windows of window class designated by [a-z] 
 - z kill all visible workspaces 
 - o kill all windows in workspace other than focused
+- t goto target and kill it
 
 ##Menu Mode
 Accessed via tapping super in normal mode
