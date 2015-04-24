@@ -79,9 +79,8 @@ Accessed via d in command mode
 
 ##Menu Mode
 Accessed via tapping super in normal mode
-- s choose choose ssh connection via rofi
-- r or tap super again run a program via rofi
-- w chose window via rofi
+- r or tap super again run a program
+- w chose window
 - l lock
 - Shift+e shutdown or end
 - Shift+r reboot
