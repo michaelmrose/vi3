@@ -95,6 +95,7 @@
         bindsym Mod1+Tab exec "ff cycle_windows visible"
         bindsym XF86LaunchA exec "ff cycle_windows visible"
         bindsym Mod1+s scratchpad show
+        bindsym F13 exec "ff rfi run"
    #audio keys
         bindsym XF86AudioRaiseVolume exec "ff setvol +5"
         bindsym XF86AudioLowerVolume exec "ff setvol -5"
@@ -103,13 +104,13 @@
         bindsym XF86AudioPlay exec "ff mm play"
         bindsym XF86AudioMute exec "ff mm mute"
         bindsym $mod+m exec "ff mm-dmenu"
+        bindsym $mod+Shift+space floating toggle
 
  
 #-----------------------modes------------------------------
 mode "command" {
     #Keybindings
-    bindsym F13 $dm
-    bindsym XF86LaunchB $dm,$exit
+    bindsym XF86Launch2 $exit
     bindsym a+b exec "konsole"
 
     # kill focused window
@@ -195,7 +196,7 @@ mode "command" {
         bindsym 8 $setsize 8
         bindsym 9 $setsize 9
         bindsym period exec "ff vi3_repeat", $exit
-        bindsym Return exec "ff dm run", $exit
+        bindsym Return exec "ff rfi run", $exit
         bindsym Tab exec "ff cycle_windows visible"
 
         bindsym Escape $exit
@@ -203,10 +204,10 @@ mode "command" {
 
 mode "windowmove"{
     #keybindings
-        bindsym h exec "ff windowmove left 200" 
-        bindsym j exec "ff windowmove down 200"
-        bindsym k exec "ff windowmove up 200"
-        bindsym l exec "ff windowmove right 200"
+        bindsym h exec "ff windowmove left 400" 
+        bindsym j exec "ff windowmove down 400"
+        bindsym k exec "ff windowmove up 400"
+        bindsym l exec "ff windowmove right 400"
 
         bindsym Escape $exit
 }
@@ -256,7 +257,7 @@ mode "audio" {
         bindsym p exec        " ff media-ctl output headphones "
         bindsym m exec        " ff media-ctl mute              "
         bindsym Shift+m exec  " ff media-ctl vol 100           "
-        bindsym v $op vi3_vol
+        bindsym v exec        " ff choose-volume               "
         bindsym i exec        " ff show-playing                "
 
         bindsym Escape $exit

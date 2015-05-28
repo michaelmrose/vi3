@@ -158,9 +158,7 @@ function vi3_combine-workspaces
 end
 
 function vi3_rearrange-workspaces
-    evalandrestore vi3_take-2 $argv[1] vi3_rearrange
-    er vi3op
-    update-op-status
+    vi3_take-2 $argv[1] vi3_rearrange
 end
 
 function vi3_trans-set
@@ -199,7 +197,7 @@ function vi3_height
     vi3_take-2 $argv[1] vi3_height-set
 end
 
-function vi3_workspace
+function vi3_workspace -d 'switch workspace [a-z]'
     im workspace $argv
     er vi3op
     update-op-status
@@ -227,7 +225,7 @@ function vi3_move-window-to-workspace
 end
 
 function vi3_operator-mode
-    setme vi3op $argv  
+    set -U vi3op $argv
     signal-i3blocks vi3
     update-op-status
     im mode "op"
@@ -391,8 +389,10 @@ function update-vi3-config
 end
 
 function colorscheme
-    set -U colors $argv
-    update-vi3-config
+    if not match $colors $argv
+        set -U colors $argv
+        update-vi3-config
+    end
 end
 
 function saveme
@@ -431,6 +431,8 @@ function new-open-app
     set target (appkey $argv)
     set winclass (return-windowclass $target)
     set sizeof (math $numkeyed \* 2)
+    set sizeof $numkeyed
+    # set sizeof (wcalc -q "$numkeyed \* 2")
 
     if [ $numkeyed = "0" ]
         echo "no size chosen"
@@ -472,6 +474,27 @@ function show-menu
     
     echo $msg
     
+end
+
+function better-show-menu
+    if exists $vi3op
+        fn -d $vi3op
+    else
+        switch $vi3mode
+            case "kill"
+                set msg '(a) all appkey (d) workspace (o) others in workspace (w) window (z) all visible'
+            case "default"
+                set msg '(mod+hjkl change focus (RShift) command (Lshift) switch workspace (mod+a) audio (PrintScreen) screenshot'
+                set msg 'default'
+            case "command"
+                set msg "command"
+            case "screenshot"
+                set msg 'Screenshot (w)indow (d)isplay (e)verything'
+            case "*"
+                set msg $vi3mode
+       end
+    end
+        
 end
 
 function show-op
@@ -523,7 +546,7 @@ function show-mode
             set msg '(a) all appkey (d) workspace (o) others in workspace (w) window (z) all visible'
         case "default"
             set msg '(mod+hjkl change focus (RShift) command (Lshift) switch workspace (mod+a) audio (PrintScreen) screenshot'
-            set msg 'vi3'
+            set msg 'default'
         case "command"
             set msg "command"
         case "screenshot"
@@ -587,11 +610,15 @@ function vi3_kill
             vi3_get-workspace keep
         case "t"
             vi3_operator-mode vi3_destroy-workspace
-        end 
+    end
+    er vi3op
+    update-op-status
+
 end
 
 function show-keys
-    xev | grep --line-buffered keysym | sed -u 's/[),]//g' | stdbuf cut -d " " -f11
+    # xev | grep --line-buffered keysym | sed -u 's/[),]//g' | stdbuf cut -d " " -f11
+    xev | grep -A2 --line-buffered '^KeyRelease' | sed -n '/keycode /s/^.*keycode \([0-9]*\).* (.*, \(.*\)).*$/\1 \2/p'
 end
 
 function cut-while

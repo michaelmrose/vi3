@@ -16,7 +16,11 @@ function wp -d 'usage: [max,scale,tile] path-to-image or path-to-image or [max,s
     switch (count $argv)
         case "2"
             set style $argv[1]
-            set image (pathof $argv[2])
+            if test -f $argv[2]
+                set image (pathof $argv[2])
+            else
+                set image /mnt/ext/Images/backgrounds/$argv[2]
+            end
         case "1"
             set image ~/.bgimage/img.png
             switch $argv[1]
@@ -106,8 +110,13 @@ function focus
 end
 
 function return-windowclass
-    set first (explode $argv[1])[1]
-    switch $first
+    # set xs (explode $argv[1])
+    if test (count $argv -eq 1)
+        set xs (explode $argv)
+    else
+        set xs $argv
+    end
+    switch $xs[1]
         case calibre
             set returnval libprs500
         case urxvt
@@ -123,9 +132,18 @@ function return-windowclass
         case kdesudo
             set returnval (return-windowclass $argv[2..-1])
         case sudo
-            set returnval (return-windowclass $argv[2..-1])
+            # set returnval (return-windowclass $argv[2..-1])
+            set returnval (return-windowclass $xs[2..-1])
         case books
             set returnval Zathura
+        case mm
+            switch $xs[2]
+                case read
+                    set returnval Zathura
+                    set returnval 'Zathura|libprs500'
+                case watch
+                    set returnval mpv
+            end
         case ffs
             set returnval Firefox
         case "*"
@@ -133,21 +151,6 @@ function return-windowclass
     end
     echo $returnval
 end
-
-function focus-distinct
-    set current_class (winclass)
-    set current_id (mywin)
-    while true
-        im focus $argv
-        set next_class (winclass)
-        if not match $current_class $next_class
-            set new_id (mywin)
-            break
-        end
-    end
-    focus id $current_id
-    focus id $new_id
-end        
 
 function new-session
     kdmctl reserve
@@ -177,7 +180,7 @@ function unset-fullscreen
 end
 
 function is-fullscreen
-    xwininfo -id (mywin) -all | grep -i fullscreen > /dev/null
+    xwininfo -id (mywin) -all | grep Fullscreen > /dev/null
 end
 
 function get-primary-display

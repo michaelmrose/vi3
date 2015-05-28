@@ -11,18 +11,6 @@ function reload-config
     source /opt/vi3/fish/mime.fish
 end
 
-function scd
-    set numargs (count $argv)
-    switch $numargs
-        case "1"
-            cd $argv
-        case "2"
-            cd (echo (pwd) | sed "s/$argv[1]/$argv[2]/g")
-   end
-end
-
-alias c scd
-
 alias rl reload-config
 
 function ip3
@@ -204,29 +192,6 @@ function lclj
     idea
 end
 
-function pdfextract
-    pdftk A=$argv[1] cat A$argv[2]-$argv[3] output temp.pdf
-    mv temp.pdf $argv[1]
-end
-
-function pdfkillcover
-    pdfextract $argv[1] 2 end
-end
-
-function coverit
-   set url (xclip -o)
-   wget $url --output-document=cover
-   convert cover cover.pdf
-   rm cover
-   pdftk cover.pdf $argv cat output temp.pdf
-   mv temp.pdf $argv
-end
-
-function replace-cover
-    pdfkillcover $argv
-    coverit $argv
-end
-
 function winclass
     xprop -id (mywin) | grep WM_CLASS | cut -d '"' -f4 
 end
@@ -243,7 +208,7 @@ function ctof
     set temp $argv[1]
     set temp (math "$temp * 1.8 + 32")
     # echo $argv º celcius is $temp º fahrenheit
-    echo {$temp}º 
+    echo {$temp} ºF
 end
 
 function pdftoimages
@@ -331,10 +296,11 @@ function coursedl
 end
 
 function noteit
-    # qvim
-    # sleep 0.5
-    # xdotool key e space s n n
-    qvim /tmp/note-(seconds) -c "Simplenote -n"
+    set tmp /tmp/notes-(uid)
+    if exists $argv
+        println $argv > $tmp
+    end
+    qvim $tmp -c "Simplenote -n" -c "quit"
 end
 
 function vlcclip
@@ -478,8 +444,9 @@ end
 
 
 function write-file
-    set tmp /tmp/(seconds)
-    eval $argv > $tmp
+    set tmp /tmp/(uid)
+    set contents (eval $argv)
+    println $contents > $tmp
     echo $tmp
 end
     
@@ -537,21 +504,8 @@ function blist
     end
 end
 
-function badd
-    calibredb add $argv
-end
-
 function bsrch
     calibredb list -s $argv
-end
-
-function updatebookdb
-     sudo updatedb -o /home/michael/calibre/books.db -U /home/michael/calibre
-end
-
-function updateallbookdb
-    updatebookdb tech-select
-    updatebookdb fiction
 end
 
 function save-layout
@@ -797,10 +751,13 @@ function get-fname-of-file
         set sizeofname (math (sizeof $argv) - $sizeofext)
         echo $argv | cut -c1-$sizeofname
     else
-        while read -l line
-            get-ext $line
-        end
+        return 1
     end
+    # else
+    #     while read -l line
+    #         get-ext $line
+    #     end
+    # end
 end
     
 
@@ -829,7 +786,7 @@ function pinfo-choose
     end
 end
 
-function pinfo
+function pkginfo
     set pkgs (psearch $argv)
     for i in $pkgs 
         set info (pstatus (extract-package-name $i))
@@ -1060,6 +1017,12 @@ function fed
     end
 end
 
+function get-line-of-fn-definition
+    set fname $argv[1]
+    set file (defined-in $fname)
+    echo (ag "function $fname -d|function $fname\$" $file | cut -d ":" -f1)
+end
+
 function defined-in
     set fn "function $argv\$"
     set fn2 "function $argv -"
@@ -1072,7 +1035,7 @@ function defined-in
         set results $results (ag -f $al $i | cut -d ':' -f1)
     end
     
-    echo $results
+    echo $results[1]
     set -e results
 end
 
@@ -1092,6 +1055,23 @@ function open-book
             zathura "$argv"
         case "*"
             ebook-viewer "$argv"
+    end
+end
+
+function nmc -d "choose wireless connection"
+    set connections println (nmcli connection | condense_spaces)[2..-1] | grep wireless | cut -d " " -f1
+    set uuids println (nmcli connection | condense_spaces)[2..-1] | grep wireless | cut -d " " -f2
+    switch $argv[1]
+        case list
+            println $connections
+        case choose
+            set choice (rfi match $connections)
+            nmc to $choice up
+        case to
+            set command $argv[-1] 
+            set location $argv[2..-2]
+            set ndx (findindex $location $connections)
+            set uid $uuids[$ndx]
     end
 end
     
@@ -1116,20 +1096,32 @@ function vpn -d "run vpn list show down reset choose or to location [up,down]"
             vpn down
             vpn to $con up
         case choose
-            vpn to (println (vpn list) | dm menu "VPN Connections") up
+            # vpn to (println (vpn list) | dm menu "VPN Connections") up
+            set choice (rfi match (vpn list))
+            if exists $choice
+                vpn to $choice up
+            end
+
+        case toggle
+            if vpn exists
+                vpn down
+            else
+                vpn up
+            end
+        case exists
+            set result (vpn show)
+            if [ $result = "None" ]
+                return 1
+            else
+                return 0
+            end
         case "*"
             #vpn to $location $command
-            set location $argv[2]
+            set location $argv[2..-2]
             set -U vpn_location $location
-            set command $argv[3]
-
-            set fieldnumber 14
-            set result ""
-            while test (sizeof $result) -ne 36
-                set result (nmcli connection | grep vpn | grep -i "$location" | cut -d " " -f$fieldnumber)
-                set fieldnumber (math "$fieldnumber - 1")
-            end
-            sudo nmcli connection $command uuid $result
+            set command $argv[-1]
+            set uuid (nmcli connection | grep vpn | grep -i "$location" | condense_spaces | cut -d " " -f5)
+            sudo nmcli connection $command uuid $uuid
             signal-i3blocks vpn
     end
 
@@ -1260,7 +1252,8 @@ function choose-window
             set tabs (get-tabs)
             set options $tabs $windows
     end
-    set choice (println $options | dm menu "windows")
+    # set choice (println $options | dm menu "windows")
+    set choice (rfi match "windows" $options)
     if contains $choice $windows
         set ndx (findindex $choice $windows)
         focus id (hextodec $ids[$ndx])
@@ -1484,7 +1477,7 @@ function game-mode
             wp scale
             set -U game_mode on
         case "off"
-            compt
+            compton &
             switchconfig dual
             toggle-shift-keys
             wp scale
@@ -1499,11 +1492,13 @@ function game-mode
 end
 
 function switchconfig
+    set primary DVI-I-0
+    set secondary DVI-I-1
     switch $argv
         case "single"
-            xrandr --output DVI-I-0 --off --output HDMI-0 --auto
+            xrandr --output $primary --auto --output $secondary --off
         case "dual"
-            xrandr --output DVI-I-0 --auto --output HDMI-0 --auto --right-of DVI-I-0
+            xrandr --output $primary --auto --output $secondary --auto --left-of $primary
     end
 end
 
@@ -1739,11 +1734,11 @@ function addmemsize
     else
         set postfix "K"
     end
-    set acc (echo $acc | head -c 5)
-    if test $acc -gt 0
-        echo {$acc}{$postfix}
+    set acc (truncate-num $acc 2)
+    if match $acc "0.0 "
+        echo none
     else
-        echo not found
+        echo {$acc}{$postfix}
     end
 end
 
@@ -1813,9 +1808,8 @@ end
 
 function unlockme
     vi3_mode default
-    restore-workspaces
     im bar mode dock
-
+    restore-workspaces
 end
 
 function unlock-with-buffer
@@ -1957,6 +1951,15 @@ function balias --argument alias command
     complete -C\"$command \$cmd\";
     )"
 end
+function set-similar-completions --argument alias command
+    if expr match $command '^sudo '>/dev/null
+        set command (expr substr + $command 6 (expr length $command))
+    end
+    complete -c $alias -xa "(
+    set -l cmd (commandline -pc | sed -e 's/^ *\S\+ *//' );
+    complete -C\"$command \$cmd\";
+    )"
+end
 
 balias al balias
 
@@ -1981,7 +1984,20 @@ end
 
 function mem_info
     set mem_info (explode (echo (free -h)[2] | cut -c 6- | condense_spaces))
+    set total $mem_info[1]
+    set used $mem_info[2]
+    set free $mem_info[3]
+    set buffers $mem_info[5]
+    set cache $mem_info[6]
+    # set total_free (addmemsize $free)
     echo -e total: $mem_info[1] used: $mem_info[2] free: $mem_info[3] buffers: $mem_info[5] cache: $mem_info[6]
+end
+function free-memory
+    set mem_info (explode (echo (free -m)[2] | cut -d ":" -f2- | condense_spaces))
+    set free {$mem_info[3]}M
+    set buffers {$mem_info[5]}M
+    set cache {$mem_info[6]}M
+    addmemsize $free $buffers $cache
 end
 
 function sumof
@@ -1999,6 +2015,22 @@ function quote
         end
         if not endswith \" $argv
             set val $val\"
+        end
+        echo $val
+    else
+        while read -l line
+            quote $line
+        end
+    end
+end
+
+function singlequote
+    if exists $argv
+        if not startswith \' $argv
+            set val \'$argv
+        end
+        if not endswith \' $argv
+            set val $val\'
         end
         echo $val
     else
@@ -2237,6 +2269,22 @@ function open-remote
    openurl (echo (git remote -v | condense_spaces | cut -d " " -f2)[1]) 
 end
 
+function isafile
+    if exists $argv
+        if test -f $argv
+            echo $argv
+        end
+    end
+end
+
+function edit-var
+    set lst (println $$argv)
+    for i in (range (count $lst))
+        echo $lst[$i]
+        vared lst[$i]
+    end
+    set $argv $lst
+end
 alias rfm "urxvtc -e ranger"
 alias qs quickswitch.py
 alias pbr process-book-rar
