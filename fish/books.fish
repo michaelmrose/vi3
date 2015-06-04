@@ -1,4 +1,4 @@
-function books -d 'open books given either as a title or criteria query using dmenu to narrow down multiple results or recent-reads if no input given'
+function books -d 'open books given either as a title or criteria query using rofi to narrow down multiple results or recent-reads if no input given'
     if exists $argv
         if test (count $argv) -gt 1
             set tail $argv[2..-1]
@@ -110,9 +110,8 @@ function choose-format -d "for the given list of formats in preferential order r
     return 1
 end
         
-function select-book -d "use dmenu to select a book if more than one is possible"
+function select-book -d "use rofi to select a book if more than one is possible"
     if test (count $argv) -gt 1
-        # set val (println $argv | dm menu "select book")
         set val (rfi match "select book" $argv)
         if not exists $val
             return 1
@@ -134,8 +133,7 @@ function add-to-recent-reads -d "keep a list of the 10 most recent unique items 
     end
 end
 
-function show-recent-reads -d "use dmenu to pick one of the items from recent_reads and open it with sopen if it is a file or books if it is a title"
-    # set choice (println $recent_reads | dm menu "books")
+function show-recent-reads -d "use rofi to pick one of the items from recent_reads and open it with sopen if it is a file or books if it is a title"
     set choice (rfi match "choose a book" $recent_reads)
     if exists $choice
         if test -f $choice

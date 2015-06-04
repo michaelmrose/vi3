@@ -438,12 +438,21 @@ function new-open-app
         echo "no size chosen"
     else
         cat ~/.i3/sessions/template.json | sed "s/#size/$sizeof/g" | sed "s/#winclass/$winclass/g" > /tmp/template.json
+        cat /tmp/template.json
         im append_layout /tmp/template.json
         set -U numkeyed 0
     end
     er vi3op
     update-op-status
-    eval $target
+    #running urxvtc as root doesn't result in a root terminal OBVIOUSLY so need to run
+    #urxvt obviously this is a flakey special case for one app
+    if exists $sustatus
+        if [ $target = urxvtt ]
+            set target urxvt
+        end
+    end
+    eval $sustatus $target &
+    er sustatus
     sleep 0.5
 end
 

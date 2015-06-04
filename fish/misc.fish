@@ -906,8 +906,7 @@ end
 alias libprs500 calibre
 
 function system-menu
-    set options logout reboot shutdown "new session"
-    set choice (println $options | dm menu "system menu")
+    set choice (rfi match "logout" "reboot" "shutdown" "new session")
     if exists $choice
         switch $choice
             case "logout"
@@ -1096,7 +1095,6 @@ function vpn -d "run vpn list show down reset choose or to location [up,down]"
             vpn down
             vpn to $con up
         case choose
-            # vpn to (println (vpn list) | dm menu "VPN Connections") up
             set choice (rfi match (vpn list))
             if exists $choice
                 vpn to $choice up
@@ -1252,7 +1250,6 @@ function choose-window
             set tabs (get-tabs)
             set options $tabs $windows
     end
-    # set choice (println $options | dm menu "windows")
     set choice (rfi match "windows" $options)
     if contains $choice $windows
         set ndx (findindex $choice $windows)
@@ -1311,7 +1308,7 @@ function smartnav
 end
 
 function choose-session
-    restoreme (list-sessions | dm menu "choose session")
+    restoreme (rfi match "choose a session" (list-sessions))
 end
 
 function list-sessions
@@ -1573,9 +1570,7 @@ function watch-video
     end
 
     if test (count $files) -gt 1
-        # set files (apply "cutlast '/'" files)
-        # set files (apply "extract-filename" files)
-        set files (println $files | dm menu "pick a movie")
+        set files (rfi match "pick a movie" $files)
     end
     open $files
     cd $pth
@@ -1902,6 +1897,8 @@ function return-program-name
             echo $words[2..-1]
         case libprs500
             echo calibre
+        case urxvtt
+            echo urxvtc
         case "*"
             echo $words
     end
@@ -2122,7 +2119,7 @@ end
 
 function choose-tab
     set tabs (get-tabs)
-    set choice (println $tabs | dm menu "pick a tab")
+    set choice (rfi match "pick a tab" $tabs)
     set ndx (findindex $choice $tabs)
     focus class firefox
     xdotool key colon b space $ndx Return

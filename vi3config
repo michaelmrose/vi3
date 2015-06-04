@@ -165,6 +165,7 @@ mode "command" {
         bindsym u exec "ff focus urgent"
         bindsym Shift+f $op vi3_fetch-window
         bindsym o $op new-open-app             
+        bindsym Shift+s exec "ff sustatus"
         bindsym r $mode resize           
         bindsym d $mode kill
         bindsym m $op mws 
