@@ -51,6 +51,11 @@ function query-calibre -d "usage: query-calibre [exact,contains] criteria query 
     eval $com
 end
 
+function book-exists
+    set result (query-calibre exact title $argv | jq .[].title)
+    positive (count $result)
+end
+
 function query-calibre-title -d "returns list of titles, exact if present or list containing chosen phrase"
     set result (query-calibre contains $argv | jq .[].title)
     set exact (println $result | grep -i "$argv[2..-1]")
@@ -208,15 +213,6 @@ function badd -d "add one or more books wherein the book consists of a file or a
     end
 end
 
-function justdie
-    if test $status -eq 1
-        return 1
-    else
-        return 0
-    end
-    msg "status is $status"
-end
-
 function sopen
     if exists $argv
         if test -f $argv
@@ -225,4 +221,25 @@ function sopen
     else
         return 1
     end
+end
+
+function open-book
+    set fullpath (pwd)/$argv
+    set ext (cutlast "." $argv)
+    set library $HOME/calibre
+    if substr $fullpath $library #if path is in $library
+        set title (query-calibre-title title (extract-title $fullpath))
+        add-to-recent-reads $title
+    end
+    
+    switch $ext
+        case "pdf"
+            zathura "$argv"
+        case "*"
+            ebook-viewer "$argv"
+    end
+end
+
+function extract-title
+    cutlast "/" "$argv" | cut -d "-" -f1 | trim | sed 's/_/:/g'
 end

@@ -162,7 +162,7 @@ mode "command" {
         
         bindsym f $op focus-app
         #bindsym u [urgent=latest] focus, $exit
-        bindsym u exec "ff focus urgent"
+        bindsym u exec "ff focus urgent", $exit
         bindsym Shift+f $op vi3_fetch-window
         bindsym o $op new-open-app             
         bindsym Shift+s exec "ff sustatus"

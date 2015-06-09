@@ -1,15 +1,6 @@
 set query blah
 set filenames blah
 
-function reload-config
-    source ~/.config/fish/config.fish
-    source /opt/vi3/fish/utilities.fish
-    source /opt/vi3/fish/vi3.fish
-    source /opt/vi3/fish/books.fish
-    source /opt/vi3/fish/general.fish
-    source /opt/vi3/fish/audio.fish
-    source /opt/vi3/fish/mime.fish
-end
 
 alias rl reload-config
 
@@ -442,6 +433,9 @@ function pman2 --argument-names app --description 'opens pdf version of man page
     open $pdf
 end
 
+function vman
+    man $argv | col -b | qvim -R -c 'set ft=man nolist' -c 'colorscheme distinguished' -c 'set number! relativenumber!' -c 'set guifont=Source\ Code\ Pro\ for\ Powerline\ 13' -
+end
 
 function write-file
     set tmp /tmp/(uid)
@@ -453,7 +447,18 @@ end
 
 
 function display-manual
-    pman (tolower (return-program-name (winclass)))
+    if exists $argv
+        switch $argv[1]
+            case -v
+                set com vman
+            case -p
+                set com pman2
+        end
+   else
+       set com pman2 
+   end
+    eval $com (tolower (return-program-name (winclass)))
+    # pman2 (tolower (return-program-name (winclass)))
 end
 
 function why
@@ -1042,21 +1047,6 @@ function defined
     type $argv > /dev/null
 end
 
-function open-book
-    set fullpath (pwd)/$argv
-    set ext (cutlast "." $argv)
-    if substr $HOME/calibre $fullpath
-        add-to-recent-reads (echo $argv | extract-title | cut -d '-' -f1 | trim)
-    end
-    
-    switch $ext
-        case "pdf"
-            zathura "$argv"
-        case "*"
-            ebook-viewer "$argv"
-    end
-end
-
 function nmc -d "choose wireless connection"
     set connections println (nmcli connection | condense_spaces)[2..-1] | grep wireless | cut -d " " -f1
     set uuids println (nmcli connection | condense_spaces)[2..-1] | grep wireless | cut -d " " -f2
@@ -1351,12 +1341,6 @@ end
 
 function choose-volume
     setvol (dm choice "set volume")
-end
-
-function openurl
-    focus class $BROWSER
-    set com $BROWSER \'$argv\'
-    eval $com
 end
 
 function typeforme
@@ -2238,10 +2222,6 @@ end
 
 function many
     test $argv -gt 1
-end
-
-function vman
-    man $argv | col -b | qvim -R -c 'set ft=man nolist' -c 'colorscheme distinguished' -c 'set number! relativenumber!' -c 'set guifont=Source\ Code\ Pro\ for\ Powerline\ 13' -
 end
 
 function not-in-package
