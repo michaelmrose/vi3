@@ -1,5 +1,9 @@
 function books -d 'open books given either as a title or criteria query using rofi to narrow down multiple results or recent-reads if no input given'
     if exists $argv
+        if test -f "$argv"
+            open-book "$argv"
+            return 0
+        end
         if test (count $argv) -gt 1
             set tail $argv[2..-1]
         end
@@ -26,7 +30,8 @@ function books -d 'open books given either as a title or criteria query using ro
             case -e
                 books --erase
             case --query
-                open (choose-format (get-fname-of-book (add-to-recent-reads (select-book (query-calibre-title (return-query $tail))))))
+                # open (choose-format (get-fname-of-book (add-to-recent-reads (select-book (query-calibre-title (return-query $tail))))))
+                open (choose-format (get-fname-of-book (select-book (query-calibre-title (return-query $tail)))))
             case -q
                 books --query $tail
             case "*"
@@ -117,7 +122,7 @@ end
         
 function select-book -d "use rofi to select a book if more than one is possible"
     if test (count $argv) -gt 1
-        set val (rfi match "select book" $argv)
+        set val (rfi match "select book: " $argv)
         if not exists $val
             return 1
         end
@@ -131,7 +136,9 @@ end
 
 function add-to-recent-reads -d "keep a list of the 10 most recent unique items opened via this script"
     if exists $argv
-        set -U recent_reads (take 10 (unique (println $argv $recent_reads)))
+        set title (echo $argv | sed "s/'/\'/g")
+        echo title is $title
+        set -U recent_reads (take 10 (unique (println "$title" $recent_reads)))
         echo $argv
     else
         return 1
@@ -229,7 +236,7 @@ function open-book
     set library $HOME/calibre
     if substr $fullpath $library #if path is in $library
         set title (query-calibre-title title (extract-title $fullpath))
-        add-to-recent-reads $title
+        add-to-recent-reads "$title"
     end
     
     switch $ext
@@ -242,4 +249,8 @@ end
 
 function extract-title
     cutlast "/" "$argv" | cut -d "-" -f1 | trim | sed 's/_/:/g'
+end
+
+function escape-chars
+    echo "$argv" | sed "s/'/\'/g"
 end
