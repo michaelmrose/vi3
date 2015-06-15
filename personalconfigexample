@@ -29,6 +29,7 @@ for_window [class="i3bar"] exec "ff set-trans"
 for_window [class="Clementine"] exec "ff set-trans"
 for_window [class="Dolphin"] exec "ff set-trans"
 for_window [class="libprs500" title="E-book viewer$"] exec "ff unset-fullscreen"
+for_window [title="sxiv$"] exec "ff zoomsxiv"
 mouse_warping none
 # vim:filetype=i3
 

@@ -80,7 +80,8 @@
         bindsym mod1+h $op vi3_height
         bindsym mod1+w $op vi3_width
         bindsym $mod+f fullscreen
-        bindsym $mod+b $mode brightness
+        # bindsym $mod+b $mode brightness
+        bindsym $mod+b exec "ff randombg"
         bindsym mod1+b exec "ff books"
         bindsym mod1+v exec "ff choose-video"
         #bindsym $mod+w exec "ff show-winclass"

@@ -136,10 +136,8 @@ end
 
 function add-to-recent-reads -d "keep a list of the 10 most recent unique items opened via this script"
     if exists $argv
-        set title (echo $argv | sed "s/'/\'/g")
-        echo title is $title
+        set title $argv
         set -U recent_reads (take 10 (unique (println "$title" $recent_reads)))
-        echo $argv
     else
         return 1
     end
@@ -235,7 +233,7 @@ function open-book
     set ext (cutlast "." $argv)
     set library $HOME/calibre
     if substr $fullpath $library #if path is in $library
-        set title (query-calibre-title title (extract-title $fullpath))
+        set title (query-calibre-title title (escape-chars (extract-title $fullpath)))
         add-to-recent-reads "$title"
     end
     
@@ -252,5 +250,5 @@ function extract-title
 end
 
 function escape-chars
-    echo "$argv" | sed "s/'/\'/g"
+    echo "$argv" | sed "s/'/\\\'/g"
 end

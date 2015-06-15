@@ -88,6 +88,8 @@ function output-status-line
             set symbol 
         case speakers
             set symbol 
+        case "*"
+            set symbol 
     end
     echo $symbol (getvolume)
 end
