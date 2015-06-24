@@ -1,51 +1,7 @@
-set wallpaperroot /mnt/ext/Images/backgrounds
-set naughtypics /mnt/ext/Images/xrated
-
-function pick-list-from-wh
-    #set default values
-    set cookies ~/.cjar.txt
-    set purity 100
-    set sort relevance
-    set q $argv[1]
-    set n 1
-    set wallhavengallery /tmp/wallhavengallery
-
-    rm /tmp/wallhavengallery/* #get rid of the files from last run
-
-    for i in (getvariables $argv)
-        set val (explode $i)
-        set $val[1] $val[2]
-    end
-
-    set img /tmp/wallhaven.jpg
-    set url "http://alpha.wallhaven.cc/search?q=$q&categories=111&purity=$purity&resolutions=1440x900,1600x900,1600x1200,1680x1050,1920x1080,1920x1200,2560x1440,2560x1600,3840x1080,5760x1080,3840x2160&sorting=$sort&order=desc"
-    set numbers (curl -b $cookies $url | pup 'a[class=preview]' | grep href | head -$n | cut -d '"' -f4 | rev | cut -d "/" -f1 | rev)
-    mkdir $wallhavengallery #in case it doesn't exist tmp may be in ram after all
-    for i in (seq (count $numbers))
-        set targetimage http://wallpapers.wallhaven.cc/wallpapers/full/wallhaven-$numbers[$i].jpg
-        curl -b $cookies $targetimage > $wallhavengallery/$i.jpg &
-    end
-    while pgrep curl > /dev/null
-        sleep 0.25
-    end
-    if test $n -eq 1
-        wp $wallhavengallery/1.jpg
-    else
-        pics $wallhavengallery
-    end
-end
-
-function save-wp
-    file-bg $bgimage $argv
-end
-
-function stdincurl
-    while read -l line
-        curl $line
-    end
-end
-
 function wp
+    set wallpaperroot /mnt/ext/Images/backgrounds
+    set naughtypics /mnt/ext/Images/xrated
+
     if not exists $argv
         wp any
         return 0
@@ -99,16 +55,14 @@ function wp
             end
     end
 
+
     if not exists $backgrounddir
         set backgrounddir $wallpaperroot/$argv
     end
-    echo bd is $backgrounddir
-    echo wpr is $wallpaperroot 
 
     if not exists $img
         set img (findall $backgrounddir jpg jpeg bmp png | shuf | head -1)
     end
-    echo img is $img
     if not exists $style
         set ratio (get-image-aspect-ratio-type $img)
         if not exists $ratio
@@ -131,6 +85,51 @@ function wp
     set -U bgimage $img
     feh --bg-$style $img
 end
+
+function pick-list-from-wh
+    #set default values
+    set cookies ~/.cjar.txt
+    set purity 100
+    set sort relevance
+    set q $argv[1]
+    set n 1
+    set wallhavengallery /tmp/wallhavengallery
+
+    rm /tmp/wallhavengallery/* #get rid of the files from last run
+
+    for i in (getvariables $argv)
+        set val (explode $i)
+        set $val[1] $val[2]
+    end
+
+    set img /tmp/wallhaven.jpg
+    set url "http://alpha.wallhaven.cc/search?q=$q&categories=111&purity=$purity&resolutions=1440x900,1600x900,1600x1200,1680x1050,1920x1080,1920x1200,2560x1440,2560x1600,3840x1080,5760x1080,3840x2160&sorting=$sort&order=desc"
+    set numbers (curl -b $cookies $url | pup 'a[class=preview]' | grep href | head -$n | cut -d '"' -f4 | rev | cut -d "/" -f1 | rev)
+    mkdir $wallhavengallery #in case it doesn't exist tmp may be in ram after all
+    for i in (seq (count $numbers))
+        set targetimage http://wallpapers.wallhaven.cc/wallpapers/full/wallhaven-$numbers[$i].jpg
+        curl -b $cookies $targetimage > $wallhavengallery/$i.jpg &
+    end
+    while pgrep curl > /dev/null
+        sleep 0.25
+    end
+    if test $n -eq 1
+        wp $wallhavengallery/1.jpg
+    else
+        pics $wallhavengallery
+    end
+end
+
+function save-wp
+    file-bg $bgimage $argv
+end
+
+function stdincurl
+    while read -l line
+        curl $line
+    end
+end
+
 
 function get-resolution
     identify $argv | sed "s#$argv##g" | trim | cut -d " " -f2
