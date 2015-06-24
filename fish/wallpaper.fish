@@ -58,7 +58,7 @@ function wp
     #if the first argument is a valid file set that 
 
     switch $argv[1]
-        case pick
+        case view
             pics $argv[2]
             return 0
         case url
@@ -102,9 +102,13 @@ function wp
     if not exists $backgrounddir
         set backgrounddir $wallpaperroot/$argv
     end
+    echo bd is $backgrounddir
+    echo wpr is $wallpaperroot 
+
     if not exists $img
         set img (findall $backgrounddir jpg jpeg bmp png | shuf | head -1)
     end
+    echo img is $img
     if not exists $style
         set ratio (get-image-aspect-ratio-type $img)
         if not exists $ratio
@@ -123,8 +127,6 @@ function wp
                 set style max
         end
     end
-    # echo b is $backgrounddir
-    # echo i is $img
     set -U bgstyle (cutlastn "/" 2 $img)
     set -U bgimage $img
     feh --bg-$style $img
