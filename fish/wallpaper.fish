@@ -78,12 +78,17 @@ function wp
                 set style scale
             case "superwide"
                 convert -crop 50%x100% +repage $img /tmp/pano.jpg
+                set originalimage $img
                 set img /tmp/pano-1.jpg /tmp/pano-0.jpg 
                 set style max
         end
     end
     set -U bgstyle (cutlastn "/" 2 $img)
-    set -U bgimage $img
+    if exists $originalimage
+        set -U bgimage $originalimage
+    else
+        set -U bgimage $img
+    end
     feh --bg-$style $img
 end
 
