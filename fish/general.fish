@@ -334,28 +334,6 @@ function switchonval
     end
 end
 
-function file-bg
-    set file $argv[1]
-    set name $argv[2]
-    set ext (get-ext $file)
-    set location /mnt/ext/Images/backgrounds/$name.$ext
-    if test -f $location
-        echo it already exists
-    else
-        mv $file $location
-    end
-end
-
-function file-bg-url
-    set url (xclip -o)
-    set name $argv[1]
-    set ext (get-ext $url)
-    set tmp background-url.$ext
-    curl $url > /tmp/$tmp
-    cd /tmp
-    file-bg $tmp $name
-    wp /mnt/ext/Images/backgrounds/$name.$ext
-end
 
 function randomroll
     switch $argv[1]
