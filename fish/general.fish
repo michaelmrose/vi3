@@ -393,3 +393,8 @@ end
 function isinteger
     echo $argv | grep -E '^[0-9]+$' > /dev/null
 end
+
+function waituntilfocused
+    while not [ (winclass) = $argv ]
+    end
+end
