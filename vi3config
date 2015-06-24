@@ -81,7 +81,7 @@
         bindsym mod1+w $op vi3_width
         bindsym $mod+f fullscreen
         # bindsym $mod+b $mode brightness
-        bindsym $mod+b exec "ff randombg"
+        bindsym $mod+b exec "ff wp"
         bindsym mod1+b exec "ff books"
         bindsym mod1+v exec "ff choose-video"
         #bindsym $mod+w exec "ff show-winclass"
@@ -425,6 +425,8 @@ mode locked {
         bindsym s exec        " ff media-ctl output speakers   "
         bindsym p exec        " ff media-ctl output headphones "
         bindsym m exec        " ff media-ctl vol 0             "
+        bindsym b exec        " ff wp next                     "
+        bindsym r exec        " ff wp                          "
         bindsym Shift+m exec  " ff media-ctl vol 100           "
         bindsym Shift+n exec  " ff new-session"
         bindsym Shift+e exec  " sudo shutdown -h now"

@@ -11,7 +11,7 @@ end
 
     
 
-function wp -d 'usage: [max,scale,tile] path-to-image or path-to-image or [max,scale,tile]'
+function wp0 -d 'usage: [max,scale,tile] path-to-image or path-to-image or [max,scale,tile]'
     set dest ~/.bgimage/img.png
     switch (count $argv)
         case "2"
@@ -28,17 +28,21 @@ function wp -d 'usage: [max,scale,tile] path-to-image or path-to-image or [max,s
                     set style max
                 case "scale"
                     set style scale
+                case "center"
+                    set style center
+                case "fill"
+                    set style fill
                 case "tile"
                     set style tile
                 case "*"
-                    set style scale
+                    set style max
                     set image (pathof $argv[1])
            end
     end
     feh --bg-$style $image
     if not match $image $bgpath
         echo converting...
-        convert $image -resize 1920x1080\! $dest
+        convert $image -resize 1920x1080\! $dest &
     end
     set -U bgpath $image
 end

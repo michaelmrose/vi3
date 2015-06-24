@@ -109,7 +109,17 @@ function endofpath
 end
 
 function cutlast
-    echo $argv[2..-1] | rev | cut -d $argv[1] -f1 | rev
+    set sep $argv[1]
+    set lst $argv[2..-1]
+    echo $lst | rev | cut -d "$sep" -f1 | rev
+end
+
+function cutlastn
+    set sep $argv[1]
+    set num $argv[2]
+    set lst $argv[3..-1]
+
+    echo $lst | rev | cut -d "$sep" -f$num | rev
 end
 
 
