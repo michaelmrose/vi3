@@ -122,7 +122,10 @@ function pick-list-from-wh
 end
 
 function save-wp
-    file-bg $bgimage $argv
+    if file-bg $bgimage $argv
+        set ext (get-ext $bgimage)
+        set -U bgimage $wallpaperroot/$argv.$ext
+    end
 end
 
 function stdincurl
@@ -199,6 +202,7 @@ function file-bg
     set location /mnt/ext/Images/backgrounds/$name.$ext
     if test -f $location
         echo it already exists
+        return 1
     else
         mv $file $location
     end
