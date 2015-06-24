@@ -1,3 +1,6 @@
+set wallpaperroot /mnt/ext/Images/backgrounds
+set naughtypics /mnt/ext/Images/xrated
+
 function pick-list-from-wh
     #set default values
     set cookies ~/.cjar.txt
@@ -76,9 +79,9 @@ function wp
             save-wp $argv[2]
             return 0
         case xrated
-            set backgrounddir /mnt/ext/Images/xrated
+            set backgrounddir $naughtypics
         case any
-            set backgrounddir /mnt/ext/Images/backgrounds
+            set backgrounddir $wallpaperroot
         case next
             wp $bgstyle
             return 0
@@ -92,12 +95,12 @@ function wp
                 set img $argv[1]
                 set style $argv[2]
             else
-                set backgrounddir /mnt/ext/Images/backgrounds/$argv
+                set backgrounddir $wallpaperroot/$argv
             end
     end
 
     if not exists $backgrounddir
-        set backgrounddir /mnt/ext/Images/backgrounds/$argv
+        set backgrounddir $wallpaperroot/$argv
     end
     if not exists $img
         set img (findall $backgrounddir jpg jpeg bmp png | shuf | head -1)
