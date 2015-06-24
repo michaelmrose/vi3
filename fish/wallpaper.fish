@@ -147,3 +147,45 @@ function get-image-aspect-ratio-type
     set integer (truncate-num (wcalc -q "$ratio * 100"))
     switchonval $integer 1-125 narrow 126-249 wide 250-900 superwide
 end
+
+function image-date
+    identify -verbose 00046.jpg | grep DateTimeOriginal | cut -d ":" -f3- | trim
+end
+
+function getvariables
+    if not substr "$argv" =
+        return 1
+    else
+        set vars (println $argv | grep =)
+        for i in $vars
+            echo (echo $i | cut -d "=" -f1) (echo $i | cut -d "=" -f2)
+        end
+
+    end
+end
+function gimpfromstdin
+    while read -l line
+        gimp $line
+    end
+end
+
+
+function zoomsxiv
+    set title (xprop -id (mywin) | grep NET_WM_NAME | cut -d "=" -f2- | trim | cut -d '"' -f2)
+    if [ $title = sxiv ]
+        xdotool key --delay 5 plus plus plus
+    end
+end
+
+function pics
+    if exists $argv
+        if test -d $argv
+            set target $argv
+        else
+            set target /mnt/ext/Images/backgrounds/$argv
+        end
+    else
+        set target (pwd)
+    end
+    sxiv -tbfor $target &
+end

@@ -241,3 +241,155 @@ end
 function lastchar
     echo $argv | cut -c(sizeof $argv)
 end
+
+function hours
+    date '+%H'
+end
+
+function within
+    set num (truncate-num $argv[2])
+    set min (echo $argv[1] | cut -d "-" -f1)
+    set max (echo $argv[1] | cut -d "-" -f2)
+    test $num -ge $min -a $num -le $max
+end
+
+function truncate-num
+    switch (count $argv)
+        case 1
+            echo $argv | cut -d "." -f1
+        case "*"
+            set places $argv[-1]
+            set wholenumber (echo $argv[1..-2] | cut -d "." -f1)
+            set dec (echo $argv | cut -d "." -f2- | cut -c1-$places)
+            echo {$wholenumber}.{$dec}
+   end
+end
+
+function is-even
+    test (modulo $argv 2) -eq 0
+end
+
+function is-odd
+    test (modulo $argv 2) -ne 0
+end
+
+function modulo
+    math "$argv[1] % $argv[2]"
+end
+
+function odds
+    for i in (range (count $argv))
+        if is-odd $i
+            set acc $acc $argv[$i]
+        end
+    end
+    println $acc
+end
+
+function evens
+    for i in (range (count $argv))
+        if is-even $i
+            set acc $acc $argv[$i]
+        end
+    end
+    println $acc
+end
+
+function uid
+    uuidgen
+end
+
+function greaterof
+    if test $argv[1] -gt $argv[2]
+        echo $argv[1]
+    else
+        echo $argv[2]
+    end
+end
+
+function take
+    set lst $argv[2..-1]
+    for i in (range (lesserof $argv[1] (count $lst)))
+        echo $lst[$i]
+    end
+end
+
+function lesserof
+    if test $argv[1] -lt $argv[2]
+        echo $argv[1]
+    else
+        echo $argv[2]
+    end
+end
+
+function switchonval
+    set val $argv[1]
+    set tail $argv[2..-1]
+    set ranges (odds $tail)
+    set results (evens $tail)
+    for i in (seq (count $ranges))
+        if within $ranges[$i] $val
+            echo $results[$i]
+        end
+    end
+end
+
+function file-bg
+    set file $argv[1]
+    set name $argv[2]
+    set ext (get-ext $file)
+    set location /mnt/ext/Images/backgrounds/$name.$ext
+    if test -f $location
+        echo it already exists
+    else
+        mv $file $location
+    end
+end
+
+function file-bg-url
+    set url (xclip -o)
+    set name $argv[1]
+    set ext (get-ext $url)
+    set tmp background-url.$ext
+    curl $url > /tmp/$tmp
+    cd /tmp
+    file-bg $tmp $name
+    wp /mnt/ext/Images/backgrounds/$name.$ext
+end
+
+function randomroll
+    switch $argv[1]
+        case binary
+            rand -M 2
+        case select
+            set lst $argv[2..-1]
+            set num (randomroll (count $lst))
+            echo $lst[$num]
+        case fromzero
+            set num (randomroll $argv[2])
+            math $num - 1
+        case "*"
+            set num $lastroll
+            while test $num -eq $lastroll
+                set num (rand -M $argv)
+                set $num (math $num + 1)
+            end
+            math $num + 1
+            set -U lastroll $num
+    end
+
+end
+
+function test-recursion
+    if exists $argv
+        set depth (math $argv + 1)
+    else
+        set depth 1
+    end
+    echo depth is $depth
+    recursive $depth
+end
+
+function isinteger
+    echo $argv | grep -E '^[0-9]+$' > /dev/null
+end
