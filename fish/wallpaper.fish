@@ -210,6 +210,7 @@ function pick-list-from-wh
     set sort relevance
     set q $argv[1]
     set n 1
+    set resolutions 1440x900,1600x900,1600x1200,1680x1050,1920x1080,1920x1200,2560x1440,2560x1600,3840x1080,5760x1080,3840x2160
     set wallhavengallery /tmp/wallhavengallery
 
     rm /tmp/wallhavengallery/* #get rid of the files from last run
@@ -219,13 +220,17 @@ function pick-list-from-wh
         set $val[1] $val[2]
     end
 
+    if test -f $cookies
+        set curloptions -b
+    end
+
     set img /tmp/wallhaven.jpg
-    set url "http://alpha.wallhaven.cc/search?q=$q&categories=111&purity=$purity&resolutions=1440x900,1600x900,1600x1200,1680x1050,1920x1080,1920x1200,2560x1440,2560x1600,3840x1080,5760x1080,3840x2160&sorting=$sort&order=desc"
-    set numbers (curl -b $cookies $url | pup 'a[class=preview]' | grep href | head -$n | cut -d '"' -f4 | rev | cut -d "/" -f1 | rev)
+    set url "http://alpha.wallhaven.cc/search?q=$q&categories=111&purity=$purity&resolutions=$resolutions&sorting=$sort&order=desc"
+    set numbers (curl $curloptions $cookies $url | pup 'a[class=preview]' | grep href | head -$n | cut -d '"' -f4 | rev | cut -d "/" -f1 | rev)
     mkdir $wallhavengallery #in case it doesn't exist tmp may be in ram after all
     for i in (seq (count $numbers))
         set targetimage http://wallpapers.wallhaven.cc/wallpapers/full/wallhaven-$numbers[$i].jpg
-        curl -b $cookies $targetimage > $wallhavengallery/$i.jpg &
+        curl $curloptions $cookies $targetimage > $wallhavengallery/$i.jpg &
     end
     while pgrep curl > /dev/null
         sleep 0.25
