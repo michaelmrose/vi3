@@ -50,6 +50,7 @@
 # - viewing files uses sxiv a great minimal image viewer
 # - wp url uses xclip
 # - wp edit requires gimp
+# - viewing images is handled with sxiv, I heartily recommend building it from source and changing tns->zl = 0 to 3 in thumbs.c so that the default isn't microscopic
 # - its also presently only smart enough to split it in 2 horizontally in a fixed order, this will be fixed later, at present
 #   you can simply edit the section under case "superwide" to correct the order
 
