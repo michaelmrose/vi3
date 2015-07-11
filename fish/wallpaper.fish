@@ -1,3 +1,58 @@
+# wallpaper.fish by michael rose a nicer alternative to using feh hsetroot or such manually
+# Usage to follow
+# - wp $imagefile sets your wallpaper like feh (in fact it uses feh) with the added benefit that it will automatically determine what sort of scaling to use with the following rules
+#   - narrow images use max so that they aren't oddly streched
+#   - wide images are scaled to file the whole screen
+#   - superwide images are split via imagemagick and corresponding images are displayed with max
+#   - to manually set the style simply use wp $imagefile format=value wherein possible values include center fill max scale tile
+# - wp style value will pick a random background from a subfolder of $wallpaperroot wherein the subfolder is named value and any number of levels under wallpaperroot and all files under it
+# - wp view value will view all the pictures in the forementioned subfolder and any under it
+# - wp edit will edit current background in gimp
+# - wp url will get the url from the clipboard with xclip -o file it to the value passed in and set it as the bg
+#   -I use this combined with a pentadacyl binding to bind <leader>b to prompt for a value then run this function with that value
+# - wp get gets backgrounds from wallhaven 
+#   - feel free to pass the following values in the format setting=value
+#     - purity=nnn wherein each n can be either 0 or 1, first is safe for work, second is naughty, third is porn eg 100 is safe 001 is all porn all the time
+#     - sort=relevance,random,date default relevance
+#     - q your search query
+#     - n number of results default is 1
+#     - resolutions the resolutions you want the default is fairly inclusive
+#     - if you ask for 1 it is set as your background otherwise you are shown all in a gallery
+#   - if you want to enable interesting options in sxiv you can look at https://gist.github.com/michaelmrose/8c052ba76ad524ba2605
+#     this lets you for example press <C-x><C-w> to set the current selected image as your wallpaper among other things
+# - wp remove deletes the current background file
+# - wp any chooses any of your backgrounds at random
+# - wp rename self explanetory
+# - wp save category/name saves the current background to category/name useful if you set your wp to something like a url you downloaded
+# - wp next will either choose another random image in the same style or go to the next in the current slideshow more on that
+# - file-bg image style/name will move the image to whatever subdir style is named name
+# - slideshow category will set all files in category to $backgroundslist wont start it if stopped but will if paused
+# - slideshow show will use sxiv to show the current contents of $backgroundslist
+# - slideshow add remove and clear are obvious but will be a lot nicer if you use custom actions in sxiv as you can simply
+#   enter slideshow show mark a bunch and press a key to remove them or wp view category and add the ones you would like
+# - slideshow next and prev are self explanetory note wraps around
+# - slideshow shuffle shuffles the list
+# - slideshow start stop pause continue work as expected
+#   - you can pass values to slideshow start as follows
+#     - ndx index to start on
+#     - interval minutes seconds hours default is minutes
+#     - time number of intervals to go between changing backgrounds default is 30
+#
+# in order for this to actually work consider the following
+# - you may need functions from the rest of the repo particularly general.fish
+# - you should set wallpaperroot and naughtypics to values that make sense for you
+# - your backgrounds should all preferably be in wallpaperroot arranged in any number of unique subfolders
+# - if you want to get pics from wallhaven 
+#   - make sure you have pup installed to process html
+#   - https://github.com/ericchiang/pup
+#   - if you want to be able to and want to be able to see naughty pics create an acct and export your cookies to ~/.cjar.txt or whatever
+# - spliting a super wide wallpaper between monitors requires imagemagick
+# - viewing files uses sxiv a great minimal image viewer
+# - wp url uses xclip
+# - wp edit requires gimp
+# - its also presently only smart enough to split it in 2 horizontally in a fixed order, this will be fixed later, at present
+#   you can simply edit the section under case "superwide" to correct the order
+
 set -U wallpaperroot /mnt/ext/Images/backgrounds
 set -U naughtypics /mnt/ext/Images/xrated
 
@@ -9,6 +64,7 @@ function wp
     end
     
     set laststyle $bgstyle
+    set lastimage $bgimage
     set -e bgstyle
     set -e bgimage
 
@@ -17,8 +73,8 @@ function wp
             pics $argv[2]
             return 0
         case edit
-            gimp $bgimage
-            wp $bgimage
+            gimp $lastimage
+            wp $lastimage
             return 0
         case url
             file-bg-url $argv[2..-1]
@@ -163,8 +219,6 @@ function slideshow
             case pick
                 set currentbackgroundindex (findindex $argv[2] $backgroundslist)
                 wp $backgroundslist[$currentbackgroundindex]
-            case test
-                echo $hi
             case start
                 if exists $backgroundslist
                     set -U currentbackgroundindex $ndx
