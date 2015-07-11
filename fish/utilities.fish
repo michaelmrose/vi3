@@ -135,6 +135,8 @@ function return-windowclass
             set returnval mpv
         case kdesudo
             set returnval (return-windowclass $argv[2..-1])
+        case lilyterm
+            set returnval LilyTerm
         case sudo
             # set returnval (return-windowclass $argv[2..-1])
             set returnval (return-windowclass $xs[2..-1])

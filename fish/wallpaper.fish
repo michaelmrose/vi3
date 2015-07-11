@@ -3,25 +3,33 @@ set -U naughtypics /mnt/ext/Images/xrated
 
 function wp
 
-    if not exists $argv
-        wp any
-        return 0
-    else if test -f $argv[1]
-        wp img $argv
-        return 0
+    for i in (getvariables $argv)
+        set val (explode $i)
+        set $val[1] $val[2]
     end
-
-    #if no arguments choose a random background from all folders
-    #if the first argument is a valid file set that 
+    
+    set laststyle $bgstyle
+    set -e bgstyle
+    set -e bgimage
 
     switch $argv[1]
         case view
             pics $argv[2]
             return 0
+        case edit
+            gimp $bgimage
+            wp $bgimage
+            return 0
         case url
             file-bg-url $argv[2..-1]
             return 0
-        case net
+        case slideshow
+            slideshow $argv[2..-1]
+            return 0
+        case ss
+            slideshow $argv[2..-1]
+            return 0
+        case get
             switch $argv[2]
                 case random
                     pick-list-from-wh $argv[3] sort=random
@@ -35,36 +43,50 @@ function wp
         case save
             save-wp $argv[2]
             return 0
+        case remove
+            rm $bgimage
+            return 0
         case xrated
             set backgrounddir $naughtypics
+            set img (findall $backgrounddir jpg jpeg bmp png | shuf | head -1)
+            set -U bgstyle xrated
         case any
             set backgrounddir $wallpaperroot
         case next
-            wp $bgstyle
+            if match $slideshowstatus play
+                wp slideshow next
+            else
+                wp style $laststyle
+            end
+            return 0
+        case rename
+            set ext (get-ext $bgimage)
+            set newname $argv[2]
+            set path (cutlastn / 2- $bgimage)/$newname.$ext
+            mv $bgimage $path
+            wp $path
             return 0
         case img
-            set img $argv[2]
-            if test (count $argv) -eq 3
-                set style $argv[3]
-            end
+            set -U bgstyle (cutlastn "/" 2 $argv[2])
+            set -U bgimage $argv[2]
+            wp $argv[2]
+            return 0
+        case style
+            set backgrounddir (get-folder-for-backgrounds $argv[2])
+            set img (findall $backgrounddir jpg jpeg bmp png | shuf | head -1)
+            set -U bgstyle $argv[2]
         case "*"
             if test -f $argv[1]
-                set img $argv[1]
-                set style $argv[2]
+                set img (pathof $argv[1])
             else
-                set backgrounddir $wallpaperroot/$argv
+                return 1
             end
+
     end
 
+    set -U bgimage $img
 
-    if not exists $backgrounddir
-        set backgrounddir $wallpaperroot/$argv
-    end
-
-    if not exists $img
-        set img (findall $backgrounddir jpg jpeg bmp png | shuf | head -1)
-    end
-    if not exists $style
+    if not exists $format
         set ratio (get-image-aspect-ratio-type $img)
         if not exists $ratio
             echo img is $img
@@ -73,23 +95,112 @@ function wp
         end
         switch $ratio
             case "narrow"
-                set style max
+                set format max
             case "wide"
-                set style scale
+                set format scale
             case "superwide"
                 convert -crop 50%x100% +repage $img /tmp/pano.jpg
-                set originalimage $img
                 set img /tmp/pano-1.jpg /tmp/pano-0.jpg 
-                set style max
+                set format max
         end
     end
-    set -U bgstyle (cutlastn "/" 2 $img)
-    if exists $originalimage
-        set -U bgimage $originalimage
-    else
-        set -U bgimage $img
+
+    feh --bg-$format $img
+    signal-i3blocks wallpaper
+end
+
+function list-backgrounds
+    findall (get-folder-for-backgrounds $argv) jpg jpeg bmp png
+end
+
+function slideshow
+        set time 30
+        set ndx 1
+        set interval minutes
+
+        for i in (getvariables $argv)
+            set val (explode $i)
+            set $val[1] $val[2]
+        end
+
+        switch $argv[1]
+            case add
+                set -U backgroundslist $backgroundslist (pathof $argv[2])
+            case category
+                set -U backgroundslist (list-backgrounds $argv[2])
+                if match $slideshowstatus paused
+                    slideshow start
+                end
+            case remove
+                set -U backgroundslist (without (pathof $argv[2]) $backgroundslist)
+            case show
+                if exists $backgroundslist
+                    sxiv -tbfor $backgroundslist
+                end
+            case clear
+                slideshow stop
+                er backgroundslist
+            case next
+                if exists $backgroundslist
+                    if not match $slideshowstatus paused
+                        set -U currentbackgroundindex (math $currentbackgroundindex + 1)
+                        if test $currentbackgroundindex -gt (count $backgroundslist)
+                            set currentbackgroundindex 1
+                        end
+                        wp $backgroundslist[$currentbackgroundindex]
+                    end
+                end
+            case prev
+                if exists $backgroundslist
+                    if not match $slideshowstatus paused
+                        set -U currentbackgroundindex (math $currentbackgroundindex - 1)
+                        if test $currentbackgroundindex -lt 1
+                            set currentbackgroundindex (count $backgroundslist)
+                        end
+                        wp $backgroundslist[$currentbackgroundindex]
+                    end
+                end
+            case pick
+                set currentbackgroundindex (findindex $argv[2] $backgroundslist)
+                wp $backgroundslist[$currentbackgroundindex]
+            case test
+                echo $hi
+            case start
+                if exists $backgroundslist
+                    set -U currentbackgroundindex $ndx
+                    set -U slideshowstatus play
+                    wp $backgroundslist[$currentbackgroundindex]
+                    switch $interval
+                        case seconds
+                            set seconds $time
+                        case minutes
+                            set seconds (math "$time * 60")
+                        case hours
+                            set seconds (math "time * 3600")
+                    end
+                    while not match $slideshowstatus stopped
+                        sleep $seconds
+                        wp slideshow next
+                    end
+                end
+            case shuffle
+                set backgroundslist (println $backgroundslist | shuf)
+            case pause
+                set -U slideshowstatus paused
+            case stop
+                set -U slideshowstatus stopped
+            case continue
+                slideshow next
+                switch $slideshowstatus
+                    case stopped
+                        slideshow start ndx=$currentbackgroundindex
+                    case play
+                        nil
+                    case paused
+                        set -U slideshowstatus play
+                        slideshow next
+                end
     end
-    feh --bg-$style $img
 end
 
 function pick-list-from-wh
@@ -173,26 +284,13 @@ function getvariables
 
     end
 end
-function gimpfromstdin
-    while read -l line
-        gimp $line
-    end
-end
-
-
-function zoomsxiv
-    set title (xprop -id (mywin) | grep NET_WM_NAME | cut -d "=" -f2- | trim | cut -d '"' -f2)
-    if [ $title = sxiv ]
-        xdotool key --delay 5 plus plus plus
-    end
-end
 
 function pics
     if exists $argv
         if test -d $argv
             set target $argv
         else
-            set target /mnt/ext/Images/backgrounds/$argv
+            set target (get-folder-for-backgrounds $argv)
         end
     else
         set target (pwd)
@@ -202,15 +300,14 @@ end
 
 function file-bg
     set file $argv[1]
-    set name $argv[2]
+    set target $argv[2]
     set ext (get-ext $file)
-    set location /mnt/ext/Images/backgrounds/$name.$ext
-    if test -f $location
-        echo it already exists
-        return 1
-    else
-        mv $file $location
-    end
+    set category (echo $target | cut -d "/" -f1)
+    set name (echo $target | cut -d "/" -f2)
+    set dir (get-folder-for-backgrounds $category)
+    set location $dir/$name.$ext
+    mv $file $location
+    wp $location
 end
 
 function file-bg-url
@@ -221,5 +318,22 @@ function file-bg-url
     curl $url > /tmp/$tmp
     cd /tmp
     file-bg $tmp $name
-    wp /mnt/ext/Images/backgrounds/$name.$ext
+end
+
+function get-folder-for-backgrounds
+    switch $argv
+        case xrated
+            echo $naughtypics
+        case "*"
+            set res (find $wallpaperroot -type d | grep $argv | head -1)
+            if not exists $res
+                return 1
+            else
+                echo $res
+            end
+    end
+end
+
+function name-of-wallpaper
+    cutlastn "/" 1 $bgimage | cut -d "." -f1 | sed "s/-/ /g"
 end

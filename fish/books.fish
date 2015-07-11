@@ -30,8 +30,8 @@ function books -d 'open books given either as a title or criteria query using ro
             case -e
                 books --erase
             case --query
-                # open (choose-format (get-fname-of-book (add-to-recent-reads (select-book (query-calibre-title (return-query $tail))))))
-                open (choose-format (get-fname-of-book (select-book (query-calibre-title (return-query $tail)))))
+                gvfs-open (choose-format (get-fname-of-book (select-book (query-calibre-title (return-query $tail)))))
+                # e open choose-format get-fname-of-book select-book query-calibre-title return-query $tail
             case -q
                 books --query $tail
             case "*"

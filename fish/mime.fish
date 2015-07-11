@@ -11,10 +11,6 @@ function mimet
     end
 end
 
-function thathappened
-    echo hi again again damnit
-end
-
 function mime-set
     set type $argv[1]
     set mimetype (mimet $type)
@@ -36,6 +32,7 @@ function mime-set
         end
     else
         gvfs-mime --set $mimetype $command.desktop
+        xdg-mime default $command.desktop $mimetype
     end
 
 end

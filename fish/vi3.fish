@@ -17,6 +17,8 @@ function defop
 end
 
 function vi3_start-vi3
+    xmodmap keys
+    toggle-symbol-lock
     vi3_define-vars
     vi3_setup-keyboard
     vi3_bind-shift-keys
@@ -383,7 +385,7 @@ end
 function update-vi3-config
     rm ~/.i3/config
     cat /opt/vi3/header.txt ~/.i3/colors/{$colors} ~/.i3/personalconfig /opt/vi3/vi3config > ~/.i3/config
-    im restart
+    im reload
     sleep 3
     apply-transparency
 end

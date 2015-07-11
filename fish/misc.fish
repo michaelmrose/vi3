@@ -65,7 +65,7 @@ function kill-user
 end
 
 function tm
-    time $argv    
+    time $argv
     echo " "
 end
 
@@ -184,7 +184,7 @@ function lclj
 end
 
 function winclass
-    xprop -id (mywin) | grep WM_CLASS | cut -d '"' -f4 
+    xprop -id (mywin) | grep WM_CLASS | cut -d '"' -f4
 end
 
 function wtfisthis
@@ -256,8 +256,8 @@ function gs
 end
 
 function cclass
-    startvm Compilers 
-    mountccl  
+    startvm Compilers
+    mountccl
     qvim ~/devvm
 end
 #--------------------------------------------------------------------------
@@ -305,9 +305,9 @@ end
 function vimplug
     set dir (pwd)
     cd ~/.vim
-    git submodule add $argv ./bundle/(vplugname $argv) 
+    git submodule add $argv ./bundle/(vplugname $argv)
     cd $dir
-end 
+end
 
 function fadetoblack
     kdmctl kdm stop
@@ -390,7 +390,7 @@ end
 function chromeless
     chromium-browser --kiosk $argv
 end
-    
+
 function arrangeme
     if not pgrep urxvt
         urxvtc &
@@ -416,7 +416,7 @@ function pman
     if man $app > /dev/null
         man -t $app | ps2pdf - $pdf
     else
-        help2man $app > /tmp/{$app}.txt   
+        help2man $app > /tmp/{$app}.txt
         man -lt /tmp/{$app}.txt | ps2pdf - $pdf
     end
     open /tmp/{$argv}.pdf &
@@ -443,7 +443,7 @@ function write-file
     println $contents > $tmp
     echo $tmp
 end
-    
+
 
 
 function display-manual
@@ -455,7 +455,7 @@ function display-manual
                 set com pman2
         end
    else
-       set com pman2 
+       set com pman2
    end
     eval $com (tolower (return-program-name (winclass)))
     # pman2 (tolower (return-program-name (winclass)))
@@ -539,10 +539,6 @@ function xcow
     xcowsay $argv --cow-size=large --monitor=0 --at=100,0 --font="DejaVu Sans Mon 60"
 end
 
-function er
-    set -e $argv
-end
-
 function filtermatch
     set fexpr $argv[1]
     set match $argv[2]
@@ -595,7 +591,7 @@ end
 
 function show-winclass
     msg (winclass)
-end    
+end
 
 function update-calibre
     sudo python -c "import sys; py3 = sys.version_info[0] > 2; u = __import__('urllib.request' if py3 else 'urllib', fromlist=1); exec(u.urlopen('http://status.calibre-ebook.com/linux_installer').read()); main()"
@@ -611,7 +607,7 @@ function indexof
     set ndx (math "$argv[1] + 1")
     set cnt 1
     for i in $$argv[3]
-        if test $ndx -eq $cnt 
+        if test $ndx -eq $cnt
             echo $i
             return 0
         else
@@ -634,7 +630,7 @@ function snip
         inc cnt
     end
     set cutcom $cutcom -f1-
-    set mycom "echo $str | $cutcom" 
+    set mycom "echo $str | $cutcom"
     # echo $mycom
     eval $mycom
 end
@@ -713,14 +709,14 @@ function cd-project-root
         return 1
     end
     if not test -d .git
-        cd .. 
+        cd ..
         cd-project-root
     else
         return 0;
     end
 end
 
-alias cpr cd-project-root 
+alias cpr cd-project-root
 
 function get-filename
     echo (cutlast "/" $argv) | cut -d "." -f1
@@ -741,7 +737,7 @@ function get-fname-of-path
         cutlast "/" $argv
     else
         while read -l line
-           get-fname-of-path $line 
+           get-fname-of-path $line
         end
     end
 end
@@ -764,7 +760,7 @@ function get-fname-of-file
     #     end
     # end
 end
-    
+
 
 function extract-filename
     if exists $argv
@@ -793,7 +789,7 @@ end
 
 function pkginfo
     set pkgs (psearch $argv)
-    for i in $pkgs 
+    for i in $pkgs
         set info (pstatus (extract-package-name $i))
         set name (echo $info | cut -d ":" -f1)
         set desc (extract-package-description $i)
@@ -818,7 +814,7 @@ end
 
 function switch-library
     calibre -s
-    calibre --with-library ~/calibre/$argv --detach & 
+    calibre --with-library ~/calibre/$argv --detach &
 end
 
 function honey-i-shrunk-the-window
@@ -844,7 +840,7 @@ function focus-distinct
     end
     focus id $current_id
     focus id $new_id
-end        
+end
 
 function starton
     set ws $argv[1]
@@ -921,7 +917,7 @@ function system-menu
             case "shutdown"
                 sudo shutdown -h now
             case "new session"
-                new-session 
+                new-session
             case "*"
                 echo not an option
         end
@@ -988,7 +984,7 @@ function multiplybyten
     else
         set result (echo $argv | cut -d '.' -f2)
         if test (expr length $result) -lt 2
-            set result {$result}0 
+            set result {$result}0
         end
         echo $result
     end
@@ -1017,7 +1013,7 @@ function fed
             set file (defined-in $fname)
             set line (ag "function $fname -d|function $fname\$" $file | cut -d ":" -f1)
 
-            qvim +$line $file
+            nvim +$line $file
     end
 end
 
@@ -1038,7 +1034,7 @@ function defined-in
         set results $results (ag -f $fn2 $i | cut -d ':' -f1)
         set results $results (ag -f $al $i | cut -d ':' -f1)
     end
-    
+
     echo $results[1]
     set -e results
 end
@@ -1057,13 +1053,13 @@ function nmc -d "choose wireless connection"
             set choice (rfi match $connections)
             nmc to $choice up
         case to
-            set command $argv[-1] 
+            set command $argv[-1]
             set location $argv[2..-2]
             set ndx (findindex $location $connections)
             set uid $uuids[$ndx]
     end
 end
-    
+
 
 function vpn -d "run vpn list show down reset choose or to location [up,down]"
     switch $argv[1]
@@ -1128,7 +1124,7 @@ end
 function display-in-editor
     set tmp /tmp/view
     rm $tmp
-    for i in $argv 
+    for i in $argv
         echo $i >> $tmp
     end
     eval $EDITOR $tmp
@@ -1185,20 +1181,20 @@ function list-windows
 
     set windows (wmctrl -l | cut -d " " -f1)
 
-    if contains "dec" $argv 
+    if contains "dec" $argv
         transform-with hextodec windows
     end
-    
-    if contains "visible" $argv 
+
+    if contains "visible" $argv
         filter-with viewable windows
     end
-    
-    if contains "names" $argv 
+
+    if contains "names" $argv
         transform-with window-name windows
     end
-    
+
     println $windows
-    
+
 end
 
 function transform-with
@@ -1216,12 +1212,13 @@ end
 
 function testfn
     if test $argv -gt 3
+        echo testing this shit
         return 0
     else
         return 1
     end
 end
-            
+
 function choose-window
     switch $argv
         case "visible"
@@ -1232,7 +1229,7 @@ function choose-window
             set ids (list-windows)
             set windows (list-windows names)
             for i in $windows
-                if not substr Firefox $i 
+                if not substr Firefox $i
                     set realwins $realwins $i
                 end
             end
@@ -1333,7 +1330,7 @@ function process-book-rar
     rm -rf $tmp
     rm $argv
 end
-    
+
 
 function choose-trans
     trans (dividebyten (dm choice "set opacity")) > /dev/null
@@ -1375,13 +1372,14 @@ function echofun
 end
 
 function weather-here
-    echo (weather-icon) (weather $geo) in $geo
+    #echo (weather-icon) (weather $geo) in $geo
+    echo (weather $geo) in $geo
 end
 
 function weather-icon
     weather $geo --iconify | rev | cut -c1-3
 end
- 
+
 function transwindows
     for i in (list-windows)
         transset -i $i .77
@@ -1401,7 +1399,7 @@ end
 
 function keysd
     switch $argv[1]
-        case "toggle"   
+        case "toggle"
             if pgrep sxhkd
                 keysd stop
                 msg --id 1 -t "sxhkd disabled"
@@ -1415,7 +1413,7 @@ function keysd
             set cfg sxhkdrc
             set dir ~/.config/sxhkd
             rm $dir/$cfg
-            ln -s $dir/$mode $dir/$cfg 
+            ln -s $dir/$mode $dir/$cfg
             kill -10 (pgrep sxhkd)
         case "stop"
             killall sxhkd
@@ -1430,7 +1428,7 @@ function sxmode
     set cfg sxhkdrc
     set dir ~/.config/sxhkd
     rm $dir/$cfg
-    ln -s $dir/$mode $dir/$cfg 
+    ln -s $dir/$mode $dir/$cfg
     kill -10 (pgrep sxhkd)
 end
 
@@ -1569,7 +1567,7 @@ function find-video
     for i in $words
         set files (println $files | grep -i $i)
     end
-    
+
     println $files
 end
 
@@ -1619,7 +1617,7 @@ function intersect-2 -d "prints the common elements of 2 lists"
 end
 
 function contains-all
-    set str $argv[1]  
+    set str $argv[1]
     set words $argv[2..-1]
     for i in $words
         if substr $i $str
@@ -1628,7 +1626,7 @@ function contains-all
         end
     end
 end
-    
+
 
 function range
     set cnt 1
@@ -1658,6 +1656,8 @@ function signal-i3blocks
             set val 5
         case windowtitle
             set val 6
+        case wallpaper
+            set val 7
         case "*"
             set val $argv
     end
@@ -1689,26 +1689,26 @@ end
 
 function addmemsize
     set acc 0
-    for i in $argv  
+    for i in $argv
         if endswith "K" $i
             set num (echo $i | cut -d "K" -f1)
         end
         if endswith "M" $i
             set num (echo $i | cut -d "M" -f1)
             set num (echo $i | cut -d "." -f1)
-            set num (qalc -t "$num * 1024")
+            set num (wcalc -q "$num * 1024")
         end
         if endswith "G" $i
             set num (echo $i | cut -d "G" -f1)
-            set num (qalc -t "$num * 1024 * 1024")
+            set num (wcalc -q "$num * 1024 * 1024")
         end
-        set acc (qalc -t "$acc + $num")
+        set acc (wcalc -q "$acc + $num")
     end
     if test $acc -gt 1048576
-        set acc (qalc -t "$acc / 1048576")
+        set acc (wcalc -q "$acc / 1048576")
         set postfix "G"
     else if test $acc -gt 1024
-        set acc (qalc -t "$acc / 1024")
+        set acc (wcalc -q "$acc / 1024")
         set postfix "M"
     else
         set postfix "K"
@@ -1722,21 +1722,21 @@ function addmemsize
 end
 
 function addmemsize2
-    for i in $argv  
+    for i in $argv
         set num (echo $i | cut -c1-(math (sizeof $i)-1))
         switch (lastchar $i)
             case M
-                set num (qalc -t "$num * 1024")
+                set num (wcalc -q "$num * 1024")
             case G
-                set num (qalc -t "$num * 1024 * 1024")
+                set num (wcalc -q "$num * 1024 * 1024")
             end
-        set acc (qalc -t "$acc + $num")
+        set acc (wcalc -q "$acc + $num")
     end
     if test $acc -gt 1048576
-        set acc (qalc -t "$acc / 1048576")
+        set acc (wcalc -q "$acc / 1048576")
         set postfix "G"
     else if test $acc -gt 1024
-        set acc (qalc -t "$acc / 1024")
+        set acc (wcalc -q "$acc / 1024")
         set postfix "M"
     else
         set postfix "K"
@@ -1801,7 +1801,7 @@ end
 function mybuffer
     switch $argv
         case "erase"
-           set buffer "" 
+           set buffer ""
         case "*"
             set buffer $buffer$argv
     end
@@ -1883,6 +1883,8 @@ function return-program-name
             echo calibre
         case urxvtt
             echo urxvtc
+        case LilyTerm
+            echo lilyterm
         case "*"
             echo $words
     end
@@ -1978,7 +1980,8 @@ function free-memory
     set free {$mem_info[3]}M
     set buffers {$mem_info[5]}M
     set cache {$mem_info[6]}M
-    addmemsize $free $buffers $cache
+    echo f $free b $buffers c $cache
+    # addmemsize $free $buffers $cache
 end
 
 function sumof
@@ -2047,7 +2050,7 @@ end
 #     set ids (windows-list | sort | grep (winclass) | cut -d " " -f1)
 #     set cnt (count $ids)
 #     set ndx (findindex (ensure-hex (mywin)) $ids)
-#     if test $ndx -eq $cnt  
+#     if test $ndx -eq $cnt
 #         set next 1
 #     else
 #         set next (math "$ndx + 1")
@@ -2107,7 +2110,7 @@ function choose-tab
     set ndx (findindex $choice $tabs)
     focus class firefox
     xdotool key colon b space $ndx Return
-end 
+end
 
 function subtract-from
     filter-with "not substr $argv[1]" $argv[2]
@@ -2160,9 +2163,9 @@ function scratchpad
     end
 end
 
-function pversion --argument-names modulename --description 'display version of specified Perl module if it exists'    
+function pversion --argument-names modulename --description 'display version of specified Perl module if it exists'
     eval perl -M{$modulename} -e \'print \"\${$modulename}::VERSION\\n\"\;\'
-end     
+end
 
 function match-lists-v
     set ndx (findindex $argv[3] $$argv[1])
@@ -2186,7 +2189,7 @@ function calibre-fnames
 end
 
 function endof
-    echo $argv[-1]     
+    echo $argv[-1]
 end
 
 function startof
@@ -2243,7 +2246,7 @@ function lsf
 end
 
 function open-remote
-   openurl (echo (git remote -v | condense_spaces | cut -d " " -f2)[1]) 
+   openurl (echo (git remote -v | condense_spaces | cut -d " " -f2)[1])
 end
 
 function isafile
