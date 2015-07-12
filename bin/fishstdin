@@ -1,0 +1,12 @@
+#!/usr/bin/env fish
+set somefunction $argv
+function whateveryouwant
+   while read -l line
+       eval $somefunction $line
+   end
+   return 0
+end
+
+while read -l line
+    echo $line | whateveryouwant
+end
