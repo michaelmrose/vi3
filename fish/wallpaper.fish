@@ -163,7 +163,9 @@ function wp
     end
 
     feh --bg-$format $img
-    signal-i3blocks wallpaper
+    if pgrep i3blocks
+        signal-i3blocks wallpaper
+    end
 end
 
 function list-backgrounds
