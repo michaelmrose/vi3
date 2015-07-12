@@ -51,8 +51,6 @@
 # - wp url uses xclip
 # - wp edit requires gimp
 # - viewing images is handled with sxiv, I heartily recommend building it from source and changing tns->zl = 0 to 3 in thumbs.c so that the default isn't microscopic
-# - its also presently only smart enough to split it in 2 horizontally in a fixed order, this will be fixed later, at present
-#   you can simply edit the section under case "superwide" to correct the order
 
 set -U wallpaperroot /mnt/ext/Images/backgrounds
 set -U naughtypics /mnt/ext/Images/xrated
@@ -64,8 +62,6 @@ function wallpaper
         set $val[1] $val[2]
     end
     
-    set lastimage $bgimage
-
     switch $argv[1]
         case view
             pics $argv[2]
@@ -156,8 +152,12 @@ function wallpaper
             case "wide"
                 set format scale
             case "superwide"
-                convert -crop 50%x100% +repage $img /tmp/pano.jpg
-                set img /tmp/pano-1.jpg /tmp/pano-0.jpg 
+                set perc (math 100 / (get-number-of-displays))
+                convert -crop $perc%x100% +repage $img /tmp/pano.jpg
+                for i in (get-display-order)
+                    set lst $lst /tmp/pano-$i.jpg
+                end
+                set img $lst
                 set format max
         end
     end
@@ -402,4 +402,27 @@ end
 
 function name-of-wallpaper
     cutlastn "/" 1 $bgimage | cut -d "." -f1 | sed "s/-/ /g"
+end
+
+function get-display-left-to-right
+    set outputs (xrandr | grep " connected" | cut -d " " -f1)
+    set offsets (xrandr | grep " connected" | cut -d + -f2)
+    set sorted (println $offsets | sort)
+    for i in (seq (count $outputs))
+        set x (findindex $sorted[$i] $offsets)
+        set lst $lst $outputs[$x]
+    end
+    println $lst
+end
+
+function get-number-of-displays
+    count (get-connected-displays)
+end
+
+function get-display-order
+    set outputs (xrandr | grep " connected" | cut -d " " -f1)
+    set ordered (get-display-left-to-right)
+    for i in $outputs
+        math (findindex $i $ordered) - 1
+    end
 end
