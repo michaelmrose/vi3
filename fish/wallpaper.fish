@@ -56,8 +56,10 @@
 
 set -U wallpaperroot /mnt/ext/Images/backgrounds
 set -U naughtypics /mnt/ext/Images/xrated
+alias wp wallpaper
+alias ss slideshow
 
-function wp
+function wallpaper
 
     for i in (getvariables $argv)
         set val (explode $i)
@@ -108,7 +110,7 @@ function wp
             wp style backgrounds
             return 0
         case similar
-            wp $bgstyle
+            wp style $bgstyle
             return 0
         case next
              slideshow next
@@ -246,6 +248,8 @@ function slideshow
                 set -U slideshowstatus paused
             case stop
                 set -U slideshowstatus stopped
+            case status
+                echo $slideshowstatus
             case continue
                 slideshow next
                 switch $slideshowstatus
@@ -259,6 +263,8 @@ function slideshow
                 end
     end
 end
+
+
 
 function pick-list-from-wh
     #set default values
