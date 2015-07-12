@@ -24,7 +24,7 @@
 # - wp any chooses any of your backgrounds at random
 # - wp rename self explanetory
 # - wp save category/name saves the current background to category/name useful if you set your wp to something like a url you downloaded
-# - wp next will either choose another random image in the same style or go to the next in the current slideshow more on that
+# - wp prev next next or prev image in slideshow, more on that later
 # - file-bg image style/name will move the image to whatever subdir style is named name
 # - slideshow category will set all files in category to $backgroundslist wont start it if stopped but will if paused
 # - slideshow show will use sxiv to show the current contents of $backgroundslist
@@ -64,18 +64,15 @@ function wp
         set $val[1] $val[2]
     end
     
-    set laststyle $bgstyle
     set lastimage $bgimage
-    set -e bgstyle
-    set -e bgimage
 
     switch $argv[1]
         case view
             pics $argv[2]
             return 0
         case edit
-            gimp $lastimage
-            wp $lastimage
+            gimp $bgimage
+            wp $bgimage
             return 0
         case url
             file-bg-url $argv[2..-1]
@@ -108,13 +105,16 @@ function wp
             set img (findall $backgrounddir jpg jpeg bmp png | shuf | head -1)
             set -U bgstyle xrated
         case any
-            set backgrounddir $wallpaperroot
+            wp style backgrounds
+            return 0
+        case similar
+            wp $bgstyle
+            return 0
         case next
-            if match $slideshowstatus play
-                wp slideshow next
-            else
-                wp style $laststyle
-            end
+             slideshow next
+            return 0
+        case prev
+            slideshow prev
             return 0
         case rename
             set ext (get-ext $bgimage)
@@ -124,8 +124,8 @@ function wp
             wp $path
             return 0
         case img
-            set -U bgstyle (cutlastn "/" 2 $argv[2])
-            set -U bgimage $argv[2]
+            set -U bgimage (pathof $argv[2])
+            set -U bgstyle (cutlastn "/" 2 $bgimage)
             wp $argv[2]
             return 0
         case style
