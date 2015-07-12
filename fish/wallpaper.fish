@@ -158,7 +158,7 @@ function wallpaper
                     set lst $lst /tmp/pano-$i.jpg
                 end
                 set img $lst
-                set format max
+                set format scale
         end
     end
 
