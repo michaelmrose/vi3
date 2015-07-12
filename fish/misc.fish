@@ -161,10 +161,6 @@ function ppa
     aptup
 end
 
-function here
-    ls -A | grep -i $argv
-end
-
 function unins
     sudo apt-get remove $argv
 end
@@ -183,9 +179,6 @@ function lclj
     idea
 end
 
-function winclass
-    xprop -id (mywin) | grep WM_CLASS | cut -d '"' -f4
-end
 
 function wtfisthis
     whoami
@@ -539,32 +532,6 @@ function xcow
     xcowsay $argv --cow-size=large --monitor=0 --at=100,0 --font="DejaVu Sans Mon 60"
 end
 
-function filtermatch
-    set fexpr $argv[1]
-    set match $argv[2]
-    for i in $$argv[3]
-        set val (echo $i | sed 's/(/\\\(/g' | sed 's/)/\\\)/g')
-        set toeval $fexpr $val
-        set result (eval $toeval)
-        if match $result $match
-            echo $i
-            set acc $acc $i
-        end
-    end
-    echo $acc
-end
-
-
-function has
-    set target $argv[1]
-    for i in $$argv[2]
-        echo $i
-        set acc $acc (tolower $i)
-    end
-    println $acc
-end
-
-
 function replace-str
     set numargs (count $argv)
     if test $numargs -gt 2
@@ -601,19 +568,6 @@ function list-books
     set files (ls)
     filter files pdf
     filter files epub
-end
-
-function indexof
-    set ndx (math "$argv[1] + 1")
-    set cnt 1
-    for i in $$argv[3]
-        if test $ndx -eq $cnt
-            echo $i
-            return 0
-        else
-            inc cnt
-        end
-    end
 end
 
 function snip
@@ -681,10 +635,6 @@ function choose
     end
 end
 
-function sizeof
-    echo (expr length $argv)
-end
-
 function myemail
     git config user.email
 end
@@ -720,16 +670,6 @@ alias cpr cd-project-root
 
 function get-filename
     echo (cutlast "/" $argv) | cut -d "." -f1
-end
-
-function get-ext
-    if exists $argv
-        cutlast . "$argv"
-    else
-        while read -l line
-            get-ext $line
-        end
-    end
 end
 
 function get-fname-of-path
@@ -867,33 +807,6 @@ function window-exists
     end
 end
 
-function runningp
-    set app $argv[1]
-    set com bash -c \"pgrep $app\" \> /dev/null
-    switch (count $argv)
-        case 1 #ex runningp app
-            eval $com
-        case 3 #ex runningp app on host
-            set host $argv[3]
-            ssh $host -q -t "$com"
-        case 4 #ex runningp app local or host
-            set host $argv[4]
-            test (runningp $app) -o (runningp $app on $host)
-    end
-end
-
-
-function xc
-    xclip -o
-end
-
-function ensure-started
-    if not runningp $argv
-        bash -c $argv &
-    end
-    while not pgrep $argv
-    end
-end
 
 function urxvtt
     if not pgrep urxvtd
@@ -990,58 +903,6 @@ function multiplybyten
     end
 end
 
-function findindex
-    set target $argv[1]
-    set list $argv[2..-1]
-    set cnt 1
-    for i in $list
-        if [ $i = $target ]
-            echo $cnt
-            return 0
-        else
-            set cnt (math "$cnt + 1")
-        end
-    end
-end
-
-function fed
-    switch $argv[1]
-        case "-i"
-            funced -i $argv[2..-1]
-        case "*"
-            set fname $argv[1]
-            set file (defined-in $fname)
-            set line (ag "function $fname -d|function $fname\$" $file | cut -d ":" -f1)
-
-            nvim +$line $file
-    end
-end
-
-function get-line-of-fn-definition
-    set fname $argv[1]
-    set file (defined-in $fname)
-    echo (ag "function $fname -d|function $fname\$" $file | cut -d ":" -f1)
-end
-
-function defined-in
-    set fn "function $argv\$"
-    set fn2 "function $argv -"
-    set al "alias $argv "
-    set fishpaths /opt/vi3/fish ~/fish ~/.config/fish/functions
-    set fishconfig ~/.config/fish/config.fish
-    for i in $fishpaths
-        set results $results (ag -f $fn $i | cut -d ':' -f1)
-        set results $results (ag -f $fn2 $i | cut -d ':' -f1)
-        set results $results (ag -f $al $i | cut -d ':' -f1)
-    end
-
-    echo $results[1]
-    set -e results
-end
-
-function defined
-    type $argv > /dev/null
-end
 
 function nmc -d "choose wireless connection"
     set connections println (nmcli connection | condense_spaces)[2..-1] | grep wireless | cut -d " " -f1
@@ -1111,16 +972,6 @@ function vpn -d "run vpn list show down reset choose or to location [up,down]"
 
 end
 
-function seperate
-    set ndx 1
-    set word $argv
-    set length (sizeof $word)
-    while test $ndx -le $length
-        echo (expr substr $word $ndx 1)
-        set ndx (math "$ndx + 1" )
-    end
-end
-
 function display-in-editor
     set tmp /tmp/view
     rm $tmp
@@ -1134,36 +985,6 @@ function viewable
     xwininfo -id $argv | grep "Map State: IsViewable" > /dev/null
 end
 
-function window-name
-    set winid $argv
-    set winid (ensure-hex $winid )
-    set window (wmctrl -lx | grep $winid)
-    set classname (echo $window | cut -d " " -f4 | cut -d "." -f2)
-    set title (echo $window | cut -d "-" -f2- | cut -d " " -f2-)
-    echo $classname $title
-end
-
-function ensure-hex
-    set val $argv
-    if not substr 0x $val
-        echo (dectohex $val)
-    else
-        echo $val
-    end
-end
-
-function ensure-dec
-    set val $argv
-    if substr 0x $val
-        echo (hextodec $val)
-    else
-        echo $val
-    end
-end
-
-function window-title
-    xwininfo -id (mywin) | cut -d \n -f2 | cut -d '"' -f2
-end
 
 function show-title
     msg (window-title)
@@ -1195,19 +1016,6 @@ function list-windows
 
     println $windows
 
-end
-
-function transform-with
-   set $argv[2] (apply $argv[1] $argv[2])
-end
-
-function filter-with
-    for i in $$argv[2]
-        if eval $argv[1] $i
-            set lst $lst $i
-        end
-    end
-    set $argv[2] $lst
 end
 
 function testfn
@@ -1489,22 +1297,6 @@ function display-appkeys
     eval $EDITOR $tmp
 end
 
-function matches
-    set com "echo $argv[1] | grep -E --regexp '^$argv[2..-1]\$'"
-    eval $com > /dev/null
-end
-
-function pathof
-    set partialpath (pwd)/$argv
-    set fullpath $argv
-    if test -f $partialpath
-        echo $partialpath
-    else if test -f $fullpath
-        echo $fullpath
-    else
-        echo not a file!
-    end
-end
 
 function now-playing
     while not pgrep clementine
@@ -1616,27 +1408,6 @@ function intersect-2 -d "prints the common elements of 2 lists"
     echo $result
 end
 
-function contains-all
-    set str $argv[1]
-    set words $argv[2..-1]
-    for i in $words
-        if substr $i $str
-        else
-            return 1
-        end
-    end
-end
-
-
-function range
-    set cnt 1
-    set max $argv
-    echo $cnt
-    while test $cnt -ne $max
-        set cnt (math "$cnt +1")
-        echo $cnt
-    end
-end
 
 function choose-video
     mm watch (dm choice "enter search query")
@@ -1836,42 +1607,6 @@ function mydate
     end
 end
 
-function startswith
-    set tst (explode $argv[1])
-    set char (echo $argv[2..-1] | cut -c1)
-    for i in $tst
-        if match $i $char
-            # echo $i
-            return 0
-        end
-    end
-    return 1
-end
-
-function car
-    echo $argv | cut -c1
-end
-
-function cdr
-    echo $argv | cut -c2-
-end
-
-function positive
-    test $argv -gt 0
-end
-
-function negative
-    test $argv -lt 0
-end
-
-function stripsign
-    if startswith "- +" $argv
-        cdr $argv
-    else
-        echo $argv
-    end
-end
-
 function return-program-name
     set words (explode $argv)
     switch $words[1]
@@ -1892,10 +1627,6 @@ end
 
 function get-cpu-utilization
     top -bn 2 -d 0.01 | grep '^%Cpu' | tail -n 1 | gawk '{print $2+$4+$6}'
-end
-
-function pidof
-    unique (wmctrl -lxp | grep -iE ".*\.$argv | $argv\..*" | cut -d " " -f4)
 end
 
 function cpuusage
@@ -1924,45 +1655,12 @@ function get-gpu-fanspeed
     echo {$speed}%
 end
 
-function balias --argument alias command
-    eval 'alias $alias $command'
-    if expr match $command '^sudo '>/dev/null
-        set command (expr substr + $command 6 (expr length $command))
-    end
-    complete -c $alias -xa "(
-    set -l cmd (commandline -pc | sed -e 's/^ *\S\+ *//' );
-    complete -C\"$command \$cmd\";
-    )"
-end
-function set-similar-completions --argument alias command
-    if expr match $command '^sudo '>/dev/null
-        set command (expr substr + $command 6 (expr length $command))
-    end
-    complete -c $alias -xa "(
-    set -l cmd (commandline -pc | sed -e 's/^ *\S\+ *//' );
-    complete -C\"$command \$cmd\";
-    )"
-end
-
-balias al balias
-
-
 function get-cpu-temp
     ctof (sensors | grep CPU\ Temp | cut -d ":" -f2 | cut -c 8-11)
 end
 
 function drop_caches
     sudo bash -c 'echo 3 > /proc/sys/vm/drop_caches'
-end
-
-function condense_spaces
-    if exists $argv
-        echo $argv | sed 's/\s\+/ /g' | trim
-    else
-        while read -l line
-            condense_spaces $line
-        end
-    end
 end
 
 function mem_info
@@ -1984,57 +1682,6 @@ function free-memory
     # addmemsize $free $buffers $cache
 end
 
-function sumof
-    set acc 0
-    for i in $argv
-        set acc (math "$acc + $i")
-    end
-    echo $acc
-end
-
-function quote
-    if exists $argv
-        if not startswith \" $argv
-            set val \"$argv
-        end
-        if not endswith \" $argv
-            set val $val\"
-        end
-        echo $val
-    else
-        while read -l line
-            quote $line
-        end
-    end
-end
-
-function singlequote
-    if exists $argv
-        if not startswith \' $argv
-            set val \'$argv
-        end
-        if not endswith \' $argv
-            set val $val\'
-        end
-        echo $val
-    else
-        while read -l line
-            quote $argv
-        end
-    end
-end
-
-function quote-list
-    if exists $argv
-        for i in $argv
-            echo \"$i\"
-        end
-    else
-        while read -l line
-            quote $argv
-        end
-    end
-end
 
 function urlwithoutgui
     firefox --new-window $argv &
@@ -2112,25 +1759,11 @@ function choose-tab
     xdotool key colon b space $ndx Return
 end
 
-function subtract-from
-    filter-with "not substr $argv[1]" $argv[2]
-end
-
 function cycle_windows
     set windows (list-windows dec $argv)
     set current (findindex (mywin) $windows)
     set dest (ensure_valid_index $current $windows)
     focus id $windows[$dest]
-end
-
-function ensure_valid_index
-    set num $argv[1]
-    set cnt (count $argv[2..-1])
-    if test $num -eq $cnt
-        echo 1
-    else
-        echo (math $num + 1)
-    end
 end
 
 function float_fullscreen
@@ -2167,64 +1800,13 @@ function pversion --argument-names modulename --description 'display version of 
     eval perl -M{$modulename} -e \'print \"\${$modulename}::VERSION\\n\"\;\'
 end
 
-function match-lists-v
-    set ndx (findindex $argv[3] $$argv[1])
-    echo $$argv[2][$ndx]
-end
-
-function match-lists
-    set val $argv[1]
-    set l1 $argv[2..-2]
-    set l2 (explode $argv[-1])
-    set ndx (findindex $val $l1)
-    if exists $ndx
-        echo $l2[$ndx]
-    else
-        echo (endof $l2)
-    end
-end
-
 function calibre-fnames
     echo $argv | jq .[].formats
-end
-
-function endof
-    echo $argv[-1]
-end
-
-function startof
-    echo $argv[1]
-end
-
-function squish
-    if exists $argv
-        echo $argv | sed "s/ //g"
-    else
-        while read -l line
-            echo (squish $line)
-        end
-    end
-end
-
-function stripquotes
-    echo $argv | sed 's/"//g'
 end
 
 function start-quietly
     set com \'$argv '2>' ''/dev/null\'
     eval bash -c $com
-end
-
-function ternary
-    if eval $argv[1]
-        eval $argv[2]
-    else
-        eval $argv[2]
-    end
-end
-
-function many
-    test $argv -gt 1
 end
 
 function not-in-package
@@ -2274,12 +1856,3 @@ alias pedit master-pdf-editor
 alias so smart-open
 alias sp smart-pick
 alias htp 'sudo htop'
-
-#colors
-set red    '\e[0;31m'
-set blue   '\e[0;34m'
-set green  '\e[0;32m'
-set cyan   '\e[0;36m'
-set purple '\e[0;35m'
-set nc     '\e[0m'
-set white  '\e[0;37m'
