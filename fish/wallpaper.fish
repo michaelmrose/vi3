@@ -56,8 +56,6 @@
 
 set -U wallpaperroot /mnt/ext/Images/backgrounds
 set -U naughtypics /mnt/ext/Images/xrated
-alias wp wallpaper
-alias ss slideshow
 
 function wallpaper
 
