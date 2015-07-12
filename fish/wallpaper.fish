@@ -225,7 +225,7 @@ function slideshow
             case start
                 if exists $backgroundslist
                     set -U currentbackgroundindex $ndx
-                    set -U slideshowstatus play
+                    set -U slideshowstatus playing
                     wp $backgroundslist[$currentbackgroundindex]
                     switch $interval
                         case seconds
@@ -256,7 +256,7 @@ function slideshow
                     case play
                         nil
                     case paused
-                        set -U slideshowstatus play
+                        set -U slideshowstatus playing
                         slideshow next
                 end
     end
