@@ -426,3 +426,6 @@ function get-display-order
         math (findindex $i $ordered) - 1
     end
 end
+function get-connected-displays
+    xrandr | grep " connected" | cut -d "c" -f1 | trim
+end

@@ -171,14 +171,6 @@ function clemctl
     qdbus org.mpris.clementine /Player org.freedesktop.MediaPlayer.{$argv}
 end
 
-function get-connected-displays
-    xrandr | grep " connected" | cut -d "c" -f1 | trim
-end
-
-function get-number-of-displays
-    count (get-connected-displays)
-end
-
 function unset-fullscreen
     if is-fullscreen
         i3-msg fullscreen > /dev/null
