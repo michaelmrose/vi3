@@ -165,29 +165,45 @@ function findall
     eval (condense $start $second $middle $ending)
 end
 
-function findall2
-    if [ $argv[1] = -p ]
-        set target $argv[2]
-        set types $argv[3..-1]
-    else
-        set target (pwd)
-        set types $argv
+# function findall2
+#     if [ $argv[1] = -p ]
+#         set target $argv[2]
+#         set types $argv[3..-1]
+#     else
+#         set target (pwd)
+#         set types $argv
+#     end
+    
+#     set pth (pwd)
+#     cd $target
+#     set start 'find ./ -regextype posix-extended -regex ".*\.('
+#     set ending ')"'
+#     set pipe '|'
+#     for i in $types
+#         set middle $i $pipe $middle
+#     end
+#     set middle (condense $middle)
+#     set middle (echo $middle | rev | cut -d '|' -f2- | rev)
+#     set results (eval (condense $start $middle $ending))
+#     cd $pth
+#     println $results
+
+# end
+
+function findall-list
+    for i in (getvariables $argv)
+        set val (explode $i)
+        set $val[1] $val[2..-1]
     end
     
-    set pth (pwd)
-    cd $target
-    set start 'find ./ -regextype posix-extended -regex ".*\.('
-    set ending ')"'
-    set pipe '|'
-    for i in $types
-        set middle $i $pipe $middle
+    for i in $dirs
+        set results $results (findall $i $types)
     end
-    set middle (condense $middle)
-    set middle (echo $middle | rev | cut -d '|' -f2- | rev)
-    set results (eval (condense $start $middle $ending))
-    cd $pth
-    println $results
-
+    if exists $exclude
+        println $results | grep -v $exclude
+    else
+        println $results
+    end
 end
 
 function cond
@@ -788,25 +804,44 @@ function ensure_valid_index
     end
 end
 
-function match-lists-v
-    set ndx (findindex $argv[3] $$argv[1])
-    echo $$argv[2][$ndx]
-end
+# function match-lists-v
+#     set ndx (findindex $argv[3] $$argv[1])
+#     echo $$argv[2][$ndx]
+# end
 
+# function match-lists
+#     set val $argv[1]
+#     set l1 $argv[2..-2]
+#     set l2 (explode $argv[-1])
+#     set ndx (findindex $val $l1)
+#     if exists $ndx
+#         echo $l2[$ndx]
+#     else
+#         echo (endof $l2)
+#     end
+# end
 function match-lists
     set val $argv[1]
-    set l1 $argv[2..-2]
-    set l2 (explode $argv[-1])
-    set ndx (findindex $val $l1)
-    if exists $ndx
-        echo $l2[$ndx]
+    set l1 (explode $argv[2])
+    set l2 (explode $argv[3])
+    set default $argv[4]
+    set ndx1 (findindex $val $l1)
+    set ndx2 (findindex $val $l2)
+    if exists $ndx1
+        echo $l2[$ndx1]
+    else if exists $ndx2
+        echo $l1[$ndx2]
     else
-        echo (endof $l2)
+        echo $default
     end
 end
 
 function endof
     echo $argv[-1]
+end
+
+function increase
+    echo (math $argv +1)
 end
 
 function startof
@@ -837,6 +872,38 @@ end
 
 function many
     test $argv -gt 1
+end
+
+function add-unique-to-list
+    if not contains $argv[1] $argv[2..-1]
+        println $argv
+    else
+        println $argv[2..-1]
+    end
+end
+
+function remove-from-list
+    set target $argv[1]
+    set lst $argv[2..-1]
+    for i in $lst
+        if not match $i $target
+            echo $i
+        end
+    end
+end
+
+function istrue
+    if contains $argv t true 1
+    end 
+end
+
+function isfalse
+    if contains $argv f false 0
+    end 
+end
+
+function toggle-bool
+    match-lists $argv "0 f F false False" "1 t T true True" error
 end
 
 #colors

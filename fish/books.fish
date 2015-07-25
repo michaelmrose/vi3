@@ -21,6 +21,10 @@ function books -d 'open books given either as a title or criteria query using ro
                 remove-pdf-watermark "$tail"
             case -w
                 books --removewatermark $tail
+            case -s 
+                bsrch $tail
+            case --search
+                bsrch $tail
             case --cover 
                 coverit "$tail"
             case -c

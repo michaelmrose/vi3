@@ -57,6 +57,9 @@ set -U naughtypics /mnt/ext/Images/xrated
 
 function wallpaper
 
+    #default values
+    set norecord false
+
     for i in (getvariables $argv)
         set val (explode $i)
         set $val[1] $val[2]
@@ -72,6 +75,9 @@ function wallpaper
             return 0
         case url
             file-bg-url $argv[2..-1]
+            return 0
+        case recent
+            sxiv -tbfor $recent_backgrounds
             return 0
         case slideshow
             slideshow $argv[2..-1]
@@ -93,13 +99,10 @@ function wallpaper
         case save
             save-wp $argv[2]
             return 0
-        case remove
+        case rm
             rm $bgimage
+            wp similar
             return 0
-        case xrated
-            set backgrounddir $naughtypics
-            set img (findall $backgrounddir jpg jpeg bmp png | shuf | head -1)
-            set -U bgstyle xrated
         case any
             wp style backgrounds
             return 0
@@ -107,30 +110,28 @@ function wallpaper
             wp style $bgstyle
             return 0
         case next
-             slideshow next
+            wallpaper-next
+            return 0
+        case xrated
+            set backgrounddir (get-folders-for-backgrounds xrated)
+            set img (findall-list dirs=$backgrounddir types=jpg,jpeg,bmp,png | shuf | head -1)
+            wp $img
             return 0
         case prev
-            slideshow prev
+            wallpaper-prev
             return 0
         case rename
-            set ext (get-ext $bgimage)
-            set newname $argv[2]
-            set path (cutlastn / 2- $bgimage)/$newname.$ext
-            mv $bgimage $path
-            wp $path
-            return 0
-        case img
-            set -U bgimage (pathof $argv[2])
-            set -U bgstyle (cutlastn "/" 2 $bgimage)
-            wp $argv[2]
+            file-bg $bgimage $bgstyle/$argv[2..-1]
             return 0
         case style
-            set backgrounddir (get-folder-for-backgrounds $argv[2])
-            set img (findall $backgrounddir jpg jpeg bmp png | shuf | head -1)
-            set -U bgstyle $argv[2]
+            set backgrounddir (get-folders-for-backgrounds $argv[2])
+            set img (findall-list dirs=$backgrounddir types=jpg,jpeg,bmp,png exclude=xrated | shuf | head -1)
+            wp $img
+            return 0
         case "*"
             if test -f $argv[1]
                 set img (pathof $argv[1])
+                set -U bgstyle (cutlastn "/" 2 $img)
             else
                 return 1
             end
@@ -138,6 +139,10 @@ function wallpaper
     end
 
     set -U bgimage $img
+    if not match $norecord true
+        add-to-recent-backgrounds $img
+    else
+    end
 
     if not exists $format
         set ratio (get-image-aspect-ratio-type $img)
@@ -168,8 +173,34 @@ function wallpaper
     end
 end
 
+function wallpaper-prev
+    if not exists $wallpaperindex
+        set -U wallpaperindex 1
+    end
+    set -U wallpaperindex (math $wallpaperindex + 1)
+    if test $wallpaperindex -gt (count $recent_backgrounds)
+        set -U wallpaperindex 1
+    end
+    wp $recent_backgrounds[$wallpaperindex] norecord=true
+end
+
+function wallpaper-next
+    if not exists $wallpaperindex
+        set -U wallpaperindex 1
+    end
+    set -U wallpaperindex (math $wallpaperindex - 1)
+    if test $wallpaperindex -lt 1
+        set -U wallpaperindex (count $recent_backgrounds)
+    end
+    wp $recent_backgrounds[$wallpaperindex] norecord=true
+end
+
 function list-backgrounds
-    findall (get-folder-for-backgrounds $argv) jpg jpeg bmp png
+    findall-list dirs=(get-folders-for-backgrounds $argv) types=jpg,jpeg,bmp,png exlude=xrated
+end
+
+function add-to-recent-backgrounds
+    set -U recent_backgrounds (take 20 (unique (println $argv $recent_backgrounds)))
 end
 
 function slideshow
@@ -345,7 +376,10 @@ function getvariables
     else
         set vars (println $argv | grep =)
         for i in $vars
-            echo (echo $i | cut -d "=" -f1) (echo $i | cut -d "=" -f2)
+            # echo (echo $i | cut -d "=" -f1) (echo $i | cut -d "=" -f2)
+            set var (echo $i | cut -d "=" -f1)
+            set val (echo $i | cut -d "=" -f2 | sed 's/,/ /g')
+            echo $var $val
         end
 
     end
@@ -356,12 +390,13 @@ function pics
         if test -d $argv
             set target $argv
         else
-            set target (get-folder-for-backgrounds $argv)
+            set target (get-folders-for-backgrounds $argv)
         end
     else
         set target (pwd)
     end
-    sxiv -tbfor $target &
+    set pictures (findall-list dirs=$target types=jpg)
+    sxiv -tbfor $pictures
 end
 
 function file-bg
@@ -387,45 +422,27 @@ function file-bg-url
 end
 
 function get-folder-for-backgrounds
-    switch $argv
-        case xrated
-            echo $naughtypics
-        case "*"
-            set res (find $wallpaperroot -type d | grep $argv | head -1)
-            if not exists $res
-                return 1
-            else
-                echo $res
-            end
+    set res (find $wallpaperroot -type d | grep $argv | head -1)
+    if test (count $res) -ne 1
+        return 1
+    else
+        echo $res
+    end
+end
+
+function get-folder-for-backgrounds2
+    shortest (explode (get-folders-for-backgrounds $argv))
+end
+
+function get-folders-for-backgrounds
+    set res (find $wallpaperroot -type d | grep $argv)
+    if not exists $res
+        return 1
+    else
+        echo $res | sed 's/ /,/g'
     end
 end
 
 function name-of-wallpaper
     cutlastn "/" 1 $bgimage | cut -d "." -f1 | sed "s/-/ /g"
-end
-
-function get-display-left-to-right
-    set outputs (xrandr | grep " connected" | cut -d " " -f1)
-    set offsets (xrandr | grep " connected" | cut -d + -f2)
-    set sorted (println $offsets | sort)
-    for i in (seq (count $outputs))
-        set x (findindex $sorted[$i] $offsets)
-        set lst $lst $outputs[$x]
-    end
-    println $lst
-end
-
-function get-number-of-displays
-    count (get-connected-displays)
-end
-
-function get-display-order
-    set outputs (xrandr | grep " connected" | cut -d " " -f1)
-    set ordered (get-display-left-to-right)
-    for i in $outputs
-        math (findindex $i $ordered) - 1
-    end
-end
-function get-connected-displays
-    xrandr | grep " connected" | cut -d "c" -f1 | trim
 end

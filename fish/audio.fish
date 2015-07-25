@@ -79,7 +79,12 @@ function current-output
 end
 
 function output-type
-    match-lists (quote (current-output)) (quote-list (output-list)) "headphones speakers other"
+    set op (current-output)
+    if substr $op headset
+        echo $headphones
+    else
+        echo speakers
+    end
 end
 
 function output-status-line
@@ -95,7 +100,7 @@ function output-status-line
 end
 
 function setvolume
-    ponymix (match-lists (car $argv) + - "increase decrease set-volume") (stripsign $argv)
+    ponymix (match-lists (car $argv) "+ -" "increase decrease" set-volume) (stripsign $argv)
     signal-i3blocks output
 end
 

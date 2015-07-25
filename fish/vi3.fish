@@ -71,6 +71,15 @@ function toggle-shift-keys
     end
 end
 
+function vi3_toggle_shift_keys
+    if pgrep xcape > /dev/null
+        killall xcape
+    else
+        vi3_setup-keyboard
+        vi3_bind-shift-keys
+    end
+end
+
 function vi3_combo
     vi3_get-workspace $combolist[1]
     vi3_get-workspace $combolist[2]
@@ -133,14 +142,14 @@ function vi3_take-n
     set -U combolist $combolist $argv[1]
     if test (count $combolist) = $argv[3]
         eval $argv[2]
-        echo "done!"
+        echo "done!" &
         set -e combolist
-        im mode "default"
-        er vi3op
-        update-op-status
+        im mode "default" &
+        er vi3op &
+        update-op-status &
     else
-        echo "not yet"
-        im mode "op"
+        echo "not yet" &
+        im mode "op" &
     end
 end
 
@@ -291,14 +300,10 @@ function vi3_select-all-in-workspace
     im focus parent
 end
 
-function append-and-eval
-   set result $argv[1] $argv[2]
-   eval $result
-end
-
 function evalvi3op
-    set -U lastcom $vi3op $argv
-    append-and-eval $vi3op $argv
+    # set -U lastcom $vi3op $argv
+    set com $vi3op $argv 
+    eval $com
 end
 
 function vi3_set_lastcom
@@ -385,7 +390,7 @@ end
 function update-vi3-config
     rm ~/.i3/config
     cat /opt/vi3/header.txt ~/.i3/colors/{$colors} ~/.i3/personalconfig /opt/vi3/vi3config > ~/.i3/config
-    im reload
+    im restart
     sleep 3
     apply-transparency
 end

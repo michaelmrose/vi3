@@ -20,35 +20,10 @@ function rboot
     sudo shutdown -r now
 end
 
-function u
-    cd ..
-end
-
-function fizzbuzz
-    for i in (seq $argv)
-        set result ""
-        if divisible $i 3
-            set result {$result}fizz
-        end
-        if divisible $i 5
-            set result {$result}buzz
-        end
-        if match $result ""
-            echo $i
-        else
-            echo $result
-        end
-    end
-end
-
 function reset-net
     sudo ifconfig eth0 down
     sleep 3
     sudo ifconfig eth0 up
-end
-
-function h
-    cd ~
 end
 
 function die
@@ -58,7 +33,6 @@ end
 function logoff
     i3-msg exit
 end
-
 
 function kill-user
     sudo pkill -KILL -u $argv
@@ -73,9 +47,7 @@ function logout
     i3-msg exit
 end
 
-
-
-function grepproc
+function gproc
     ps -A | grep $argv
 end
 
@@ -1320,7 +1292,19 @@ function zp
 end
 
 function zf
-    sudo zfs $argv
+    switch $argv[1]
+        case -q
+            zf get -H $argv[2..-1] | condense_spaces | cut -d " " -f3
+        case "*"
+            sudo zfs $argv
+        end
+end
+
+function calculate-space-saved
+    set ratio (zf -q compressratio tank | cut -c1-3)
+    set used (zf -q used tank | cut -d G -f1)
+    set additional (wcalc -q "($ratio - 1) * $used")
+    echo $additional Gigabytes saved by compression
 end
 
 function seconds
@@ -1525,16 +1509,6 @@ function show-memusage
     msg (memusage-current)
 end
 
-function lockme
-    save-workspaces
-    vi3_mode locked
-    for i in (get-connected-displays)
-        im focus output $i
-        im workspace {$i}_is_locked
-    end
-    im bar mode invisible
-end
-
 function lockmeminimal
     save-workspaces
     for i in (get-connected-displays)
@@ -1554,12 +1528,6 @@ function unlockmeminimal
         im bar mode dock
         set -U locked false
     end
-end
-
-function unlockme
-    vi3_mode default
-    im bar mode dock
-    restore-workspaces
 end
 
 function unlock-with-buffer
@@ -1599,7 +1567,7 @@ function transfer
 end
 
 function mydate
-    set adate (date '+%I:%M:%S %b %d %Y')
+    set adate (date '+%r %b %d %Y')
     if startswith 0 $adate
         echo $adate | cut -c2-
     else
@@ -1846,6 +1814,669 @@ function edit-var
         vared lst[$i]
     end
     set $argv $lst
+end
+
+function switchtty
+    xdotool key Control+alt+F$argv
+end
+
+function spacefm-cd
+    xdotool key Control+l
+    xdotool type --delay 1 $argv
+    xdotool key Return
+end
+
+function remove-pdf-watermark2
+    set watermark "Licensed to michael rose <Michael@rosenetwork.net>"
+    set file $argv[1]
+    set tmp /tmp/pdf_{$file}
+    pdftk $argv output $tmp uncompress
+    replacestr $watermark '' $tmp
+    cp $tmp out.pdf
+    pdftk $tmp output $file compress
+    rm $tmp
+end
+
+function choose-library
+    switch-library (rfi match (ls ~/calibre))
+end
+
+function choose-image
+    set current (pwd)
+    set path $argv
+    cd $path
+    echo $path/(sxiv -tfo *.jpg *.png *.bmp)
+    cd $current
+end
+
+function randomtest
+    set num[1] (rand -M 7) &
+    set num[2] (rand -M 7) &
+    set num[3] (rand -M 7) &
+    set num[4] (rand -M 7) &
+    set num[5] (rand -M 7) &
+    sleep 0.01
+    for i in $num
+        if test $i -ne $lastroll
+            set -U lastroll $i
+            echo $i
+            return 0
+        end
+    end
+    randomtest
+end
+
+function replacestr
+    set com perl -0777 -i.original -pe \'s/$argv[1]/$argv[2]/igs\' $argv[3]
+    eval $com
+end
+
+function on_i3_events --description "watches the events described and evaluates the function with the same name as events if it exists"
+    i3subscribe $argv | while read -l line
+                            if defined $line
+                                eval $line
+                            end
+                        end
+end
+
+function tstfn
+end
+
+function workspace:focus
+    echo ws focus
+end
+
+function window:focus
+    signal-i3blocks windowtitle
+end
+
+function window:new
+    echo win new
+end
+
+function evaluate
+    if defined $argv[1]
+        eval $argv
+    end
+end
+
+function apply-transparency
+    for i in (list-windows id)
+        transset -i $i (return-trans-value (return-winclass $i)) > /dev/null
+    end
+    for i in (get-i3bar-ids)
+        transset -i $i 0.9 > /dev/null
+    end
+end
+
+function set-trans
+    transset -i (mywin) (return-trans-value (return-winclass (mywin)))
+end
+
+function return-winclass
+    xprop  WM_CLASS -id $argv | cut -d '"' -f4
+end
+
+
+function return-trans-value
+    set app (echo $argv | cut -d " " -f4 | cut -d "." -f1)
+    switch $app
+        case Qvim
+            echo 0.9
+        case Clementine
+            echo 0.89
+        case Spacefm
+            echo 0.95
+        case LilyTerm
+            echo 0.88
+        case Hexchat
+            echo 1.0
+        case i3bar
+            echo 0.8
+        case "*"
+            echo 1.0
+    end
+end
+
+function remap
+    switch $argv[1]
+        case key
+            set type keysym
+            set key1 $argv[2]
+            set key2 $argv[3..-1]
+        case code
+            set type keycode
+            set key1 $argv[2]
+            set key2 $argv[3..-1]
+        case "*"
+            set type keysym
+            set key1 $argv[1]
+            set key2 $argv[2..-1]
+    end
+    xmodmap -e "$type $key1 = $key2"
+end
+
+function toggle-symbol-lock
+    if [ $symbollock = true ]
+        remap code 10 1 exclam
+        remap code 11 2 at
+        remap code 12 3 numbersign
+        remap code 13 4 dollar
+        remap code 14 5 percent
+        remap code 15 6 asciicircum
+        remap code 16 7 ampersand
+        remap code 17 8 asterisk
+        remap code 18 9 parenleft
+        remap code 19 0 parenright
+        set symbollock false
+    else
+        remap code 10 exclam 1
+        remap code 11 at 2
+        remap code 12 numbersign 3
+        remap code 13 dollar 4
+        remap code 14 percent 5
+        remap code 15 asciicircum 6
+        remap code 16 ampersand 7
+        remap code 17 asterisk 8
+        remap code 18 parenleft 9
+        remap code 19 parenright 0
+        set symbollock true
+    end
+end
+
+function inbg
+    ff $argv &
+    bg %(echo (jobs)[-1] | cut -f1)
+end
+
+function window-title-status-line
+    echo (center-text (window-title | cut -c1-120))
+end
+
+function diffcom
+    diff (write-file (eval $argv[1])) (write-file (eval $argv[2]))
+end
+
+function get-i3-setting
+    cat ~/.i3/config | grep "$argv" | condense_spaces | cut -d " " -f2-
+end
+
+function get-i3bar-ids
+    xwininfo -all -root | grep 'i3bar for output' | condense_spaces | cut -d " " -f1
+end
+
+function process-schedule
+    for i in (cat $argv)
+        work $i
+    end
+end
+
+function mm-dmenu
+    eval media-ctl (dm choice "enter a command for media-ctl")
+end
+
+
+function padded
+    set val $argv
+    for i in (range 30)
+        set val $val ""
+    end
+    println $val
+end
+
+function sxs
+    set xs (padded $xs)
+end
+
+function xs
+    if test (count $xs) -ge $argv
+        echo $xs[$argv]
+    end
+end
+
+function sopen
+    if test -f $argv
+        eval open (quote $argv)
+    end
+end
+
+function outerfn
+    set xs $argv
+    xs 2..-1
+    innerfn
+    # echo val of xs is $xs in outer
+end
+
+function innerfn
+    set xs fuck
+    # echo set xs in inner
+end
+
+function update-penta
+    git -C ~/proj/dactyl pull
+    make -C ~/proj/dactyl/pentadactyl install
+    killall firefox
+    firefox &
+end
+
+function doit
+    sudo $history[1]
+end
+
+
+# function startiton
+#     set layout /tmp/(echo (uid)-layout)
+#     set workspace $argv[1]
+#     set app $argv[2]
+#     set winclass (return-windowclass $app)
+#     save-workspaces
+#     cat ~/test.json | sed "s/#winclass/$winclass/g" > $layout
+#     ws $workspace
+#     im append_layout $layout
+#     fish -c $app &
+#     restore-workspaces
+#     rm $layout
+# end
+
+function startiton
+    set workspacelist (odds $argv)
+    set applist (evens $argv)
+    echo printing ws
+    println $workspacelist
+    echo printing apps
+    println $applist
+    save-workspaces
+
+    for i in (range (count $workspacelist))
+        set layout /tmp/(echo (uid)-layout)
+        set workspace $workspacelist[$i]
+        set app $applist[$i]
+        set winclass (return-windowclass $app)
+        echo w is $winclass and a is $app
+        cat ~/test.json | sed "s/#winclass/$winclass/g" > $layout
+        ws $workspace
+        im append_layout $layout
+        fish -c "$app &"
+        rm $layout
+    end
+    restore-workspaces
+    sleep 3
+    apply-transparency
+end
+
+function fn
+    switch $argv[1]
+        case -h
+            set fn (functions $argv[2])
+            echo $fn | cut -d "'" -f2
+        case -i
+            funced -i $argv[2]
+        case -l
+            get-line-of-fn-definition $argv[2]
+        case -le
+            get-end-line-of-fn-definition $argv[2]
+        case -e
+            fed $argv[2]
+            rl
+        case -d
+            defined-in $argv[2]
+        case "*"
+            functions $argv
+    end
+end
+
+function get-size-of-fn
+    count (functions $argv)
+end
+
+function delete-lines
+    set start $argv[1]
+    set end $argv[2]
+    set file $argv[3]
+    sed -i -e "$start,$end d" $file
+end
+
+function get-end-line-of-fn-definition
+    set begining (get-line-of-fn-definition $argv)
+    set size (get-size-of-fn $argv)
+    set ending (math "$begining + $size -1")
+    echo $ending
+end
+
+
+function set-similar-completions --argument alias command
+    if expr match $command '^sudo '>/dev/null
+        set command (expr substr + $command 6 (expr length $command))
+    end
+    complete -c $alias -xa "(
+    set -l cmd (commandline -pc | sed -e 's/^ *\S\+ *//' );
+    complete -C\"$command \$cmd\";
+    )"
+end
+
+balias al balias
+
+set-similar-completions fn funced
+
+
+function set-appropriate-colorscheme
+        set daylight 8-19
+        if within $daylight (hours)
+            colorscheme greenandyellow
+            echo yellow
+        else
+            colorscheme blue
+            echo blue
+        end
+end
+
+
+function get-i3-assignments
+    set assignments (cat ~/.i3/config | grep "assign \[" | condense_spaces)
+    set conditions (println $assignments | cut -d "[" -f2 | cut -d "]" -f1 | trim)
+    set workspaces (println $assignments | cut -d " " -f4)
+    for i in (range (count $assignments))
+        echo $conditions[$i] $workspaces[$i]
+    end
+end
+
+function shortest
+        set shortest $argv[1]
+        for i in $argv
+            if test (sizeof $i) -lt (sizeof $shortest)
+                set shortest $i
+            end
+        end
+        echo $shortest
+end
+
+
+function scd
+    set numargs (count $argv)
+    switch $numargs
+        case "1"
+            cd $argv
+        case "2"
+            cd (echo (pwd) | sed "s/$argv[1]/$argv[2]/g")
+   end
+end
+
+function change-to-subdir
+    set dirs (println (find . -maxdepth 4 -type d))
+    set matches (println $dirs | grep --regex /$argv\$)
+    if exists $matches
+        cd (shortest $matches)
+    end
+end
+
+alias cs change-to-subdir
+
+function autojump-with-returnval
+    directorychanged j $argv
+end
+
+function directorychanged
+    set dir (pwd)
+    eval $argv
+    set newdir (pwd)
+    if [ $dir = $newdir ]
+        return 1
+    else
+        return 0
+    end
+end
+
+function c
+    if test -d $argv
+        cd $argv
+    else if false #bmark exists
+        echo goto bmark
+    else if change-to-subdir $argv
+    else if autojump-with-returnval $argv
+    else
+        return 1
+    end
+end
+
+function evaluate-list
+    for i in $argv
+        if startswith @ $i
+            set msg $msg (cdr $i)
+        else
+            set msg $msg (eval $i)
+        end
+    end
+    echo $msg
+end
+
+function rfi
+    set bindings -kb-accept-custom "Return"
+    switch $argv[1]
+        case run
+            rofi $bindings -show run
+        case window
+            rofi -show window
+        case match
+            println $argv[3..-1] | rofi -dmenu -p $argv[2]
+        case menu
+            println "" | rofi $bindings -dmenu -p $argv[2]
+        case enter
+            echo '' | rofi -dmenu -p $argv[2]
+        case ssh
+            rofi -show ssh
+        case windows
+            choose-window all
+        case visible
+            choose-window visible
+        case vpn
+            vpn choose
+        case books
+            books
+        case volume
+            choose-volume
+        case video
+            choose-video
+        case music
+            choose-music
+        case trans
+            choose-trans
+        case library
+            choose-library
+        case session
+            choose-session
+        case bg
+            choose-background
+    end
+end
+
+function psf
+    ps -A | grep -i "$argv"
+end
+
+function clipboard
+    if exists $argv
+        eval $argv | clipboard
+    else
+        xclip -selection clipboard -i
+    end
+end
+
+function wf
+    eval $argv | psub
+end
+
+function in-terminal
+    pstree -s %self | grep $TERMINAL > /dev/null
+end
+
+function sendit
+    if in-terminal
+        switch $argv[1]
+            case -p
+                println $argv[2..-1]
+            case "*"
+                echo $argv
+        end
+    else
+        switch $argv[1]
+            case -p
+                msg $argv[2..-1]
+            case "*"
+                msg $argv
+        end
+    end
+end
+
+function l
+    ls++ --ptsf $argv
+end
+
+
+function view-wininfo
+    set id (mywin)
+    set tmp /tmp/wininfo-(uid)
+    echo XPROP >> $tmp
+    echo ----- >> $tmp
+    echo " " >> $tmp
+    xprop -id $id >> $tmp
+    echo " " >> $tmp
+    echo XWININFO >> $tmp
+    echo -------- >> $tmp
+    echo " " >> $tmp
+    xwininfo -id $id -all >> $tmp
+    eval $EDITOR $tmp
+end
+
+function sustatus
+    set -U sustatus sudo
+end
+
+function run-appkey-as-su
+    set app (return-program-name (appkey $argv))
+    if [ $app = urxvtc ]
+        set app urxvt
+    end
+    eval sudo $app &
+    er vi3op
+    update-op-status
+end
+
+function mdman
+     grep -v "\-\-\-\-\-" $argv | pandoc -s -f markdown -t man | groff -T utf8 -man | less
+ end
+
+ function testd
+     if eval $argv > /dev/null
+     end
+ end
+
+
+function areweonline
+    ping 8.8.8.8 -c 1 -W 1 > /dev/null
+end
+
+
+function escapeme
+    set val \'$argv\'
+    echo \'$val\' | sed 's/*/\*/g' | sed 's/?/\?/g'
+end
+
+function ssh-agent-wrap
+    set sshagentstring (ssh-agent -s)
+    set vals[1] (echo $sshagentstring[1] | cut -d "=" -f1)
+    set vals[2] (echo $sshagentstring[2] | cut -d "=" -f1)
+    set res[1] (echo $sshagentstring[1] | cut -d "=" -f2 | cut -d ";" -f1)
+    set res[2] (echo $sshagentstring[2] | cut -d "=" -f2 | cut -d ";" -f1)
+    echo set $vals[1] $res[1]
+    echo set $vals[2] $res[2]
+end
+
+function setmeurgent
+    seturgent (mywin)
+end
+
+function evalinturn
+    set lastarg $argv[-1]
+    set lastcom $argv[-2]
+    set res (eval $lastcom $lastarg)
+
+    for i in $argv[-3..1]
+        echo res is $res i $i
+        set res (eval $i "$res")
+        echo res is $res i $i
+    end
+end
+
+function choose-autojump-dir
+    set dir (autojump (rfi enter "choose a dir: "))
+    spacefm-cd $dir
+end
+
+function filterandopen
+    set val (rfi enter "enter a value: ")
+    open (rfi match "choose a file" (here $val))
+end
+
+function shutitdown
+    if exists $argv
+        set -U shutitdown $argv
+        return 0
+    end
+    if contains $shutitdown t true
+        set -U shutitdown false
+        sudo shutdown -h now
+    end
+end
+
+al sd shutitdown
+
+function in-vim
+    if contains (winclass) Qvim Gvim
+        return 0
+    end
+    if window-title | grep -E '^nvim'
+        return 0
+    end
+    return 1
+end
+
+function toggle-vim
+    if in-vim
+        xdotool key Escape
+        xdotool type --delay 0.1 :w 
+        xdotool key Return
+        xdotool key Control+z
+        xdotool key Return
+        xdotool key Control+r
+    else
+        xdotool key Control+x
+    end
+end
+
+function zfs-get-val
+    zf get -H $argv[1] $argv[3] | condense_spaces | cut -d " " -f3
+end
+
+function commatospaces
+    if exists $argv
+        echo $argv | sed 's/,/ /g'
+    else
+        while read -l line
+            commatospaces $line
+        end
+    end
+end
+
+function kill-window
+    if match (winclass) mpv
+        kill -9 (mypid)
+    else
+        i3-msg kill
+    end
+end
+
+function mypid
+    wmctrl -lxp | grep (ensure-hex (mywin)) | condense_spaces | cut -d " " -f3
 end
 alias rfm "urxvtc -e ranger"
 alias qs quickswitch.py

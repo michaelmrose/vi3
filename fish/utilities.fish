@@ -371,7 +371,13 @@ function capitalize
 end
 
 function explode
-    echo $argv | sed 's/ /\n/g'
+    if substr $argv @
+        set char @
+    else
+        set char ' '
+    end
+
+    echo $argv | sed "s/$char/\n/g"
 end
 
 function xdc
@@ -444,4 +450,46 @@ end
 
 function hextodec
     printf '%d\n' $argv
+end
+
+function format-for-matchlist
+    set size (count $argv)
+    set n 0
+    for i in $argv
+        set n (increase $n)
+        if test $n -ne $size
+            set acc $acc (echo {$i}@)
+        else
+            set acc $acc $i
+        end
+    end
+    # set size (math (sizeof $acc) - 1
+    echo $acc
+end
+
+function get-display-left-to-right
+    set outputs (xrandr | grep " connected" | cut -d " " -f1)
+    set offsets (xrandr | grep " connected" | cut -d + -f2)
+    set sorted (println $offsets | sort)
+    for i in (seq (count $outputs))
+        set x (findindex $sorted[$i] $offsets)
+        set lst $lst $outputs[$x]
+    end
+    println $lst
+end
+
+function get-number-of-displays
+    count (get-connected-displays)
+end
+
+function get-display-order
+    set outputs (xrandr | grep " connected" | cut -d " " -f1)
+    set ordered (get-display-left-to-right)
+    for i in $outputs
+        math (findindex $i $ordered) - 1
+    end
+end
+
+function get-connected-displays
+    xrandr | grep " connected" | cut -d "c" -f1 | trim
 end
