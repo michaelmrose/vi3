@@ -75,6 +75,7 @@ end
 
 function v
     qvim $argv
+    nv
 end
 
 function vs
@@ -295,61 +296,10 @@ function gcalendar
     chromeless -new-window calendar.rosenetwork.net &
 end
 
-function fm
-        set startingdir (pwd)
-        j $argv
-        open (pwd) &
-        cd $startingdir
-end
-
-function keyp
-    xdotool key $argv
-end
-
-function open-trans
-    eval $argv[1]
-    sleep 1
-    set mywin (xdotool getactivewindow)
-    transset -i $mywin $argv[2]
-end
-
-function trans
-    currentapp
-    transset -i $mywin $argv
-end
-
-function another-trans
-    transset -i (xdotool getactivewindow) .{$argv}
-end
-
-function currentapp
-    set -U mywin (xdotool getactivewindow)
-end
-
-function mywin
-   xdotool getactivewindow
-end
-
-function transparent
-    currentapp
-    transset -i $mywin .86
-end
-
-function solid
-    currentapp
-    transset -i $mywin 1.0
-end
-
 function chromeless3
     firefox -P chromeless -no-remote $argv &
     sleep 3
     unset-fullscreen
-end
-
-function chromeless2
-    firefox -new-window $argv
-    sleep 3
-    keyp colon c h r o m e l e s s Return Control+z
 end
 
 function chromeless
@@ -408,8 +358,6 @@ function write-file
     println $contents > $tmp
     echo $tmp
 end
-
-
 
 function display-manual
     if exists $argv
@@ -479,7 +427,7 @@ function bsrch
 end
 
 function save-layout
-    i3-save-tree --workspace (getCurrentWorkspace)   > ~/workspace.json
+    i3-save-tree --workspace (get-focused-workspace)   > ~/workspace.json
 end
 
 function sxivd
@@ -685,7 +633,7 @@ function extract-filename
 end
 
 function really-quit
-    xkill -id (mywin)
+    xkill -id (wininfo id dec)
 end
 
 function pinfo-choose
@@ -741,12 +689,12 @@ end
 
 function focus-distinct
     set current_class (winclass)
-    set current_id (mywin)
+    set current_id (wininfo id dec)
     while true
         im focus $argv
         set next_class (winclass)
         if not match $current_class $next_class
-            set new_id (mywin)
+            set new_id (wininfo id dec)
             break
         end
     end
@@ -824,7 +772,7 @@ function set-brightness
     if expr $number : -[0-9]\* > /dev/null
         set adjustment (math $currentval - $adjustment)
     end
-    xrandr  --output $display  --brightness (dividebyten $adjustment)
+    xrandr  --output $display  --brightness (wcalc -q "$adjustment / 100")
 end
 
 alias bright set-brightness-all-displays
@@ -840,7 +788,7 @@ end
 function get-brightness-of-all
     set result (xrandr --verbose | grep -i brightness |  cut -d " " -f2)
     for i in $result
-        echo (multiplybyten $i)
+        echo (wcalc -q "$i * 100")
     end
 end
 
@@ -856,22 +804,11 @@ function get-brightness-current-display
 end
 
 function dividebyten
+    #function name is a basic math error leaving till I fix the idiotic name
     if test $argv -ge 100
         echo 1
     else
-        echo "0."$argv
-    end
-end
-
-function multiplybyten
-    if [ $argv = 1.0 ]
-        echo 100
-    else
-        set result (echo $argv | cut -d '.' -f2)
-        if test (expr length $result) -lt 2
-            set result {$result}0
-        end
-        echo $result
+        wcalc -q "$argv / 100"
     end
 end
 
@@ -959,7 +896,7 @@ end
 
 
 function show-title
-    msg (window-title)
+    msg (wininfo title)
 end
 
 set windows (wmctrl -l | cut -d " " -f1)
@@ -1041,39 +978,6 @@ function cpu-set
     sudo cpufreq-set -c 0 -f $argv GHz
 end
 
-function smartnav
-    set title (window-title)
-    switch $argv
-        case "up"
-            set key k
-        case "down"
-            set key j
-        case "left"
-            set key h
-        case "right"
-            set key l
-    end
-    set vimmod Shift
-    set i3mod Super
-    set class (tolower (winclass))
-    switch $class
-        case "qvim"
-            set mod $vimmod
-        case "*"
-            set mod $i3mod
-   end
-   xdotool keydown $mod;xdotool key $key;xdotool keyup $mod
-   echo mod is $mod
-   sleep 1
-   set newtitle (window-title)
-   if match $title $newtitle
-        # msg vim nav
-        xdotool keydown $i3mod
-        xdotool key $key
-        xdotool keyup $i3mod
-    end
-end
-
 function choose-session
     restoreme (rfi match "choose a session" (list-sessions))
 end
@@ -1111,40 +1015,17 @@ function process-book-rar
     rm $argv
 end
 
-
 function choose-trans
-    trans (dividebyten (dm choice "set opacity")) > /dev/null
+    set val (rfi enter "set opacity: ")
+    if isnumeric $val
+        trans $val > /dev/null
+    end
 end
 
 function choose-volume
-    setvol (dm choice "set volume")
+    setvol (rfi enter "set volume: ")
 end
 
-function typeforme
-    xdotool key k
-end
-
-function smart-pick
-    set result (ls | grep -i "$argv")
-    switch (count $result)
-        case "1"
-            echo $result
-        case "*"
-            fuzzymenu $result
-            echo $fquery
-    end
-end
-
-function smart-open
-    set result (ls | grep -i "$argv")
-    switch (count $result)
-        case "1"
-            open $result
-        case "*"
-            fuzzymenu $result
-            open $fquery
-    end
-end
 
 function echofun
     set value (toilet $argv -f future)
@@ -1158,6 +1039,10 @@ end
 
 function weather-icon
     weather $geo --iconify | rev | cut -c1-3
+end
+
+function weather-status-line
+    echo (weather-icon) (weather-here)
 end
 
 function transwindows
@@ -1420,7 +1305,7 @@ function signal-i3blocks
 end
 
 function new_tab
-    set win (mywin)
+    set win (wininfo id dec)
     im layout tabbed
     urxvtc
     sleep 1
@@ -1641,12 +1526,13 @@ function mem_info
     # set total_free (addmemsize $free)
     echo -e total: $mem_info[1] used: $mem_info[2] free: $mem_info[3] buffers: $mem_info[5] cache: $mem_info[6]
 end
+
 function free-memory
     set mem_info (explode (echo (free -m)[2] | cut -d ":" -f2- | condense_spaces))
     set free {$mem_info[3]}M
     set buffers {$mem_info[5]}M
     set cache {$mem_info[6]}M
-    echo f $free b $buffers c $cache
+    echo free: $free buff: $buffers cache: $cache
     # addmemsize $free $buffers $cache
 end
 
@@ -1661,17 +1547,6 @@ function windows-list
     wmctrl -lxp | condense_spaces
 end
 
-# function nextwin
-#     set ids (windows-list | sort | grep (winclass) | cut -d " " -f1)
-#     set cnt (count $ids)
-#     set ndx (findindex (ensure-hex (mywin)) $ids)
-#     if test $ndx -eq $cnt
-#         set next 1
-#     else
-#         set next (math "$ndx + 1")
-#     end
-#     focus id $ids[$next]
-# end
 
 function nextwin
     nextmatch (winclass)
@@ -1680,7 +1555,7 @@ end
 function nextmatch
     set ids (windows-list | sort | grep -i (return-windowclass $argv) | cut -d " " -f1)
     set cnt (count $ids)
-    set ndx (findindex (ensure-hex (mywin)) $ids)
+    set ndx (findindex (wininfo id hex) $ids)
     if not exists $ndx #there is no $ndx as the current window is not the same window class as $argv
         set next 1
     else if test $ndx -eq $cnt #we are already at the last item on the list we should start at the begining
@@ -1729,7 +1604,7 @@ end
 
 function cycle_windows
     set windows (list-windows dec $argv)
-    set current (findindex (mywin) $windows)
+    set current (findindex (wininfo id dec) $windows)
     set dest (ensure_valid_index $current $windows)
     focus id $windows[$dest]
 end
@@ -1910,7 +1785,7 @@ function apply-transparency
 end
 
 function set-trans
-    transset -i (mywin) (return-trans-value (return-winclass (mywin)))
+    transset -i (wininfo id dec) (return-trans-value (return-winclass (wininfo id dec)))
 end
 
 function return-winclass
@@ -1925,6 +1800,8 @@ function return-trans-value
             echo 0.9
         case Clementine
             echo 0.89
+        case Zathura
+            echo 0.95
         case Spacefm
             echo 0.95
         case LilyTerm
@@ -1990,7 +1867,7 @@ function inbg
 end
 
 function window-title-status-line
-    echo (center-text (window-title | cut -c1-120))
+    echo (center-text (wininfo title | cut -c1-120))
 end
 
 function diffcom
@@ -2254,6 +2131,7 @@ function rfi
     switch $argv[1]
         case run
             rofi $bindings -show run
+            #dmenu_run -nb "black" -sf "#036300" -sb "#A6CD01" -nf "grey" -b -l 10 -i -p "Command: "
         case window
             rofi -show window
         case match
@@ -2333,7 +2211,7 @@ end
 
 
 function view-wininfo
-    set id (mywin)
+    set id (wininfo id dec)
     set tmp /tmp/wininfo-(uid)
     echo XPROP >> $tmp
     echo ----- >> $tmp
@@ -2392,7 +2270,7 @@ function ssh-agent-wrap
 end
 
 function setmeurgent
-    seturgent (mywin)
+    seturgent (wininfo id dec)
 end
 
 function evalinturn
@@ -2434,7 +2312,7 @@ function in-vim
     if contains (winclass) Qvim Gvim
         return 0
     end
-    if window-title | grep -E '^nvim'
+    if wininfo title | grep -E '^nvim'
         return 0
     end
     return 1
@@ -2443,7 +2321,7 @@ end
 function toggle-vim
     if in-vim
         xdotool key Escape
-        xdotool type --delay 0.1 :w 
+        xdotool type --delay 0.1 :w
         xdotool key Return
         xdotool key Control+z
         xdotool key Return
@@ -2467,17 +2345,6 @@ function commatospaces
     end
 end
 
-function kill-window
-    if match (winclass) mpv
-        kill -9 (mypid)
-    else
-        i3-msg kill
-    end
-end
-
-function mypid
-    wmctrl -lxp | grep (ensure-hex (mywin)) | condense_spaces | cut -d " " -f3
-end
 alias rfm "urxvtc -e ranger"
 alias qs quickswitch.py
 alias pbr process-book-rar

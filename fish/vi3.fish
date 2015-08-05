@@ -106,14 +106,11 @@ function vi3_change-all-workspaces
 end
 
 function get-active-workspaces
-    for i in (get-connected-displays) 
-        echo (getCurrentWorkspace)
-        im focus output right
-    end
+    get-ws-info get name where visible = true
 end
 
 function focus-primary
-    im focus output (get-primary-display) 
+    im focus output (get-primary-display)
 end
 
 function restore-workspaces
@@ -136,7 +133,7 @@ end
 function vi3_take-n
 
 # takes a letter which is added to a list a function to eval
-# and a number n when the list is n letters long the function 
+# and a number n when the list is n letters long the function
 # is evaluated making use of the list
 
     set -U combolist $combolist $argv[1]
@@ -278,7 +275,7 @@ function vi3_get-workspace
     er vi3op
     update-op-status
     checkpoint-ws
-    vi3_workspace $argv 
+    vi3_workspace $argv
     vi3_select-all-in-workspace
     vi3_take-back
     restore-ws
@@ -302,7 +299,7 @@ end
 
 function evalvi3op
     # set -U lastcom $vi3op $argv
-    set com $vi3op $argv 
+    set com $vi3op $argv
     eval $com
 end
 
@@ -354,7 +351,7 @@ function focus-next
 end
 
 function open-app
-    set target (appkey $argv) \& 
+    set target (appkey $argv) \&
     echo $target
     eval $target
     er vi3op
@@ -377,7 +374,7 @@ function kill-other-windows
     kill-workspace
     vi3_get-workspace keep
 end
-    
+
 
 function destroy-everything
     set displays (get-connected-displays)
@@ -403,7 +400,7 @@ function colorscheme
 end
 
 function saveme
-    i3-save-tree --workspace (getCurrentWorkspace) | sed 's-^\([[:blank:]]*\)//\([[:blank:]]"class".*\),$-\1\2-' > ~/.i3/sessions/{$argv}.json
+    i3-save-tree --workspace (get-focused-workspace) | sed 's-^\([[:blank:]]*\)//\([[:blank:]]"class".*\),$-\1\2-' > ~/.i3/sessions/{$argv}.json
     set sessionscript ~/sessions/{$argv}
     echo '#!/usr/bin/fish' > $sessionscript
     chmod +x $sessionscript
@@ -477,19 +474,32 @@ function im
 end
 
 function get-focused-workspace
-    set list (get-active-workspaces)
-    echo $list[1]
+    get-ws-info get name where focused = true
+end
+
+function get-ws-info
+    #example get output where focused = true
+    set var $argv[4]
+    set val $argv[6]
+    set desired $argv[2]
+    set com i3-msg -t get_workspaces \| jq \'.\[\] \| \{output: .output, width: .rect.width, height: .rect.height, x: .rect.x, y: .rect.y, name: .name, visible: .visible, focused: .focused, urgent: .urgent\}\' \| jq -r \'select\(.$var == $val\).$desired\'
+    eval $com
+end
+
+function get-ws-info2
+    #example get output where focused = true
+    eval i3-msg -t get_workspaces \| jq \'.\[\] \| \{output: .output, width: .rect.width, height: .rect.height, x: .rect.x, y: .rect.y, name: .name, visible: .visible, focused: .focused, urgent: .urgent\}\' \| jq -r \'select\(.$argv[4] == $argv[6]\).$argv[2]\'
 end
 
 function show-menu
     if exists $vi3op
-        set msg (show-op) 
+        set msg (show-op)
     else
         set msg (show-mode)
     end
-    
+
     echo $msg
-    
+
 end
 
 function better-show-menu
@@ -510,7 +520,7 @@ function better-show-menu
                 set msg $vi3mode
        end
     end
-        
+
 end
 
 function show-op
@@ -552,7 +562,7 @@ function show-op
                   set msg "some other op"
           end
       end
-      
+
       echo $msg
 end
 
@@ -595,8 +605,8 @@ function sset
     set $argv
     echo $argv[-1]
 end
-        
-        
+
+
 
 function vi3_mode
     im mode $argv
@@ -607,7 +617,7 @@ end
 function vi3_kill
     switch $argv
         case "d" #kill workspace
-           select-all-in-workspace 
+           select-all-in-workspace
            im kill
         case "a" #all of a given appkey
             vi3_operator-mode kill-all-app
@@ -617,7 +627,7 @@ function vi3_kill
             set displays (get-connected-displays)
             for i in $displays
                 im focus output $i
-                select-all-in-workspace 
+                select-all-in-workspace
                 im kill
             end
         case "o" #other windows on workspace

@@ -21,7 +21,7 @@ function match
 end
 
 function tolower
-    echo $argv | tr '[:upper:]' '[:lower:]' 
+    echo $argv | tr '[:upper:]' '[:lower:]'
 end
 
 function println
@@ -90,7 +90,7 @@ function fuzzymenu
     for i in $argv
         set acc $acc \n $i
     end
-    
+
     set tmp /tmp/fzf.result
     echo $acc | fzf > $tmp
     if [ (cat $tmp | wc -l) -gt 0 ]
@@ -101,7 +101,7 @@ function fuzzymenu
 end
 
 function escape-spaces
-    echo $argv | sed 's/ /\\ /g' 
+    echo $argv | sed 's/ /\\ /g'
 end
 
 function endofpath
@@ -141,7 +141,11 @@ end
 
 function exists
     if test (count $argv) -gt 0
-        test (sizeof $argv[1]) -gt 0
+        for i in $argv
+            if test (sizeof $i) -gt 0
+                return 0
+            end
+        end
     end
 end
 
@@ -173,7 +177,7 @@ end
 #         set target (pwd)
 #         set types $argv
 #     end
-    
+
 #     set pth (pwd)
 #     cd $target
 #     set start 'find ./ -regextype posix-extended -regex ".*\.('
@@ -195,7 +199,7 @@ function findall-list
         set val (explode $i)
         set $val[1] $val[2..-1]
     end
-    
+
     for i in $dirs
         set results $results (findall $i $types)
     end
@@ -252,7 +256,7 @@ function unique
     end
     println $acc
 end
-    
+
 
 function lastchar
     echo $argv | cut -c(sizeof $argv)
@@ -389,6 +393,10 @@ function isinteger
 end
 
 function waituntilfocused
+    #holds until a new window is focused of the chosen windowclass"
+    set winid (xdotool getactivewindow)
+    while [ (xdotool getactivewindow) = $winid ]
+    end
     while not [ (winclass) = $argv ]
     end
 end
@@ -420,7 +428,7 @@ function here
 end
 
 function winclass
-    xprop -id (mywin) | grep WM_CLASS | cut -d '"' -f4
+    xprop -id (wininfo id dec) | grep WM_CLASS | cut -d '"' -f4
 end
 
 function filtermatch
@@ -603,10 +611,6 @@ function ensure-dec
     else
         echo $val
     end
-end
-
-function window-title
-    xwininfo -id (mywin) | cut -d \n -f2 | cut -d '"' -f2
 end
 
 function transform-with
@@ -840,6 +844,10 @@ function endof
     echo $argv[-1]
 end
 
+function delete-blank-lines
+    echo $argv | sed '/^\s*$/d'
+end
+
 function increase
     echo (math $argv +1)
 end
@@ -894,12 +902,12 @@ end
 
 function istrue
     if contains $argv t true 1
-    end 
+    end
 end
 
 function isfalse
     if contains $argv f false 0
-    end 
+    end
 end
 
 function toggle-bool

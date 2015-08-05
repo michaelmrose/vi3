@@ -3,13 +3,13 @@ function dm
         case "run"
             dmenu_run -nb "black" -sf "#036300" -sb "#A6CD01" -nf "grey" -fn Inconsolata-13 -b -l 10 -i -p "Command: "
         case "menu"
-                dmenu -nb "black" -sf "#036300" -sb "#A6CD01" -nf "grey" -fn Inconsolata-13 -b -l 10 -i -p $argv[2]   
+                dmenu -nb "black" -sf "#036300" -sb "#A6CD01" -nf "grey" -fn Inconsolata-13 -b -l 10 -i -p $argv[2]
         case "choice"
             echo "" | dm menu "$argv[2]"
     end
 end
 
-    
+
 
 function wp0 -d 'usage: [max,scale,tile] path-to-image or path-to-image or [max,scale,tile]'
     set dest ~/.bgimage/img.png
@@ -51,7 +51,7 @@ function wp2
     set dest ~/.bgimage/img.png
     set resolution 1920x1080
 
-    if matches $argv "max|scale|tile" 
+    if matches $argv "max|scale|tile"
         echo first
         set style $argv
         set image $dest
@@ -59,13 +59,13 @@ function wp2
         echo second
         set style $argv[1]
         set image (pathof $argv[2])
-    else if matches $argv "\S*" 
+    else if matches $argv "\S*"
         echo third
         set style scale
         set image (pathof $argv[1])
     end
-    
-    echo i is $image s is $style 
+
+    echo i is $image s is $style
     feh --bg-$style $image
     echo converting...
     convert $image -resize 1920x1080\! $dest
@@ -78,7 +78,7 @@ function lock
 end
 
 function focus
-    set original (mywin)
+    set original (wininfo id dec)
     switch $argv[1]
         case "id"
             set criteria id
@@ -92,7 +92,7 @@ function focus
         case "urgent"
             im [urgent=latest] focus
         case "ws"
-            im focus $argv[2] 
+            im focus $argv[2]
             return 0
         case "regex"
             set criteria $argv[2]
@@ -107,7 +107,7 @@ function focus
             end
     end
     im [$criteria=$choice] focus
-    set final (mywin)
+    set final (wininfo id dec)
     if [ $final = $original ]
         return 1
     end
@@ -136,6 +136,8 @@ function return-windowclass
         case kdesudo
             set returnval (return-windowclass $argv[2..-1])
         case lilyterm
+            set returnval LilyTerm
+        case nv
             set returnval LilyTerm
         case sudo
             # set returnval (return-windowclass $argv[2..-1])
@@ -178,7 +180,7 @@ function unset-fullscreen
 end
 
 function is-fullscreen
-    xwininfo -id (mywin) -all | grep Fullscreen > /dev/null
+    xwininfo -id (wininfo id dec) -all | grep Fullscreen > /dev/null
 end
 
 function get-primary-display
@@ -189,22 +191,8 @@ function get-secondary-display
     xrandr | grep " connected [0-9]" | cut -d " " -f1
 end
 
-function get-dividing-line
-    xrandr | grep "+[1-9]" | cut -d "+" -f2
-end
-
 function get-focused-display
-    set xcorner (xwininfo -id (mywin) -all | grep -i "corners" | cut -d '+' -f2 | trim) 
-    switch (get-number-of-displays)
-        case "1"
-            get-primary-display
-        case "*"
-            if test $xcorner -gt (get-dividing-line)
-                get-primary-display
-            else
-                get-secondary-display
-            end
-        end
+    get-ws-info get output where focused = true
 end
 
 function get-focused-display-resolution
@@ -219,11 +207,11 @@ function get-focused-display-offset
 end
 
 function get-focused-display-x-offset
-    xrandr | grep (get-focused-display) | cut -d "+" -f2-3 | cut -d " " -f1 | cut -d "+" -f1
+    get-ws-info get x where output = (quote (get-focused-display)) | sort -u
 end
 
 function get-focused-display-y-offset
-    xrandr | grep (get-focused-display) | cut -d "+" -f2-3 | cut -d " " -f1 | cut -d "+" -f2
+    get-ws-info get y where output = (quote (get-focused-display)) | sort -u
 end
 
 function screenshot
@@ -238,7 +226,7 @@ function screenshot
    end
    echo $target
 end
-            
+
 
 function get-focused-display-width
     get-focused-display-resolution | cut -d "x" -f1
@@ -249,11 +237,11 @@ function get-focused-display-height
 end
 
 function get-window-width
-    xwininfo -id (mywin) | grep "Width" | cut -d ":" -f2  | trim
+    xwininfo -id (wininfo id dec) | grep "Width" | cut -d ":" -f2  | trim
 end
 
 function get-window-height
-    xwininfo -id (mywin) | grep "Height" | cut -d ":" -f2  | trim
+    xwininfo -id (wininfo id dec) | grep "Height" | cut -d ":" -f2  | trim
 end
 
 function set-window-size
@@ -284,7 +272,7 @@ function set-window-size
             set maxsize (eval $rescommand)
             set multiplier "0.$num"
             set targetsize (math "$maxsize * $multiplier")
-    end 
+    end
     set sizecommand get-window-{$dimension}
     set currentsize (eval $sizecommand)
     set difference (math "($currentsize - $targetsize) / 16")
@@ -317,10 +305,6 @@ function adjust-width
    resize-window width $argv
 end
 
-function trans
-    transset -i (currentapp) $argv
-end
-
 function abs
     if greaterthanzero $argv
         echo $argv
@@ -339,31 +323,6 @@ end
 
 function another-trans
     transset -i (xdotool getactivewindow) .{$argv}
-end
-
-function currentapp
-    echo (xdotool getactivewindow)
-end
-
-function transparent
-    transset -i (currentapp) .86
-end
-
-function solid
-    transset -i (currentapp) 1.0
-end
-
-# function nextwindow
-#     set currentclass (xprop -id (currentapp) | grep WM_CLASS | cut -d '"' -f4)
-#     nextmatch $currentclass
-# end
-
-function pi3
-   echo "import i3"\n{$argv} | python
-end 
-
-function getCurrentWorkspace
-    pi3 "print i3.filter(i3.get_workspaces(), focused=True)[0]['name']"
 end
 
 function capitalize
@@ -394,11 +353,11 @@ function windowmove
 end
 
 function get-window-x-pos
-    xwininfo -id (mywin) | grep "Absolute upper-left X" | cut -d ":" -f2 | trim
+    xwininfo -id (wininfo id dec) | grep "Absolute upper-left X" | cut -d ":" -f2 | trim
 end
 
 function get-window-y-pos
-    xwininfo -id (mywin) | grep "Absolute upper-left Y" | cut -d ":" -f2 | trim
+    xwininfo -id (wininfo id dec) | grep "Absolute upper-left Y" | cut -d ":" -f2 | trim
 end
 
 function windowmove-relative
@@ -491,5 +450,23 @@ function get-display-order
 end
 
 function get-connected-displays
-    xrandr | grep " connected" | cut -d "c" -f1 | trim
+    get-ws-info get output where visible = true
+end
+
+function wininfo
+    switch $argv[1]
+        case title
+            xprop -id (xdotool getactivewindow) _NET_WM_NAME | cut -d "=" -f2 | trim
+        case id
+                switch $argv[2]
+                    case dec
+                        xdotool getactivewindow
+                    case hex
+                        ensure-hex (xdotool getactivewindow)
+                end
+        case class
+            xprop -id (xdotool getactivewindow) WM_CLASS | cut -d "," -f2 | trim
+        case pid
+            xprop -id (xdotool getactivewindow) _NET_WM_PID | cut -d "=" -f2 | trim
+    end
 end
