@@ -116,13 +116,15 @@ end
 function return-windowclass
     # set xs (explode $argv[1])
     if test (count $argv -eq 1)
-        set xs (explode $argv)
+        set xs (explode-words $argv)
     else
         set xs $argv
     end
     switch $xs[1]
         case calibre
             set returnval libprs500
+        case thunderbird-bin
+            set returnval Thunderbird
         case urxvt
             set returnval URxvt
         case urxvtc
@@ -207,16 +209,21 @@ function get-focused-display-offset
 end
 
 function get-focused-display-x-offset
-    get-ws-info get x where output = (quote (get-focused-display)) | sort -u
+    get-ws-info get rect.x where output = (quote (get-focused-display)) | sort -u
 end
 
 function get-focused-display-y-offset
-    get-ws-info get y where output = (quote (get-focused-display)) | sort -u
+    get-ws-info get rect.y where output = (quote (get-focused-display)) | sort -u
 end
 
 function screenshot
-    set target ~/screenshots/(mydate).png
-    switch $argv
+    switch (count $argv)
+        case 1
+            set target ~/screenshots/(mydate).png
+        case 2
+            set target $argv[2]
+    end
+    switch $argv[1]
         case "everything"
             maim $target
         case "window"
@@ -330,6 +337,18 @@ function capitalize
 end
 
 function explode
+    if contains-spaces $argv
+        explode-words $argv
+    else
+        explode-word $argv
+    end
+end
+
+function contains-spaces
+    echo $argv | grep -E '\s' > /dev/null
+end
+
+function explode-words
     if substr $argv @
         set char @
     else
@@ -337,6 +356,14 @@ function explode
     end
 
     echo $argv | sed "s/$char/\n/g"
+end
+
+function explode-word
+    if test (echo $argv | wc -w) -eq 1 
+        for i in (seq (sizeof $argv))
+           echo $argv | cut -c$i
+        end
+    end
 end
 
 function xdc
@@ -426,33 +453,6 @@ function format-for-matchlist
     echo $acc
 end
 
-function get-display-left-to-right
-    set outputs (xrandr | grep " connected" | cut -d " " -f1)
-    set offsets (xrandr | grep " connected" | cut -d + -f2)
-    set sorted (println $offsets | sort)
-    for i in (seq (count $outputs))
-        set x (findindex $sorted[$i] $offsets)
-        set lst $lst $outputs[$x]
-    end
-    println $lst
-end
-
-function get-number-of-displays
-    count (get-connected-displays)
-end
-
-function get-display-order
-    set outputs (xrandr | grep " connected" | cut -d " " -f1)
-    set ordered (get-display-left-to-right)
-    for i in $outputs
-        math (findindex $i $ordered) - 1
-    end
-end
-
-function get-connected-displays
-    get-ws-info get output where visible = true
-end
-
 function wininfo
     switch $argv[1]
         case title
@@ -465,7 +465,7 @@ function wininfo
                         ensure-hex (xdotool getactivewindow)
                 end
         case class
-            xprop -id (xdotool getactivewindow) WM_CLASS | cut -d "," -f2 | trim
+            xprop -id (xdotool getactivewindow) WM_CLASS  | cut -d "," -f2  | trim | cut -d '"' -f2
         case pid
             xprop -id (xdotool getactivewindow) _NET_WM_PID | cut -d "=" -f2 | trim
     end

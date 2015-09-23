@@ -98,6 +98,7 @@ function vi3_change-all
         vi3_workspace $combolist[$num]
         set num (math $num + 1)
     end
+    ws (explode $combolist)
 end
 
 function vi3_change-all-workspaces
@@ -206,7 +207,9 @@ function vi3_height
 end
 
 function vi3_workspace -d 'switch workspace [a-z]'
-    im workspace $argv
+    for i in (explode-words $argv)
+        im workspace $i
+    end
     er vi3op
     update-op-status
 end
@@ -385,6 +388,7 @@ function destroy-everything
 end
 
 function update-vi3-config
+    killall i3blocks
     rm ~/.i3/config
     cat /opt/vi3/header.txt ~/.i3/colors/{$colors} ~/.i3/personalconfig /opt/vi3/vi3config > ~/.i3/config
     im restart
@@ -477,7 +481,7 @@ function get-focused-workspace
     get-ws-info get name where focused = true
 end
 
-function get-ws-info
+function get-ws-info1
     #example get output where focused = true
     set var $argv[4]
     set val $argv[6]
@@ -487,8 +491,13 @@ function get-ws-info
 end
 
 function get-ws-info2
-    #example get output where focused = true
-    eval i3-msg -t get_workspaces \| jq \'.\[\] \| \{output: .output, width: .rect.width, height: .rect.height, x: .rect.x, y: .rect.y, name: .name, visible: .visible, focused: .focused, urgent: .urgent\}\' \| jq -r \'select\(.$argv[4] == $argv[6]\).$argv[2]\'
+    #example get output where focused = true
+    eval i3-msg -t get_workspaces \| jq \'.\[\] \| \{output: .output, width: .rect.width, height: .rect.height, x: .rect.x, y: .rect.y, name: .name, visible: .visible, focused: .focused, urgent: .urgent\}\' \| jq -r \'select\(.$argv[2] == $argv[3]\).$argv[1]\'
+end
+
+
+function get-ws-info3
+    i3-msg -t get_workspaces | jq . | grep -E "$argv[2].*$argv[3]" -B 12 -A 10 | grep -E "$argv[1].*" | cut -d : -f2 | sort -u
 end
 
 function show-menu

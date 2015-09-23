@@ -79,9 +79,9 @@ function current-output
 end
 
 function output-type
-    set op (current-output)
-    if substr $op headset
-        echo $headphones
+    set output (current-output)
+    if substr $output Headset
+        echo headphones
     else
         echo speakers
     end

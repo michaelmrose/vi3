@@ -157,6 +157,12 @@ function findall
         set loc './'
         set lst $argv
     end
+    switch $lst
+        case image
+            set lst bmp png jpg jpeg
+        case video
+            set lst mpv mpeg mkv avi wmv
+    end
     set start "find $loc "
     set second '-regextype posix-extended -regex ".*\.('
     set ending ')"'
@@ -255,6 +261,7 @@ function unique
         end
     end
     println $acc
+    # println $argv | sort -u
 end
 
 
@@ -392,11 +399,33 @@ function isinteger
     echo $argv | grep -E '^[0-9]+$' > /dev/null
 end
 
+# function waituntilfocused
+#     #holds until a new window is focused of the chosen windowclass"
+#     set winid (xdotool getactivewindow)
+#     while [ (xdotool getactivewindow) = $winid ]
+#     end
+#     while not [ (winclass) = $argv ]
+#     end
+# end
+#
+# function every-n-line
+#     set num $argv[1]
+#     set lst $argv[2..-1]
+#     set sedstr (echo \'n;x;p\' | sed "s/x/$num/g" )
+#     println $argv | sed -n $sedstr
+# end
 function waituntilfocused
     #holds until a new window is focused of the chosen windowclass"
-    set winid (xdotool getactivewindow)
-    while [ (xdotool getactivewindow) = $winid ]
+    set winid (wininfo id dec)
+    
+    while [ (wininfo id dec) = $winid ]
     end
+
+    while not [ (wininfo class) = $argv ]
+    end
+end
+
+function waituntilfocusedsame
     while not [ (winclass) = $argv ]
     end
 end
@@ -806,6 +835,10 @@ function ensure_valid_index
     else
         echo (math $num + 1)
     end
+end
+
+function notreal
+    dasfadf
 end
 
 # function match-lists-v

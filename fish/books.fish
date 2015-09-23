@@ -21,11 +21,11 @@ function books -d 'open books given either as a title or criteria query using ro
                 remove-pdf-watermark "$tail"
             case -w
                 books --removewatermark $tail
-            case -s 
+            case -s
                 bsrch $tail
             case --search
                 bsrch $tail
-            case --cover 
+            case --cover
                 coverit "$tail"
             case -c
                 books --cover $tail
@@ -75,12 +75,12 @@ function query-calibre-title -d "returns list of titles, exact if present or lis
     end
 end
 
-# if you hit escape when narrowing a search 
-# this will be called with title "" and result 
-# in the first book found being returned 
+# if you hit escape when narrowing a search
+# this will be called with title "" and result
+# in the first book found being returned
 
 function query-calibre-formats -d "returns files for a given exact title"
-    if test (sizeof $argv[2]) -gt 0 
+    if test (sizeof $argv[2]) -gt 0
         query-calibre exact $argv | jq .[].formats[]
     end
 end
@@ -94,7 +94,7 @@ function return-query -d "returns a properly formated query for query-calibre-ti
         set selector tags
     end
     set criteria authors title publisher series tags
-    
+
     if contains $selector $criteria
         set query $argv[2..-1]
     else
@@ -123,7 +123,7 @@ function choose-format -d "for the given list of formats in preferential order r
     end
     return 1
 end
-        
+
 function select-book -d "use rofi to select a book if more than one is possible"
     if test (count $argv) -gt 1
         set val (rfi match "select book: " $argv)
@@ -240,7 +240,7 @@ function open-book
         set title (query-calibre-title title (escape-chars (extract-title $fullpath)))
         add-to-recent-reads "$title"
     end
-    
+
     switch $ext
         case "pdf"
             zathura "$argv"

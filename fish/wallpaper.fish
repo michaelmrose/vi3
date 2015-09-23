@@ -47,10 +47,11 @@ function wallpaper
             return 0
         case rm
             rm $bgimage
-            wp similar
+            set recent_backgrounds (remove-from-list $bgimage $recent_backgrounds)
+            wp $recent_backgrounds[1]
             return 0
         case any
-            wp style backgrounds
+            wp style any
             return 0
         case similar
             wp style $bgstyle
@@ -70,8 +71,10 @@ function wallpaper
             file-bg $bgimage $bgstyle/$argv[2..-1]
             return 0
         case style
-            set backgrounddir (get-folders-for-backgrounds $argv[2])
-            set img (findall-list dirs=$backgrounddir types=jpg,jpeg,bmp,png exclude=xrated | shuf | head -1)
+            set backgrounddir (get-folder-for-backgrounds $argv[2])
+            echo bgd is $backgrounddir
+            set img (findall $backgrounddir image | shuf | head -1)
+            # set img (findall-list dirs=$backgrounddir types=jpg,jpeg,bmp,png | shuf | head -1)
             wp $img
             return 0
         case "*"
@@ -87,6 +90,7 @@ function wallpaper
     set -U bgimage $img
     if not match $norecord true
         add-to-recent-backgrounds $img
+        cp $img /mnt/ext/Images/backgrounds/lightdm
     else
     end
 
@@ -146,7 +150,7 @@ function list-backgrounds
 end
 
 function add-to-recent-backgrounds
-    set -U recent_backgrounds (take 20 (unique (println $argv $recent_backgrounds)))
+    set -U recent_backgrounds (take 30 (unique (println $argv $recent_backgrounds)))
 end
 
 function slideshow
@@ -315,7 +319,7 @@ function get-image-aspect-ratio-type
     #screw whomever doesn't handle floats in test
     set ratio (get-aspect-ratio $argv) 
     set integer (truncate-num (wcalc -q "$ratio * 100"))
-    switchonval $integer 1-125 narrow 126-249 wide 250-900 superwide
+    switchonval $integer 1-132 narrow 133-249 wide 250-900 superwide
 end
 
 function image-date
@@ -374,6 +378,10 @@ function file-bg-url
 end
 
 function get-folder-for-backgrounds
+    if match $argv any
+        echo $wallpaperroot
+        return 0
+    end
     set res (find $wallpaperroot -type d | grep $argv | head -1)
     if test (count $res) -ne 1
         return 1
@@ -386,7 +394,7 @@ function get-folder-for-backgrounds2
     shortest (explode (get-folders-for-backgrounds $argv))
 end
 
-function get-folders-for-backgrounds
+function get-folders-for-backgrounds3
     set res (find $wallpaperroot -type d | grep $argv)
     if not exists $res
         return 1

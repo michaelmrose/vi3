@@ -252,14 +252,6 @@ function coursedl
     coursera-dl -d ~/courses $argv
 end
 
-function noteit
-    set tmp /tmp/notes-(uid)
-    if exists $argv
-        println $argv > $tmp
-    end
-    qvim $tmp -c "Simplenote -n" -c "quit"
-end
-
 function vlcclip
     vlc (xclip -o)
 end
@@ -1042,7 +1034,9 @@ function weather-icon
 end
 
 function weather-status-line
-    echo (weather-icon) (weather-here)
+    # echo (weather-icon) (weather-here)
+    set weather (weather $geo)
+    echo (weather-icon) (echo $weather | cut -d " " -f2 | trim) (echo $weather | cut -d " " -f4-)
 end
 
 function transwindows
@@ -1054,12 +1048,12 @@ end
 function vpn-status-line
     set vpnstatus (vpn show)
     switch $vpnstatus
-        case None
-            set symbol 
+        case none
+            set symbol  
         case "*"
-            set symbol 
+            set symbol  
     end
-    echo $symbol $vpnstatus
+    echo $symbol"  "$vpnstatus
 end
 
 function keysd
@@ -1134,19 +1128,6 @@ function game-mode
             end
         end
 end
-
-function switchconfig
-    set primary DVI-I-0
-    set secondary DVI-I-1
-    switch $argv
-        case "single"
-            xrandr --output $primary --auto --output $secondary --off
-        case "dual"
-            xrandr --output $primary --auto --output $secondary --auto --left-of $primary
-    end
-end
-
-alias xrr switchconfig
 
 function display-appkeys
     set tmp /tmp/appkeys
@@ -1469,6 +1450,8 @@ function return-program-name
             echo $words[2..-1]
         case libprs500
             echo calibre
+        case Thunderbird
+            echo thunderbird-bin
         case urxvtt
             echo urxvtc
         case LilyTerm

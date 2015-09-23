@@ -3,13 +3,13 @@ function pkg
         case i
             sudo emerge $argv[2..-1]
             shutitdown
+        case p
+            emerge $argv[2..-1] --pretend
         case r
             sudo emerge -C $argv[2..-1]
             shutitdown
         case pick 
             pick-package $argv[2..-1]
-            # set pk $argv[2..-1]
-            # pkg i ={$pk}-(rfi match "select a version of $pk" (equery y $pk | condense_spaces | cut -d " " -f1 | sed 's/\[I\]//g' | grep -E '[0-9]'))
         case s
             emerge --search $argv[2..-1]
         case S
@@ -18,21 +18,58 @@ function pkg
             pkg updateworld
         case updateworld
             sudo emerge --sync
-            sudo emerge -auDN @world
+            sudo emerge -auDN @world --ask
             shutitdown
+        case depends
+            equery depends $argv[2..-1]
+        case depgraph
+            equery depgraph $argv[2..-1]
+        case bt
+            pkg buildtime $argv[2..-1]
+        case buildtime
+            sudo genlop -tq $argv[2..-1]
         case u
             pkg uses $argv[2..-1]
         case version
             pick-version $argv[2..-1]
+        case versions
+            equery y $argv[2..-1]
         case uses
             equery uses $argv[2..-1]
         case lo
             pkg listoverlay $argv[2..-1]
         case listoverlay
             eix --in-overlay $argv[2..-1]
+        case addoverlay
+            addoverlay $argv[2..-1]
         case installed
             eix-installed -a | grep -i $argv[2..-1]
     end
+end
+
+function pyversion
+    eselect python list | grep \* | condense_spaces | cut -c11
+end
+
+function addoverlay
+    sudo layman -a $argv
+    sudo layman -s $argv
+    sudo emerge --sync
+    sudo eix-sync
+end
+
+function pip2
+    pipv 2 $argv
+end
+function pip2
+    pipv 3 $argv
+end
+
+function pipv
+    set pyversion (pyversion)
+    es py $argv[1]
+    sudo pip $argv[2..-1]
+    es py $pyversion
 end
 
 function es
