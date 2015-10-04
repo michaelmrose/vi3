@@ -29,22 +29,6 @@ function pkt
     mpv (extract-pkt-url (rfi match "select from: " (list-pkt-articles $tag | grep -i $query)))
 end
 
-    # set lst (list-pkt-articles $tag | grep -i $query)
-    # if exists $lst
-    #     set res (rfi match "select from: " $lst)
-    #     if exists $res
-    #         set url (extract-pkt-url $res)
-    #         if exists $url
-    #             open $url
-    #         else
-    #             echo no url extracted
-    #         end
-    #     else
-    #         echo no item chosen
-    #         return 1
-    #     end
-    # end
-
 function extract-pkt-url
     if exists $argv
         cutlastn : -2 $argv | trim
