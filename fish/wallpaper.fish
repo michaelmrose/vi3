@@ -23,7 +23,7 @@ function wallpaper
             file-bg-url $argv[2..-1]
             return 0
         case recent
-            sxiv -tbfor $recent_backgrounds
+            sxiv -tbfor $recent_backgrounds 2> /dev/null
             return 0
         case slideshow
             slideshow $argv[2..-1]
@@ -150,7 +150,7 @@ function list-backgrounds
 end
 
 function add-to-recent-backgrounds
-    set -U recent_backgrounds (take 30 (unique (println $argv $recent_backgrounds)))
+    set -U recent_backgrounds (take 30 (unique (filter-with-expr is-an-image (existing-files (println $argv $recent_backgrounds)))))
 end
 
 function slideshow
@@ -181,7 +181,7 @@ function slideshow
                 set -U backgroundslist (without (pathof $argv[2]) $backgroundslist)
             case show
                 if exists $backgroundslist
-                    sxiv -tbfor $backgroundslist
+                    sxiv -tbfor $backgroundslist 2> /dev/null
                 end
             case clear
                 slideshow stop
@@ -346,13 +346,13 @@ function pics
         if test -d $argv
             set target $argv
         else
-            set target (get-folders-for-backgrounds $argv)
+            set target (get-folder-for-backgrounds $argv)
         end
     else
         set target (pwd)
     end
     set pictures (findall-list dirs=$target types=jpg)
-    sxiv -tbfor $pictures
+    sxiv -tbfor $pictures 2> /dev/null
 end
 
 function file-bg
