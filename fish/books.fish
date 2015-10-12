@@ -161,48 +161,56 @@ function show-recent-reads -d "use rofi to pick one of the items from recent_rea
 end
 
 function pdfextract -d "replaces pdf with range of pdf defined in args"
-    pdftk A=$argv[1] cat A$argv[2]-$argv[3] output temp.pdf
-    mv temp.pdf $argv[1]
+    set file $argv[1]
+    set tmp /tmp/(uid)
+    set range $argv[2]
+    set range (echo $range | sed 's#end#z#')
+    qpdf $file --pages $file $range -- $tmp
+    mv $tmp $file
 end
 
 function pdfkillcover
-    pdfextract $argv[1] 2 end
+    pdfextract $argv[1] 2-end
+end
+
+function pdfcat
+    set file1 $argv[1]
+    set file2 $argv[2]
+    set tmp /tmp/(uid)
+    set output $argv[3]
+    qpdf $file1 --pages $file1 1-z $file2 1-z -- $tmp
+    mv $tmp $output
 end
 
 function coverit -d "converts image file in clipboard to pdf and prepends to pdf supplied in argv"
    set url (xclip -o)
    wget $url --output-document=cover
    convert cover cover.pdf
+   set tmp /tmp/(uid)
    rm cover
-   pdftk cover.pdf $argv cat output temp.pdf
+   pdfcat cover.pdf $argv temp.pdf
+   # pdftk cover.pdf $argv cat output temp.pdf
    mv temp.pdf $argv
    rm cover.pdf
 end
 
+function replacecover
+    pdfkillcover $argv
+    coverit $argv
+end
+
 function remove-pdf-watermark -d "removes all watermarks from text of pdf"
     set file $argv
-    set watermarks[1] "Licensed to michael rose <Michael@rosenetwork.net>"
-    set watermarks[2] "www.it-ebooks.info"
-    set watermarks[3] "https://forums.manning.com/forums/clojure-in-action-second-edition"
-    set watermarks[4] "These will be cleaned up during production of the book by copyeditors and proofreaders."
-    # set watermarks[5] "@Manning Publications Co. We welcome reader comments about anything in the manuscript - other than typos and other simple mistakes"
-    set tmp1 /tmp/pdf1_{$file}
-    set tmp2 /tmp/pdf2_{$file}
-    echo w is $watermarks
-    # set file $argv[1]
-    echo f is $file
-    echo t is $tmp1 $tmp2
-    pdftk $file output $tmp1 uncompress
+    set tmp /tmp/pdf_{$file}
+    set watermarks[1] "www.it-ebooks.info"
+    qpdf --stream-data=uncompress $file $tmp 
     for i in $watermarks
-        set wm (echo $i | sed 's%\/%\\\/%g')
-        set replace "cat $tmp1 | sed -e \"s/$wm//g\" > $tmp2"
-        eval $replace
-        cp $tmp2 $tmp1
+        replacestr "$i" '' $tmp
     end
-    pdftk $tmp1 output $file compress
-    rm $tmp1
-    rm $tmp2
+    qpdf --stream-data=compress $tmp $file
 end
+
+
 
 function badd -d "add one or more books wherein the book consists of a file or an archive containing one or more formats of the same book"
     for i in $argv
