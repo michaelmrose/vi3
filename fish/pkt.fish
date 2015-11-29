@@ -26,7 +26,7 @@ function pkt
             set tag $argv[1]
             set query $argv[2]
     end
-    mpv (extract-pkt-url (rfi match "select from: " (list-pkt-articles $tag | grep -i $query)))
+    mpv (extract-pkt-url (rfi match "select from: " (list-pkt-articles $tag | grep -i $query))) &
 end
 
 function extract-pkt-url

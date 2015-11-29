@@ -161,7 +161,7 @@ function findall
         case image
             set lst bmp png jpg jpeg
         case video
-            set lst mpv mpeg mkv avi wmv
+            set lst mpv mpeg mkv avi wmv mp4
     end
     set start "find $loc "
     set second '-regextype posix-extended -regex ".*\.('
@@ -174,6 +174,37 @@ function findall
     set middle (echo $middle | rev | cut -d '|' -f2- | rev)
     eval (condense $start $second $middle $ending)
 end
+
+
+function make-request-payload
+    set val ''
+    for i in $argv
+        # echo i is $i and $$i
+        set val $val$i=$$i\&
+    end
+    # echo v is $val
+    set val (shorten-string 1 $val)
+    echo $val
+end
+
+function shorten-string
+    set str $argv[2..-1]
+    set initialsize (sizeof $str)
+    set toremove $argv[1]
+    set size (math $initialsize - $toremove)
+    echo $str | cut -c1-$size
+end
+
+function date-not-past
+    set currentdate (date +%j)
+    set date (convert-date-to-day-of-year $argv)
+    test $date -ge $currentdate
+end
+
+function convert-date-to-day-of-year
+    date -d "$argv" +%j
+end
+
 
 # function findall2
 #     if [ $argv[1] = -p ]
@@ -655,6 +686,43 @@ function filter-with
     set $argv[2] $lst
 end
 
+function filter-with-expr
+    set expr $argv[1]
+    set lst $argv[2..-1]
+    for i in $lst
+        if eval $expr $i
+            echo $i
+        end
+    end
+end
+
+function fs-exists
+    if test -d $argv
+    else
+        test -f $argv
+    end
+end
+
+function existing-files
+    for i in $argv
+        if fs-exists $i
+            echo $i
+        end
+    end
+end
+
+function is-an-image
+    set imgtypes bmp gif jpg jpeg
+    set type (get-ext $argv)
+    contains $type $imgtypes
+end
+    
+
+function filter-images
+    set imgtypes bmp gif jpg jpeg
+    filter-with-expr is-an-image $argv
+end
+
 function matches
     set com "echo $argv[1] | grep -E --regexp '^$argv[2..-1]\$'"
     eval $com > /dev/null
@@ -945,6 +1013,14 @@ end
 
 function toggle-bool
     match-lists $argv "0 f F false False" "1 t T true True" error
+end
+
+function apply-to-list
+    set fn $argv[1]
+    set lst $argv[2..-1]
+    for i in $lst
+        eval $fn $i
+    end
 end
 
 #colors

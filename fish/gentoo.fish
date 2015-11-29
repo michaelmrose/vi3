@@ -22,6 +22,13 @@ function pkg
             shutitdown
         case depends
             equery depends $argv[2..-1]
+        case edit
+            switch (count $argv)
+                case 1
+                    nv (rfi match "pick one: " (ls /etc/portage))
+                case 2
+                    nv /etc/portage/$argv[2..-1]
+            end
         case depgraph
             equery depgraph $argv[2..-1]
         case bt
@@ -213,5 +220,18 @@ function processtype
         echo service
     else
         echo process
+    end
+end
+
+function sys
+    switch $argv[1]
+        case s
+            sudo shutdown -h now
+        case r
+            sudo shutdown -r now
+        case l
+            i3-msg exit
+        case g
+            dm-tool switch-to-greeter
     end
 end

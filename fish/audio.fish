@@ -175,10 +175,11 @@ function clear-playlist
     touch $tmp
     clementine -l $tmp
     mm stop
+    signal-i3blocks playing
 end
 
 function lyrics
-    beet lyrics $argv -p | cut -d ';' -f12- | cut -d ';' -f1- | less
+    beet lyrics -p (playerctl metadata title) | less
 end
 
 function media-ctl

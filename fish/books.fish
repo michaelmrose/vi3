@@ -21,6 +21,16 @@ function books -d 'open books given either as a title or criteria query using ro
                 remove-pdf-watermark "$tail"
             case -w
                 books --removewatermark $tail
+            case -l
+                switch (count $argv)
+                    case 1
+                        select-library
+                    case 2
+                        switch-library $argv[2]
+                    case '*'
+                        switch-library $argv[2]
+                        books $argv[3..-1]
+                end
             case -s
                 bsrch $tail
             case --search
@@ -58,6 +68,20 @@ function query-calibre -d "usage: query-calibre [exact,contains] criteria query 
             set com (echo calibredb list --fields formats,title,$field -s $field:$query --for-machine)
     end
     eval $com
+end
+
+function query-calibre2 -d "usage: query-calibre query returns answer in json"
+    set fields (odds $argv)
+    set queries (evens $argv)
+    for i in (seq (count $fields))
+        set acc $acc $fields[$i]:$queries[$i] and
+    end
+    calibredb list --fields formats,title -s $argv --for-machine
+end
+
+function query-calibre-title2
+    set result (query-calibre2 \' $argv \' | jq .[].title)
+    echo $result
 end
 
 function book-exists
@@ -141,9 +165,27 @@ end
 function add-to-recent-reads -d "keep a list of the 10 most recent unique items opened via this script"
     if exists $argv
         set title $argv
+        # set library (get-current-calibre-library)
+        # set entry \"$title @$library\"
         set -U recent_reads (take 10 (unique (println "$title" $recent_reads)))
     else
+        msg could not add to recent reads
         return 1
+    end
+end
+
+function extract-title-from-recent-list-entry
+    if substr $argv @
+        switch-library (echo $argv | cut -d "@" -f2 | cut -d '"' -f1)
+        echo $argv | cut -d "@" -f1 | trim | append-strings '"' 
+    else
+        echo $argv
+    end
+end
+
+function append-strings
+    while read -l line
+        echo $line"$argv"
     end
 end
 
@@ -210,6 +252,23 @@ function remove-pdf-watermark -d "removes all watermarks from text of pdf"
     qpdf --stream-data=compress $tmp $file
 end
 
+function switch-library
+    if not contains $argv (ls ~/calibre)
+        sendit library $argv does not exist
+        return 1
+    end
+    if pgrep calibre
+        calibre -s
+        calibre --with-library ~/calibre/$argv --detach &
+        sleep 2
+    else
+        change-calibre-library-offline $argv
+    end
+end
+
+function select-library
+    switch-library (rfi match 'select a library: ' (ls ~/calibre))
+end
 
 
 function badd -d "add one or more books wherein the book consists of a file or an archive containing one or more formats of the same book"
@@ -259,6 +318,10 @@ end
 
 function extract-title
     cutlast "/" "$argv" | cut -d "-" -f1 | trim | sed 's/_/:/g'
+end
+
+function bsrch
+    calibredb list -s $argv
 end
 
 function escape-chars

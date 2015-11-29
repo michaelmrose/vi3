@@ -393,7 +393,7 @@ function update-vi3-config
     cat /opt/vi3/header.txt ~/.i3/colors/{$colors} ~/.i3/personalconfig /opt/vi3/vi3config > ~/.i3/config
     im restart
     sleep 3
-    apply-transparency
+    transparent-bars
 end
 
 function colorscheme

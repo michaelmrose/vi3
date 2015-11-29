@@ -190,7 +190,7 @@ function center-text
 end
 
 function msg
-    twmnc (center-text $argv)
+    twmnc --id 1 --content (center-text $argv)
 end
 
 function spaces
@@ -281,7 +281,7 @@ function gcal
 end
 
 function work
-    gcal "work $argv"
+    gcal "work-at-thd $argv"
 end
 
 function gcalendar
@@ -412,10 +412,6 @@ function blist
     for i in title tags;
         println -e {$green}"resuts in $i" {$white}(calibredb list -f title -s $i:$argv)[2..-1]
     end
-end
-
-function bsrch
-    calibredb list -s $argv
 end
 
 function save-layout
@@ -662,11 +658,6 @@ end
 
 function extract-package-description
     echo $argv | cut -d " " -f3-
-end
-
-function switch-library
-    calibre -s
-    calibre --with-library ~/calibre/$argv --detach &
 end
 
 function honey-i-shrunk-the-window
@@ -1035,8 +1026,9 @@ end
 
 function weather-status-line
     # echo (weather-icon) (weather-here)
-    set weather (weather $geo)
-    echo (weather-icon) (echo $weather | cut -d " " -f2 | trim) (echo $weather | cut -d " " -f4-)
+    # set weather (weather $geo)
+    # echo (weather-icon) (echo $weather | cut -d " " -f2 | trim) (echo $weather | cut -d " " -f4-)
+    weather.fish bremerton
 end
 
 function transwindows
@@ -1054,6 +1046,16 @@ function vpn-status-line
             set symbol  
     end
     echo $symbol"  "$vpnstatus
+end
+function vpn-status-line2
+    switch $atestval
+        case none
+            set symbol  
+            echo -e {$blue}$symbol $vpnstatus
+        case "*"
+            set symbol  
+            echo -e {$red}$symbol $vpnstatus
+    end
 end
 
 function keysd
@@ -1184,9 +1186,7 @@ function show
 end
 
 function watch-video
-    set pth (pwd)
-    cd /mnt/ext/Videos
-    set files (findall avi mkv mp4 wmv)
+    set files (find-video $argv)
     set words $argv
 
     for i in $words
@@ -1197,19 +1197,21 @@ function watch-video
         set files (rfi match "pick a movie" $files)
     end
     open $files
-    cd $pth
 end
 
 function find-video
-    set pth (pwd)
-    cd /mnt/ext/Videos
-    set files (findall avi mkv mp4 wmv)
+    set files (findall /mnt/ext/Videos video)
     set words $argv
+
+    echo w is $words
 
     for i in $words
         set files (println $files | grep -i $i)
+        echo files is
+        println $files
     end
-
+    
+    echo finally files is
     println $files
 end
 
@@ -1279,6 +1281,8 @@ function signal-i3blocks
             set val 6
         case wallpaper
             set val 7
+        case message
+            set val 8
         case "*"
             set val $argv
     end
@@ -1793,6 +1797,8 @@ function return-trans-value
             echo 1.0
         case i3bar
             echo 0.8
+        case i3-frame
+            echo 0.5
         case "*"
             echo 1.0
     end
@@ -1859,10 +1865,6 @@ end
 
 function get-i3-setting
     cat ~/.i3/config | grep "$argv" | condense_spaces | cut -d " " -f2-
-end
-
-function get-i3bar-ids
-    xwininfo -all -root | grep 'i3bar for output' | condense_spaces | cut -d " " -f1
 end
 
 function process-schedule
@@ -2118,7 +2120,10 @@ function rfi
         case window
             rofi -show window
         case match
-            println $argv[3..-1] | rofi -dmenu -p $argv[2]
+            if test (count $argv) -lt 3
+                return 1
+            end
+            println $argv[3..-1] | rofi -dmenu -i -p $argv[2]
         case menu
             println "" | rofi $bindings -dmenu -p $argv[2]
         case enter
@@ -2233,7 +2238,7 @@ function mdman
 
 
 function areweonline
-    ping 8.8.8.8 -c 1 -W 1 > /dev/null
+    ping 8.8.8.8 -c 1 -W 1 > /dev/null 2> /dev/null
 end
 
 
