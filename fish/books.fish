@@ -243,13 +243,19 @@ end
 
 function remove-pdf-watermark -d "removes all watermarks from text of pdf"
     set file $argv
-    set tmp /tmp/pdf_{$file}
+    set tmp /tmp/pdf_(uid)
     set watermarks[1] "www.it-ebooks.info"
-    qpdf --stream-data=uncompress $file $tmp 
-    for i in $watermarks
-        replacestr "$i" '' $tmp
-    end
-    qpdf --stream-data=compress $tmp $file
+    set watermarks[2] 'Licensed to michael rose'
+    set watermarks[3] '.*rosenetwork.net.*'
+    # set watermarks[3] '<Michael@rosenetwork.net>'
+    # set watermarks[2] 'Licensed to michael rose <Michael@rosenetwork.net>'
+    # set watermarks[3] '<Michael@rosenetwork.net>'
+    qpdf --stream-data=uncompress "$file" "$tmp" 
+    # for i in $watermarks
+    #     replacestr "$i" '' "$tmp"
+    # end
+    cp $tmp abook.txt
+    qpdf --stream-data=compress "$tmp" "$file"
 end
 
 function switch-library
@@ -285,7 +291,7 @@ function badd -d "add one or more books wherein the book consists of a file or a
         end
         calibredb add -1 $tmp
         rm -rf $tmp
-        rm $i
+        # rm $i
     end
 end
 

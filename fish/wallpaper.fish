@@ -10,10 +10,18 @@ function wallpaper
         set val (explode $i)
         set $val[1] $val[2]
     end
+
+    if not exists $argv
+        wp recent
+        return 0
+    end
     
     switch $argv[1]
         case view
             pics $argv[2]
+            return 0
+        case categories
+            for i in (find $wallpaperroot -type d);cutlast / $i;end
             return 0
         case edit
             gimp $bgimage
@@ -24,6 +32,18 @@ function wallpaper
             return 0
         case recent
             sxiv -tbfor $recent_backgrounds 2> /dev/null
+            return 0
+        case cat
+            move-current-wallpaper-to-category $argv[2]
+            return 0
+        case name
+            name-of-wallpaper
+            return 0
+        case create
+            create-wallpaper-category $argv[2..-1]
+            return 0
+        case album
+            wp (album-art)
             return 0
         case slideshow
             slideshow $argv[2..-1]
@@ -50,22 +70,41 @@ function wallpaper
             set recent_backgrounds (remove-from-list $bgimage $recent_backgrounds)
             wp $recent_backgrounds[1]
             return 0
+        case recall
+            ~/.fehbg
+            return 0
         case any
             wp style any
             return 0
         case similar
             wp style $bgstyle
             return 0
+        case list
+            println $recent_backgrounds
+            return 0
+        case clean
+            set -U recent_backgrounds (println $recent_backgrounds | grep -v xrated)
+            return 0
         case next
             wallpaper-next
             return 0
-        case xrated
-            set backgrounddir (get-folders-for-backgrounds xrated)
-            set img (findall-list dirs=$backgrounddir types=jpg,jpeg,bmp,png | shuf | head -1)
-            wp $img
-            return 0
         case prev
             wallpaper-prev
+            return 0
+        case scale
+            feh --bg-scale $bgimage
+            return 0
+        case max
+            feh --bg-max $bgimage
+            return
+        case fill
+            feh --bg-fill $bgimage
+            return
+        case count
+            count (findall $wallpaperroot image)
+            return 0
+        case size
+            du -hs $wallpaperroot
             return 0
         case rename
             file-bg $bgimage $bgstyle/$argv[2..-1]
@@ -90,9 +129,10 @@ function wallpaper
     set -U bgimage $img
     if not match $norecord true
         add-to-recent-backgrounds $img
-        cp $img /mnt/ext/Images/backgrounds/lightdm
+        set -U wallpaperindex 1
     else
     end
+    cp $img /mnt/ext/Images/backgrounds/lightdm
 
     if not exists $format
         set ratio (get-image-aspect-ratio-type $img)
@@ -105,7 +145,7 @@ function wallpaper
             case "narrow"
                 set format max
             case "wide"
-                set format scale
+                set format fill
             case "superwide"
                 set perc (math 100 / (get-number-of-displays))
                 convert -crop $perc%x100% +repage $img /tmp/pano.jpg
@@ -113,7 +153,7 @@ function wallpaper
                     set lst $lst /tmp/pano-$i.jpg
                 end
                 set img $lst
-                set format scale
+                set format fill
         end
     end
 
@@ -122,6 +162,46 @@ function wallpaper
         signal-i3blocks wallpaper
     end
 end
+
+function move-current-wallpaper-to-category
+    move-wallpaper-to-category $argv $bgimage
+end
+
+function move-wallpaper-to-category
+    set category $argv[1]
+    set dest (get-folder-for-backgrounds $category)
+    set files $argv[2..-1]
+    for file in $files
+        set name (cutlast / $file)
+        mv $file $dest/$name
+        if match $file $bgimage
+            wp $dest/$name
+        end
+    end
+end
+
+function create-wallpaper-category 
+    if substr $argv /
+        set root (get-folder-for-backgrounds (echo $argv | cut -d / -f1))
+        set name (echo $argv | cut -d / -f2)
+    else
+        set root $wallpaperroot
+        set name $argv
+    end
+    mkdir $root/$name
+end
+
+# function move-wallpaper-prompt
+#     if exists $argv
+#         set acc $argv
+#     else
+#         while read -l line
+#             set acc $acc $line
+#         end
+#     end
+#     set category (rfi enter "enter a category: ")
+#     echo move-wallpaper-to-category $category $acc
+# end
 
 function wallpaper-prev
     if not exists $wallpaperindex
@@ -275,7 +355,7 @@ function pick-list-from-wh
     set img /tmp/wallhaven.jpg
     set url "http://alpha.wallhaven.cc/search?q=$q&categories=111&purity=$purity&resolutions=$resolutions&sorting=$sort&order=desc"
     set numbers (curl $curloptions $cookies $url | pup 'a[class=preview]' | grep href | head -$n | cut -d '"' -f4 | rev | cut -d "/" -f1 | rev)
-    mkdir $wallhavengallery #in case it doesn't exist tmp may be in ram after all
+    ensure-dir-exists $wallhavengallery
     for i in (seq (count $numbers))
         set targetimage http://wallpapers.wallhaven.cc/wallpapers/full/wallhaven-$numbers[$i].jpg
         curl $curloptions $cookies $targetimage > $wallhavengallery/$i.jpg &
@@ -342,17 +422,24 @@ function getvariables
 end
 
 function pics
-    if exists $argv
-        if test -d $argv
-            set target $argv
+    if exists $argv[1]
+        if test -d $argv[1]
+            set target $argv[1]
         else
-            set target (get-folder-for-backgrounds $argv)
+            set target (get-folder-for-backgrounds $argv[1])
         end
     else
-        set target (pwd)
+        pics (pwd)
     end
-    set pictures (findall-list dirs=$target types=jpg)
-    sxiv -tbfor $pictures 2> /dev/null
+    # set pictures (findall-list dirs=$target types=jpg)
+    
+    #write something more complicated later
+    switch (count $argv)
+        case 1
+            sxiv -tbfor $target 2> /dev/null
+        case 2
+            sxiv -tbfo $target/* 2> /dev/null
+    end
 end
 
 function file-bg
@@ -362,9 +449,13 @@ function file-bg
     set category (echo $target | cut -d "/" -f1)
     set name (echo $target | cut -d "/" -f2)
     set dir (get-folder-for-backgrounds $category)
+    # if not exists $dir
+    #   return 1
+    # end
     set location $dir/$name.$ext
     mv $file $location
     wp $location
+    touch $wallpaperroot/checksums/(checksum-simple $file)
 end
 
 function file-bg-url
@@ -374,7 +465,11 @@ function file-bg-url
     set tmp background-url.$ext
     curl $url > /tmp/$tmp
     cd /tmp
-    file-bg $tmp $name
+    if is-background-unique $tmp
+      file-bg $tmp $name
+    else
+      echo background already exists
+    end
 end
 
 function get-folder-for-backgrounds
@@ -404,9 +499,62 @@ function get-folders-for-backgrounds3
 end
 
 function name-of-wallpaper
-    cutlastn "/" 1 $bgimage | cut -d "." -f1 | sed "s/-/ /g"
+    set category (cutlastn / 2 $bgimage)
+    set name (cutlastn / 1 $bgimage | cut -d "." -f1 | sed "s/-/ /g")
+    echo $category: $name
 end
 
+function show-wallpaper-category
+    cutlastn / 2 $bgimage
+end
+
+function checksum-simple
+  md5sum $argv | cut -d " " -f1
+end
+
+function is-background-unique
+  not test -f $wallpaperroot/checksums/(checksum-simple $argv)
+end
+
+function checksum-all-backgrounds
+  rm $wallpaperroot/checksums/*
+  set images ''
+  set checksums ''
+  for i in (findall $wallpaperroot image)
+    set csum (checksum-simple $i)
+    set images $images $i
+    set checksums $checksums $csum
+    touch $wallpaperroot/checksums/$csum
+  end
+  set -U background_list $images
+  set -U background_checksums $checksums
+end
+
+function find-all-duplicate-backgrounds
+  checksum-all-backgrounds
+  set acc ''
+  set duplicates ''
+  for i in (findall $wallpaperroot image)
+      if contains (checksum-simple $i) $acc
+        set line $i is the same as (given-checksum-return-filename (checksum-simple $i))
+        set duplicates $duplicates "$line"
+      end
+      set acc $acc (checksum-simple $i)
+  end
+  println $duplicates
+end
+
+function given-checksum-return-filename
+  set n (findindex $argv $background_checksums)
+  echo $background_list[$n]
+  # zip-lists $checksums $images
+end
+function zip-lists
+  set size (math (count $argv) / 2)
+  for i in (seq $size)
+    echo $argv[$i] $argv[(math $i + $size)]
+  end
+end
 # wallpaper.fish by michael rose a nicer alternative to using feh hsetroot or such manually
 # Usage to follow
 # - wp $imagefile sets your wallpaper like feh (in fact it uses feh) with the added benefit that it will automatically determine what sort of scaling to use with the following rules

@@ -111,7 +111,7 @@ function get-active-workspaces
 end
 
 function focus-primary
-    im focus output (get-primary-display)
+    i3-msg focus output (get-primary-display)
 end
 
 function restore-workspaces
@@ -142,12 +142,12 @@ function vi3_take-n
         eval $argv[2]
         echo "done!" &
         set -e combolist
-        im mode "default" &
+        i3-msg mode "default" &
         er vi3op &
         update-op-status &
     else
         echo "not yet" &
-        im mode "op" &
+        i3-msg mode "op" &
     end
 end
 
@@ -207,11 +207,16 @@ function vi3_height
 end
 
 function vi3_workspace -d 'switch workspace [a-z]'
-    for i in (explode-words $argv)
-        im workspace $i
-    end
-    er vi3op
-    update-op-status
+    switch (count $argv)
+      case 1
+        i3-msg $argv
+      case'*'
+        for i in (explode-words $argv)
+            i3-msg workspace $i
+        end
+        er vi3op
+        update-op-status
+      end
 end
 
 function vi3_op_workspace2
@@ -219,18 +224,18 @@ function vi3_op_workspace2
 end
 
 function vi3_workspace2
-    im workspace $combolist[1]
+    i3-msg workspace $combolist[1]
 end
 
 function vi3_take-window-to-workspace
     er vi3op
     update-op-status
-    im move container to workspace $argv
+    i3-msg move container to workspace $argv
     vi3_workspace $argv
 end
 
 function vi3_move-window-to-workspace
-    im move container to workspace $argv
+    i3-msg move container to workspace $argv
     er vi3op
     update-op-status
 end
@@ -239,7 +244,7 @@ function vi3_operator-mode
     set -U vi3op $argv
     signal-i3blocks vi3
     update-op-status
-    im mode "op"
+    i3-msg mode "op"
 end
 
 function vi3_fetch-window
@@ -258,7 +263,7 @@ function vi3_fetch-to-target
 end
 
 function vi3_take-back
-    im move container to workspace back_and_forth
+    i3-msg move container to workspace back_and_forth
     vi3_workspace back_and_forth
 end
 
@@ -266,7 +271,7 @@ function vi3_backout
     set -e vi3op
     set -e combolist
     set -U numkeyed 0
-    im mode "default"
+    i3-msg mode "default"
     update-op-status
 end
 
@@ -293,11 +298,11 @@ function restore-ws
 end
 
 function vi3_select-all-in-workspace
-    im focus parent
-    im focus parent
-    im focus parent
-    im focus parent
-    im focus parent
+    i3-msg focus parent
+    i3-msg focus parent
+    i3-msg focus parent
+    i3-msg focus parent
+    i3-msg focus parent
 end
 
 function evalvi3op
@@ -336,14 +341,14 @@ function kill-app
     save-workspaces
     focus-app $argv
     sleep 0.5
-    im kill
+    i3-msg kill
     restore-workspaces
     er vi3op
     update-op-status
 end
 
 function kill-all-app
-    set target (trim (return-program-name (appkey $argv)))
+    set target (tri3-msg (return-program-name (appkey $argv)))
     sudo killall $target
     er vi3op
     update-op-status
@@ -362,18 +367,18 @@ function open-app
 end
 
 function select-all-in-workspace
-    im focus parent
-    im focus parent
-    im focus parent
+    i3-msg focus parent
+    i3-msg focus parent
+    i3-msg focus parent
 end
 
 function kill-workspace
     select-all-in-workspace
-    im kill
+    i3-msg kill
 end
 
 function kill-other-windows
-    im move container to workspace keep
+    i3-msg move container to workspace keep
     kill-workspace
     vi3_get-workspace keep
 end
@@ -382,7 +387,7 @@ end
 function destroy-everything
     set displays (get-connected-displays)
     for i in $displays
-        im focus output right
+        i3-msg focus output right
         kill-workspace
     end
 end
@@ -391,7 +396,7 @@ function update-vi3-config
     killall i3blocks
     rm ~/.i3/config
     cat /opt/vi3/header.txt ~/.i3/colors/{$colors} ~/.i3/personalconfig /opt/vi3/vi3config > ~/.i3/config
-    im restart
+    i3-msg restart
     sleep 3
     transparent-bars
 end
@@ -406,13 +411,13 @@ end
 function saveme
     i3-save-tree --workspace (get-focused-workspace) | sed 's-^\([[:blank:]]*\)//\([[:blank:]]"class".*\),$-\1\2-' > ~/.i3/sessions/{$argv}.json
     set sessionscript ~/sessions/{$argv}
-    echo '#!/usr/bin/fish' > $sessionscript
+    echo '#!/bin/fish' > $sessionscript
     chmod +x $sessionscript
     eval $EDITOR $sessionscript
 end
 
 function restoreme
-    im append_layout ~/.i3/sessions/{$argv}.json
+    i3-msg append_layout ~/.i3/sessions/{$argv}.json
     ff ~/sessions/{$argv}
 end
 
@@ -447,7 +452,7 @@ function new-open-app
     else
         cat ~/.i3/sessions/template.json | sed "s/#size/$sizeof/g" | sed "s/#winclass/$winclass/g" > /tmp/template.json
         cat /tmp/template.json
-        im append_layout /tmp/template.json
+        i3-msg append_layout /tmp/template.json
         set -U numkeyed 0
     end
     er vi3op
@@ -469,7 +474,7 @@ function set-size-of-next-window
 end
 
 function defaultmode
-    im mode "default"
+    i3-msg mode "default"
     set -U numkeyed 0
 end
 
@@ -618,7 +623,7 @@ end
 
 
 function vi3_mode
-    im mode $argv
+    i3-msg mode $argv
     set -U vi3mode $argv
     update-op-status
 end
@@ -627,20 +632,20 @@ function vi3_kill
     switch $argv
         case "d" #kill workspace
            select-all-in-workspace
-           im kill
+           i3-msg kill
         case "a" #all of a given appkey
             vi3_operator-mode kill-all-app
         case "w" #window
-            im kill
+            i3-msg kill
         case "e" #all visiable eg everything
             set displays (get-connected-displays)
             for i in $displays
-                im focus output $i
+                i3-msg focus output $i
                 select-all-in-workspace
-                im kill
+                i3-msg kill
             end
         case "o" #other windows on workspace
-            im move container to workspace keep
+            i3-msg move container to workspace keep
             vi3_kill d
             vi3_get-workspace keep
         case "t"
@@ -681,7 +686,7 @@ function commandn
         case "o"
         case "p"
         case "q"
-            set thecommand "im kill"
+            set thecommand "i3-msg kill"
         case "r"
         case "s"
         case "t"

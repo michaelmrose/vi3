@@ -162,6 +162,8 @@ function findall
             set lst bmp png jpg jpeg
         case video
             set lst mpv mpeg mkv avi wmv mp4
+        case music
+            set lst wma mp3 flac ogg wav
     end
     set start "find $loc "
     set second '-regextype posix-extended -regex ".*\.('
@@ -198,6 +200,10 @@ end
 function date-not-past
     set currentdate (date +%j)
     set date (convert-date-to-day-of-year $argv)
+    set diff (math "$date - $currentdate")
+    if test $diff -lt -300
+        set date (math $date + 365)
+    end
     test $date -ge $currentdate
 end
 

@@ -33,6 +33,8 @@
        workspace l output $primary_output
        workspace n output $primary_output
        workspace m output $primary_output
+       workspace "1: test" output $secondary_output
+
 
 #-----------------------variables-------------------------
     set $exit exec ff vi3_mode default
@@ -57,6 +59,8 @@
         bindsym $mod+Shift+c reload
         bindsym $mod+Shift+r restart
         bindsym F12 exec "ff update-vi3-config"
+        bindsym F9 exec "/home/michael/scripts/cycleg15.sh"
+
 
     #other keybindings
         #bindsym XF86LaunchB mode "command"
@@ -70,26 +74,25 @@
         bindsym Control+Mod1+r $dm
         bindsym $mod+a $mode audio
         bindsym $mod+Shift+m exec "ff display-manual"
-        bindsym $mod+n exec "ff nextwin"
-        bindsym $mod+Shift+n exec "ff new-session"
+        # bindsym $mod+n exec "ff nextwin"
         bindsym Print $mode screenshot
         #bindsym $mod+t $op vi3_trans
         bindsym $mod+t exec "ff choose-trans"
         #bindsym $mod+v $op vi3_vol
         bindsym $mod+v exec "ff choose-volume"
-        bindsym mod1+h $op vi3_height
-        bindsym mod1+w $op vi3_width
+        # bindsym mod1+h $op vi3_height
+        # bindsym mod1+w $op vi3_width
         bindsym $mod+f fullscreen
         # bindsym $mod+b $mode brightness
         bindsym $mod+b exec "ff wp"
         bindsym mod1+b exec "ff books"
-        bindsym mod1+v exec "ff choose-video"
+        # bindsym mod1+v exec "ff choose-video"
         #bindsym $mod+w exec "ff show-winclass"
         #bindsym $mod+w $op vi3_op_workspace2
         #bindsym $mod+w exec "ff keysd toggle"
         # bindsym $mod+w exec "ff choose-window all", $exit
          bindsym $mod+w exec "rofi -show window", $exit
-        bindsym $mod+p exec "ff choose-window visible"
+        # bindsym $mod+p exec "ff choose-window visible"
         # bindsym $mod+s exec "ff choose-session"
         bindsym $mod+s exec "ff vi3_toggle_shift_keys"
         bindsym $mod+c $mode configure
@@ -97,26 +100,35 @@
         bindsym $mod+z exec "ff toggle-vim"
         bindsym Mod1+l exec "ff lockme"
         bindsym Mod1+Tab exec "ff cycle_windows visible"
-        bindsym Mod1+m exec "ff get-pdf-manual"
-        bindsym XF86LaunchA exec "ff cycle_windows visible"
+        bindsym Mod1+Shift+m exec "ff get-pdf-manual"
+        bindsym $mod+Shift+n exec "fish -c switch-audio"
+        # bindsym Mod1+m $mode message_control
+        # bindsym XF86LaunchA exec "ff cycle_windows visible"
+        # bindsym XF86LaunchB exec "ff rfi run"
+        bindsym $mod+Shift+s move scratchpad
+        bindsym mod1+Shift+s scratchpad show
         # bindsym Mod1+s scratchpad show
         #bindsym F13 exec "ff rfi run"
-		bindsym $mod+d exec "ff rfi run"
-        bindsym F10 exec "ff greeter"
+		# bindsym $mod+d exec "ff rfi run"
+    bindsym $mod+d exec --no-startup-id rofi -i -show run
+        bindsym XF86Launch5 exec "ff greeter"
+        bindsym XF86Launch6 exec "ff switch-audio"
    #audio keys
-        bindsym XF86AudioRaiseVolume exec "ff setvol +5"
-        bindsym XF86AudioLowerVolume exec "ff setvol -5"
+        bindsym XF86AudioRaiseVolume exec "ff setvolume +5"
+        bindsym XF86AudioLowerVolume exec "ff setvolume -5"
         bindsym XF86AudioPrev exec "ff mm previous"
         bindsym XF86AudioNext exec "ff mm next"
         bindsym XF86AudioPlay exec "ff mm play"
         bindsym XF86AudioMute exec "ff mm mute"
+        bindsym XF86AudioStop exec "ff switch-audio"
         # bindsym $mod+m exec "ff mm-dmenu"
         bindsym $mod+m $mode menu
+        # bindsym $mod+m $mode command
         bindsym $mod+Shift+space floating toggle
         bindsym $mod+space $op ws
-        bindsym $mod+1 exec "ff ws a k"
-        bindsym $mod+2 exec "ff ws r h"
-        bindsym Mod1+s exec "ff toggle-symbol-lock"
+        # bindsym $mod+1 exec "ff ws a k"
+        # bindsym $mod+2 exec "ff ws r h"
+        # bindsym Mod1+s exec "ff toggle-symbol-lock"
 
 
 #-----------------------modes------------------------------
@@ -142,10 +154,10 @@ mode "command" {
         bindsym space focus output right,$exit
 
     # move windows around
-        bindsym Shift+k move up
-        bindsym Shift+j move down
-        bindsym Shift+h move left
-        bindsym Shift+l move right
+        bindsym Shift+k move up, focus
+        bindsym Shift+j move down, focus
+        bindsym Shift+h move left, focus
+        bindsym Shift+l move right, focus
     #back and forth through history
         bindsym Next exec "ff vi3_workspace-next"
         bindsym Prior exec "ff vi3_workspace-last"
@@ -178,7 +190,7 @@ mode "command" {
         bindsym Shift+s exec "ff sustatus"
         bindsym r $mode resize
         bindsym d $mode kill
-        bindsym m $op mws
+        bindsym m $op vi3_move-window-to-workspace
         bindsym Shift+m $mode windowmove
         bindsym n exec "ff nextwin"
         bindsym Shift+n exec "sudo /home/michael/bin/nm", $exit
@@ -208,10 +220,11 @@ mode "command" {
         bindsym 9 $setsize 9
         bindsym period exec "ff vi3_repeat", $exit
         bindsym Return exec "ff rfi run", $exit
+        bindsym Return exec fish -c "rofi -show run"
         bindsym Tab exec "ff cycle_windows visible"
 
         bindsym Escape $exit
-        bindsym F10 exec "ff greeter"
+        bindsym XF86Launch5 exec "ff greeter"
 }
 
 mode "windowmove"{
@@ -222,7 +235,7 @@ mode "windowmove"{
         bindsym l exec "ff windowmove right 400"
 
         bindsym Escape $exit
-        bindsym F10 exec "ff greeter"
+        bindsym XF86Launch5 exec "ff greeter"
 }
 
 mode "resize" {
@@ -244,7 +257,7 @@ mode "resize" {
         bindsym 9 exec "ff set-window-size perc 90", $exit
 
         bindsym Escape $exit
-        bindsym F10 exec "ff greeter"
+        bindsym XF86Launch5 exec "ff greeter"
 }
 
 mode "arrange" {
@@ -257,7 +270,7 @@ mode "arrange" {
         bindsym f floating toggle,$exit
 
         bindsym Escape $exit
-        bindsym F10 exec "ff greeter"
+        bindsym XF86Launch5 exec "ff greeter"
 }
 
 mode "audio" {
@@ -267,25 +280,31 @@ mode "audio" {
         bindsym h exec        " ff media-ctl previous          "
         bindsym l exec        " ff media-ctl next              "
         bindsym space exec    " ff media-ctl play              "
-        bindsym n exec        " switchaudio.sh "
+        bindsym n exec        " ff fishswitchaudio.fish        "
         bindsym s exec        " ff media-ctl output speakers   "
         bindsym p exec        " ff media-ctl output headphones "
         bindsym m exec        " ff media-ctl mute              "
         bindsym Shift+m exec  " ff media-ctl vol 100           "
         bindsym v exec        " ff choose-volume               "
         bindsym i exec        " ff show-playing                "
+        bindsym XF86AudioRaiseVolume exec "ff setvolume +5"
+        bindsym XF86AudioLowerVolume exec "ff setvolume -5"
+        bindsym XF86AudioPrev exec "ff mm previous"
+        bindsym XF86AudioNext exec "ff mm next"
+        bindsym XF86AudioPlay exec "ff mm play"
+        bindsym XF86AudioMute exec "ff mm mute"
 
         bindsym Escape $exit
-        bindsym F10 exec "ff greeter"
+        bindsym XF86Launch5 exec "ff greeter"
 }
 
 mode "menu" {
     #keybindings
-        bindsym shift+s     exec "sudo pm-suspend",          $exit
+        bindsym shift+s     exec "ff lq suspend",          $exit
         bindsym shift+e     exec "ff theend",                $exit
         bindsym Shift+r     exec "ff rboot",                 $exit
         bindsym Escape $exit
-        bindsym F10 exec "ff greeter"
+        bindsym XF86Launch5 exec "ff greeter"
 }
 
 mode "brightness" {
@@ -305,7 +324,7 @@ mode "brightness" {
         bindsym 9 exec       " ff bright 90  " , $exit
 
         bindsym Escape $exit
-        bindsym F10 exec "ff greeter"
+        bindsym XF86Launch5 exec "ff greeter"
 }
 
 
@@ -375,7 +394,7 @@ mode "op" {
         bindsym 9 exec "ff evalvi3op 9",$exit
 
         bindsym Escape $backout
-        bindsym F10 exec "ff greeter"
+        bindsym XF86Launch5 exec "ff greeter"
 }
 
 
@@ -396,7 +415,7 @@ mode transparency {
         bindsym Shift+m exec "ff trans 1.0" , $exit
 
         bindsym Escape $exit
-        bindsym F10 exec "ff greeter"
+        bindsym XF86Launch5 exec "ff greeter"
 
 }
 
@@ -407,7 +426,7 @@ mode screenshot {
         bindsym e exec "ff screenshot everything", $exit
 
         bindsym Escape $exit
-        bindsym F10 exec "ff greeter"
+        bindsym XF86Launch5 exec "ff greeter"
 }
 
 mode configure {
@@ -424,35 +443,73 @@ mode configure {
         bindsym s       exec "ff toggle-symbol-lock" , $exit
         bindsym b       exec "ff books"              , $exit
         bindsym t       $mode transset
+        bindsym w       exec "ff wp recent"          , $exit
+        bindsym Shift+t exec "ff apply-transparency" , $exit
 
         bindsym Escape $exit
-        bindsym F10 exec "ff greeter"
+        bindsym XF86Launch5 exec "ff greeter"
 }
 
 mode locked {
     #keybindings
-        bindsym j exec        " ff media-ctl vol -5            "
-        bindsym k exec        " ff media-ctl vol +5            "
-        bindsym h exec        " ff media-ctl previous          "
-        bindsym l exec        " ff media-ctl next              "
-        bindsym space exec    " ff media-ctl play-pause        "
-        bindsym n exec        " switchaudio.sh "
-        bindsym s exec        " ff media-ctl output speakers   "
-        bindsym p exec        " ff media-ctl output headphones "
-        bindsym m exec        " ff media-ctl vol 0             "
-        bindsym b exec        " ff wp next                     "
-        bindsym s exec "ff msg fuckyourself"
+        bindsym Shift+a exec "ff nil"
+        bindsym Shift+b exec "ff nil"
+        bindsym Shift+c exec "ff nil"
+        bindsym Shift+d exec "ff nil"
+        bindsym Shift+e exec "ff nil"
+        bindsym Shift+f exec "ff nil"
+        bindsym Shift+g exec "ff nil"
+        bindsym Shift+h exec "ff nil"
+        bindsym Shift+i exec "ff nil"
+        bindsym Shift+j exec "ff nil"
+        bindsym Shift+k exec "ff nil"
+        bindsym Shift+l exec "ff nil"
         bindsym Shift+m exec  " ff media-ctl vol 100           "
         bindsym Shift+n exec  " ff new-session"
-        bindsym Shift+e exec  " sudo shutdown -h now"
-        bindsym Shift+r exec  " sudo shutdown -r now"
+        bindsym Shift+o exec "ff nil"
+        bindsym Shift+p exec "ff nil"
+        bindsym Shift+q exec "ff nil"
+        bindsym Shift+r exec "ff nil"
+        bindsym Shift+s exec "ff nil"
+        bindsym Shift+t exec "ff nil"
+        bindsym Shift+u exec "ff nil"
+        bindsym Shift+v exec "ff nil"
+        bindsym Shift+w exec "ff nil"
+        bindsym Shift+x exec "ff nil"
+        bindsym Shift+y exec "ff nil"
+        bindsym Shift+z exec "ff nil"
+        bindsym a exec        "ff nil"
+        bindsym b exec        " ff wp next                     "
+        bindsym d exec        "ff nil"
+        bindsym e exec        "ff nil"
+        bindsym f exec        "ff nil"
+        bindsym g exec        "ff nil"
+        bindsym h exec        " ff media-ctl previous          "
+        bindsym i exec        "ff nil"
+        bindsym j exec        " ff media-ctl vol -5            "
+        bindsym k exec        " ff media-ctl vol +5            "
+        bindsym l exec        " ff media-ctl next              "
+        bindsym m exec        " ff media-ctl vol 0             "
+        bindsym n exec        " switchaudio.sh "
         bindsym o exec        " ff lightsout                   "
+        bindsym p exec        " ff media-ctl output headphones "
+        bindsym q exec        "ff nil"
+        bindsym r exec        "ff nil"
+        bindsym s exec        " ff media-ctl output speakers   "
+        bindsym t exec        "ff nil"
+        bindsym u exec        "ff nil"
+        bindsym v exec        "ff nil"
+        bindsym w exec        "ff nil"
+        bindsym x exec        "ff nil"
+        bindsym y exec        "ff nil"
+        bindsym z exec        "ff nil"
+        bindsym space exec    " ff media-ctl play-pause        "
+
         bindsym Mod1+l exec  "  ff unlockme                    "
-        bindsym q kill
-        bindsym F10 exec "ff greeter"
+        bindsym XF86Launch5 exec "ff greeter"
    #audio keys
-        bindsym XF86AudioRaiseVolume exec "ff setvol +5"
-        bindsym XF86AudioLowerVolume exec "ff setvol -5"
+        bindsym XF86AudioRaiseVolume exec "ff setvolume +5"
+        bindsym XF86AudioLowerVolume exec "ff setvolume -5"
         bindsym XF86AudioPrev exec "ff mm previous"
         bindsym XF86AudioNext exec "ff mm next"
         bindsym XF86AudioPlay exec "ff mm play"
@@ -466,8 +523,21 @@ mode transset {
         bindsym Escape $exit
 }
 
-exec "~/scripts/autostart.sh"
+mode message_control {
+    #keybindings
+        bindsym j exec "ff status-message prev"
+        bindsym k exec "ff status-message next"
+        bindsym Return exec "ff status-message activate"
+        bindsym d exec "ff status-message delete"
+        bindsym v exec "ff status-message view"
+        bindsym Escape $exit
+}
+
+
+
+# exec "~/scripts/autostart.sh"
+exec "~/scripts/simplestart.sh"
 exec "ff . /opt/vi3/fish/vi3.fish"
 exec "ff vi3_start-vi3"
-#exec "pulseaudio --sta
+# exec "ff maintain-services"
 # vim:filetype=i3

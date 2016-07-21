@@ -68,14 +68,32 @@ function clickit
 end
 
 function uz
-    for i in $argv
-        atool -x $i
+    switch (count $argv)
+        case 1
+            switch (get-ext $argv)
+                case deb
+                    unzip-deb $argv
+                case '*'
+                    atool -x $argv
+            end
+            atool -x $1
+        case '*'
+            for i in $argv
+                uz $i
+            end
     end
+end
+
+function unzip-deb
+    deb2targz $argv
+    set fname (cutlastn . 2- $argv).tar.gz
+    echo $fname
+    uz $fname
+    rm $fname
 end
 
 function v
     qvim $argv
-    nv
 end
 
 function vs
@@ -1203,15 +1221,15 @@ function find-video
     set files (findall /mnt/ext/Videos video)
     set words $argv
 
-    echo w is $words
+    # echo w is $words
 
     for i in $words
         set files (println $files | grep -i $i)
-        echo files is
-        println $files
+        # echo files is
+        # println $files
     end
     
-    echo finally files is
+    # echo finally files is
     println $files
 end
 
@@ -1531,7 +1549,21 @@ function urlwithoutgui
 end
 
 function windows-list
-    wmctrl -lxp | condense_spaces
+    set lst (wmctrl -lxp | condense_spaces)
+    if not exists $argv
+        println $lst
+    else
+        switch $argv
+            case id
+                println $lst | cut -d ' ' -f1
+            case pid
+                println $lst | cut -d ' ' -f2
+            case class
+                println $lst | cut -d ' ' -f4 | cut -d '.' -f1
+            case '*'
+                echo invalid
+        end
+    end
 end
 
 
@@ -2088,16 +2120,25 @@ function directorychanged
     end
 end
 
-function c
-    if test -d $argv
-        cd $argv
-    else if false #bmark exists
-        echo goto bmark
-    else if change-to-subdir $argv
-    else if autojump-with-returnval $argv
-    else
-        return 1
-    end
+# function c
+#     if test -d $argv
+#         cd $argv
+#         pushdandstay
+#     else if false #bmark exists
+#         echo goto bmark
+#     else if change-to-subdir $argv
+#         pushdandstay
+#     else if autojump-with-returnval $argv
+#         pushdandstay
+#     else
+#         return 1
+#     end
+# end
+
+function pushdandstay
+    set dir (pwd)
+    pushd
+    cd dir
 end
 
 function evaluate-list
@@ -2331,6 +2372,13 @@ function commatospaces
             commatospaces $line
         end
     end
+end
+function functionize
+  for f in (functions | sed 's#,#\n#')
+    set out ~/.config/fish/functions/{$f}.fish
+    functions $f > $out
+    # echo (functions $f) > ~/.config/fish/functions/$fn.fish
+  end
 end
 
 alias rfm "urxvtc -e ranger"

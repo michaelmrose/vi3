@@ -1,4 +1,8 @@
 function pkg
+    if contains $argv[1] (equery-fns) (equery-short-fns)
+        equery $argv
+        return 0
+    end
     switch $argv[1]
         case i
             sudo emerge $argv[2..-1]
@@ -10,18 +14,28 @@ function pkg
             shutitdown
         case pick 
             pick-package $argv[2..-1]
+        case search
+            switch $argv[2]
+                case desc
+                    emerge --searchdesc $argv[3..-1]
+                case '*'
+                    emerge --search $argv[2..-1]
+            end
         case s
-            emerge --search $argv[2..-1]
+            pkg search $argv[2..-1]
         case S
             sudo emerge --sync
         case uw
             pkg updateworld
+        case status
+            em-status
         case updateworld
             sudo emerge --sync
-            sudo emerge -auDN @world --ask
-            shutitdown
+            sudo emerge -aUDN @world --with-bdeps=y --keep-going=y --ask
         case depends
             equery depends $argv[2..-1]
+        case overlay
+            addoverlay $argv[2..-1]
         case edit
             switch (count $argv)
                 case 1
@@ -29,20 +43,14 @@ function pkg
                 case 2
                     nv /etc/portage/$argv[2..-1]
             end
-        case depgraph
-            equery depgraph $argv[2..-1]
         case bt
             pkg buildtime $argv[2..-1]
         case buildtime
             sudo genlop -tq $argv[2..-1]
-        case u
-            pkg uses $argv[2..-1]
         case version
             pick-version $argv[2..-1]
         case versions
             equery y $argv[2..-1]
-        case uses
-            equery uses $argv[2..-1]
         case lo
             pkg listoverlay $argv[2..-1]
         case listoverlay
@@ -51,6 +59,8 @@ function pkg
             addoverlay $argv[2..-1]
         case installed
             eix-installed -a | grep -i $argv[2..-1]
+        case '*'
+            pkg search $argv
     end
 end
 
@@ -64,6 +74,50 @@ function addoverlay
     sudo emerge --sync
     sudo eix-sync
 end
+
+# function emerge-status
+#     if pgrep emerge > /dev/null
+#         echo (build-eta)
+#     else
+#         echo none
+#     end
+# end
+
+# function build-eta
+#     if em-status > /dev/null
+#         echo ETA: (cutlast : (em-status) | trim)
+#     end
+# end
+
+# function build-info
+#     set buildinfo (echo (sudo tail /var/log/emerge.log)[-1] | cut -d "(" -f2 | cut -d ")" -f1 | cut -c1-12)
+#     echo $buildinfo | grep -E '[0-9]+ of [0-9]+'  
+# end
+
+
+function em-status
+    if pgrep emerge > /dev/null
+        if set res (sudo genlop -ntc 2> /dev/null)
+            set output (condense_lines $res)
+        end
+    else
+        return 1
+    end
+    if startswith ! $output
+        return 1
+    else
+        echo $output
+    end
+end
+
+function condense_lines
+    for i in $argv
+        set item (echo $i | sed 's#\n##g')
+        set acc $acc $item
+    end
+    echo $acc | condense_spaces
+end
+
 
 function pip2
     pipv 2 $argv
@@ -104,10 +158,15 @@ function serv
                 rc-update show
             end
             echo
-            echo -e {$white}autostarting: {$green}$restartable_services
+            # echo -e {$white}autostarting: {$green}$restartable_services
             return 0
         case autorestart
             toggle-restartables
+            return 0
+        case list
+            for i in (ls /etc/init.d/)
+                describe-service $i
+            end
             return 0
 
     end
@@ -121,11 +180,15 @@ function serv
         case stop
             sudo /etc/init.d/$argv[1] stop
         case add
-            sudo rc-update add $argv[2] $argv[3]
+            sudo rc-update add $argv[1] $argv[3]
         case delete
-            sudo rc-update delete $argv[2] $argv[3]
+            sudo rc-update delete $argv[1] $argv[3]
         case restart
             toggle-restartable $argv[1]
+        case show
+            # serv show | grep $argv[1] | condense_spaces
+            # describe-service $argv[1]
+            condense-fns "serv show | grep $argv[1] | condense_spaces" := "describe-service $argv[1]" "serv $argv[1] status"
     end
 end
 
@@ -235,3 +298,19 @@ function sys
             dm-tool switch-to-greeter
     end
 end
+
+function rebuild-kernel
+    set com s genkernel all --install --zfs --no-clean --no-mountboot --gconfig $argv --callback=\"emerge spl zfs-kmod zfs g15daemon nvidia-drivers libg15 libg15render solaar\"
+    echo command is $com
+    countdown 10
+    eval $com
+end
+
+function equery-fns
+    println (equery -C --help | condense_spaces)[10..-1] | sed 's/(//g' | sed 's/)//g' | cut -d " " -f1
+end
+
+function equery-short-fns
+    println (equery -C --help | condense_spaces)[10..-1] | cut -d '(' -f2 | cut -d ')' -f1
+end
+
