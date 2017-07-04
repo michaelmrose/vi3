@@ -1,0 +1,821 @@
+#--------------------------------------------------------
+# i3 config file (v4)
+#--------------------------------------------------------
+
+#-----------------------appearance-------------------------
+
+    #class                  border  backgr  text    indicator
+    client.focused          #111111 #6CDEF9 #6CDEF9 #6CDEF9   
+    client.focused_inactive #111111 #111111 #111111 #292d2e
+    client.unfocused        #111111 #111111 #111111 #292d2e
+    client.urgent           #2f343a #900000 #900000 #900000
+
+    new_window pixel 4
+    new_float pixel 4
+    font pango:Source Code Pro for Powerline, myfont, FontAwesome, Weather Icons 1
+
+    bar {
+            font pango:Source Code Pro for Powerline, myfont, FontAwesome, Weather Icons 10
+            output DVI-I-2
+            position top
+            status_command ~/ext-projs/i3blocks/i3blocks -c ~/.config/i3blocks/secondary-top.conf
+            binding_mode_indicator no
+            # status_command /opt/i3blocks/i3blocks -c ~/.i3blocks.conf
+            tray_output HDMI-0
+            bindsym button4 nop
+            bindsym button5 nop
+            workspace_buttons no
+            colors { 
+                #class              border  backgr  text
+                focused_workspace  #111111 #6CDEF9 #000000
+                inactive_workspace #111111 #111111 #999999
+                active_workspace   #111111 #111111 #FFFFFF
+                urgent_workspace   #111111 #FFFFFF #000000
+            }
+
+    }
+    bar {
+            font pango:Source Code Pro for Powerline, myfont, FontAwesome, Weather Icons 10
+            output DVI-I-2
+            position bottom
+            status_command ~/ext-projs/i3blocks/i3blocks -c ~/.config/i3blocks/i3blocks-secondary.conf
+            # status_command /opt/i3blocks/i3blocks -c ~/.i3blocks.conf
+            binding_mode_indicator no
+            tray_output HDMI-0
+            bindsym button4 nop
+            bindsym button5 nop
+            strip_workspace_numbers yes
+            colors { 
+                #class              border  backgr  text
+                focused_workspace  #111111 #6CDEF9 #000000
+                inactive_workspace #111111 #111111 #999999
+                active_workspace   #111111 #111111 #FFFFFF
+                urgent_workspace   #111111 #FFFFFF #000000
+            }
+
+    }
+
+    
+    bar {
+            font pango:Source Code Pro for Powerline, myfont, FontAwesome, Weather Icons 10
+            bindsym button4 nop
+            bindsym button5 nop
+            output HDMI-0
+            position bottom
+            status_command  ~/ext-projs/i3blocks/i3blocks -c ~/.config/i3blocks/i3blocks-primary.conf
+            # status_command /opt/i3blocks/i3blocks -c ~/.i3blocksalt.conf
+            binding_mode_indicator yes
+            tray_output HDMI-0
+            colors { 
+                #class              border  backgr  text
+                focused_workspace  #111111 #6CDEF9 #000000
+                inactive_workspace #111111 #111111 #999999
+                active_workspace   #111111 #111111 #FFFFFF
+                urgent_workspace   #111111 #FFFFFF #000000
+            }
+
+    }
+#---------------------variables-----------------------
+
+    set $mod Mod4
+    set $primary_output  HDMI-0
+    set $secondary_output DVI-I-2
+    set $exit exec ff vi3_mode default
+    set $e mode default
+    set $backout exec "ff vi3_backout"
+    set $selectall focus parent, focus parent, focus parent
+    set $dm exec "ff dm run"
+    set $killall focus parent, focus parent, focus parent, kill
+    set $next focus output right
+    set $op exec ff vi3_operator-mode
+    set $mode exec ff vi3_mode
+    floating_modifier $mod
+
+    mouse_warping none
+    focus_follows_mouse yes
+
+    # gaps settings for workspaces
+    gaps inner 10
+    gaps outer 5
+    smart_gaps on
+#--Assign windows to workspaces and workspaces to outputs--
+
+    assign [class=Clementine     ]  s1
+    assign [instance=calibre-gui  ] i1
+    assign [class=Hexchat         ] a1
+    assign [class=jetbrains-ide   ] u1
+    # assign [class=Thunderbird     ] lI
+    # assign [class=Screenkey       ] f
+    assign [class=Qbittorrent     ] y1
+    assign [class=Solaar          ] z1
+    assign [class=Zeal            ] c1
+    assign [class=Slack           ] e1
+    # assign [class=telegram-desktop] z
+    # assign [class=Google-chrome title="^Google"] n
+    # assign [class=Google-chrome title="^Inbox"] m
+
+
+    # for_window [class=Google-chrome title="^Google"] move window to workspace n
+    # for_window [class=Google-chrome title="^Inbox"] move window to workspace m
+
+    for_window [class="feh"] floating enable
+    for_window [class="Firefox" title="Saved Logins"] floating disable
+    for_window [class="Yad"] floating enable
+    for_window [class="Terminator"] focus
+    for_window [class="Firefox" urgent="latest"] focus
+    no_focus [class="Solaar"]
+    # for_window [title="^Side Tabs"] 
+
+
+
+
+#----------------assign workspaces to outputs------------
+
+    workspace q output $secondary_output
+    workspace w output $secondary_output
+    workspace e output $secondary_output
+    workspace r output $secondary_output
+    workspace t output $secondary_output
+    workspace a output $secondary_output
+    workspace s output $secondary_output
+    workspace d output $secondary_output
+    workspace f output $secondary_output
+    workspace g output $secondary_output
+    workspace z output $secondary_output
+    workspace x output $secondary_output
+    workspace c output $secondary_output
+    workspace v output $secondary_output
+    workspace b output $secondary_output
+    workspace 1 output $secondary_output
+    workspace 2 output $secondary_output
+    workspace 3 output $secondary_output
+    workspace 4 output $secondary_output
+    workspace 5 output $secondary_output
+    workspace 6 output $primary_output
+    workspace 7 output $primary_output
+    workspace 8 output $primary_output
+    workspace 9 output $primary_output
+    workspace 0 output $primary_output
+    workspace y output $primary_output
+    workspace u output $primary_output
+    workspace i output $primary_output
+    workspace o output $primary_output
+    workspace p output $primary_output
+    workspace h output $primary_output
+    workspace j output $primary_output
+    workspace k output $primary_output
+    workspace l output $primary_output
+    workspace n output $primary_output
+    workspace m output $primary_output
+    workspace left output $secondary_output
+    workspace right output $primary_output
+#--------------------------------experiment---------------
+
+    workspace q1 output $secondary_output
+    workspace w1 output $secondary_output
+    workspace e1 output $secondary_output
+    workspace r1 output $secondary_output
+    workspace t1 output $secondary_output
+    workspace a1 output $secondary_output
+    workspace s1 output $secondary_output
+    workspace d1 output $secondary_output
+    workspace f1 output $secondary_output
+    workspace g1 output $secondary_output
+    workspace z1 output $secondary_output
+    workspace x1 output $secondary_output
+    workspace c1 output $secondary_output
+    workspace v1 output $secondary_output
+    workspace b1 output $secondary_output
+    workspace y1 output $primary_output
+    workspace u1 output $primary_output
+    workspace i1 output $primary_output
+    workspace o1 output $primary_output
+    workspace p1 output $primary_output
+    workspace h1 output $primary_output
+    workspace j1 output $primary_output
+    workspace k1 output $primary_output
+    workspace l1 output $primary_output
+    workspace n1 output $primary_output
+    workspace m1 output $primary_output
+
+
+    workspace q2 output $secondary_output
+    workspace w2 output $secondary_output
+    workspace e2 output $secondary_output
+    workspace r2 output $secondary_output
+    workspace t2 output $secondary_output
+    workspace a2 output $secondary_output
+    workspace s2 output $secondary_output
+    workspace d2 output $secondary_output
+    workspace f2 output $secondary_output
+    workspace g2 output $secondary_output
+    workspace z2 output $secondary_output
+    workspace x2 output $secondary_output
+    workspace c2 output $secondary_output
+    workspace v2 output $secondary_output
+    workspace b2 output $secondary_output
+    workspace y2 output $primary_output
+    workspace u2 output $primary_output
+    workspace i2 output $primary_output
+    workspace o2 output $primary_output
+    workspace p2 output $primary_output
+    workspace h2 output $primary_output
+    workspace j2 output $primary_output
+    workspace k2 output $primary_output
+    workspace l2 output $primary_output
+    workspace n2 output $primary_output
+    workspace m2 output $primary_output
+
+    workspace q3 output $secondary_output
+    workspace w3 output $secondary_output
+    workspace e3 output $secondary_output
+    workspace r3 output $secondary_output
+    workspace t3 output $secondary_output
+    workspace a3 output $secondary_output
+    workspace s3 output $secondary_output
+    workspace d3 output $secondary_output
+    workspace f3 output $secondary_output
+    workspace g3 output $secondary_output
+    workspace z3 output $secondary_output
+    workspace x3 output $secondary_output
+    workspace c3 output $secondary_output
+    workspace v3 output $secondary_output
+    workspace b3 output $secondary_output
+    workspace y3 output $primary_output
+    workspace u3 output $primary_output
+    workspace i3 output $primary_output
+    workspace o3 output $primary_output
+    workspace p3 output $primary_output
+    workspace h3 output $primary_output
+    workspace j3 output $primary_output
+    workspace k3 output $primary_output
+    workspace l3 output $primary_output
+    workspace n3 output $primary_output
+    workspace m3 output $primary_output
+
+    workspace q4 output $secondary_output
+    workspace w4 output $secondary_output
+    workspace e4 output $secondary_output
+    workspace r4 output $secondary_output
+    workspace t4 output $secondary_output
+    workspace a4 output $secondary_output
+    workspace s4 output $secondary_output
+    workspace d4 output $secondary_output
+    workspace f4 output $secondary_output
+    workspace g4 output $secondary_output
+    workspace z4 output $secondary_output
+    workspace x4 output $secondary_output
+    workspace c4 output $secondary_output
+    workspace v4 output $secondary_output
+    workspace b4 output $secondary_output
+    workspace y4 output $primary_output
+    workspace u4 output $primary_output
+    workspace i4 output $primary_output
+    workspace o4 output $primary_output
+    workspace p4 output $primary_output
+    workspace h4 output $primary_output
+    workspace j4 output $primary_output
+    workspace k4 output $primary_output
+    workspace l4 output $primary_output
+    workspace n4 output $primary_output
+    workspace m4 output $primary_output
+    
+    workspace q5 output $secondary_output
+    workspace w5 output $secondary_output
+    workspace e5 output $secondary_output
+    workspace r5 output $secondary_output
+    workspace t5 output $secondary_output
+    workspace a5 output $secondary_output
+    workspace s5 output $secondary_output
+    workspace d5 output $secondary_output
+    workspace f5 output $secondary_output
+    workspace g5 output $secondary_output
+    workspace z5 output $secondary_output
+    workspace x5 output $secondary_output
+    workspace c5 output $secondary_output
+    workspace v5 output $secondary_output
+    workspace b5 output $secondary_output
+    workspace y5 output $primary_output
+    workspace u5 output $primary_output
+    workspace i5 output $primary_output
+    workspace o5 output $primary_output
+    workspace p5 output $primary_output
+    workspace h5 output $primary_output
+    workspace j5 output $primary_output
+    workspace k5 output $primary_output
+    workspace l5 output $primary_output
+    workspace n5 output $primary_output
+    workspace m5 output $primary_output
+#-----------------------Keybindings------------------------
+
+    # change focus
+        bindsym $mod+j focus down
+        bindsym $mod+k focus up
+        bindsym $mod+h focus left
+        bindsym $mod+l focus right
+        # bindsym $mod+shift+j move down, focus
+        # bindsym $mod+shift+k move up, focus
+        # bindsym $mod+shift+h move left, focus
+        # bindsym $mod+shift+l move right, focus
+
+    # reload the configuration file
+        bindsym $mod+Shift+c reload
+        bindsym $mod+Shift+r restart
+
+
+    #other keybindings
+
+        # bindsym XF86Launch2 $op vi3_workspace
+        bindsym XF86Launch2 $mode command
+        bindsym $mod+q kill
+        bindsym $mod+a $mode audio
+        bindsym $mod+Shift+m exec "ff display-manual"
+        bindsym Print $mode screenshot
+        bindsym Mod1+Shift+p $mode screenshotimgur
+        bindsym $mod+t exec "ff choose-trans"
+        bindsym $mod+v exec "ff choose-volume"
+        bindsym $mod+f fullscreen
+        bindsym $mod+b exec "ff wp"
+        bindsym mod1+b exec "ff books"
+        bindsym mod1+m exec "ff m recent"
+        bindsym $mod+w exec "rofi -show window", $exit
+        bindsym $mod+s exec "ff vi3_toggle_shift_keys"
+        bindsym $mod+c $mode configure
+        bindsym mod1+z $mode command
+        bindsym $mod+z exec "ff toggle-vim"
+        # bindsym Mod1+l exec "ff real-lock"
+        bindsym Mod1+Tab exec "ff cycle_windows visible"
+        bindsym Mod1+Shift+m exec "ff get-pdf-manual"
+        bindsym $mod+Shift+n exec "fish -c fishswitchaudio.fish"
+        bindsym $mod+Shift+s move scratchpad
+        bindsym mod1+Shift+s scratchpad show
+        bindsym $mod+d exec --no-startup-id rofi -i -show run
+        bindsym F5 exec "ff greeter"
+        bindsym F4 exec "ff fishswitchaudio.fish"
+        bindsym F7 exec "ff sus greet"
+   #audio keys
+        bindsym XF86AudioRaiseVolume exec "ff setvolume +5"
+        bindsym XF86AudioLowerVolume exec "ff setvolume -5"
+        bindsym XF86AudioPrev exec fish -c "apctl previous"
+        bindsym XF86AudioNext exec fish -c "apctl next"
+        bindsym XF86AudioPlay exec fish -c "apctl play-pause"
+
+        bindsym Mod1+n exec "ff next-player"
+        bindsym $mod+Up exec "ff pithoscli love"
+        bindsym $mod+Down exec "ff pithoscli ban"
+        bindsym XF86AudioMute exec "ff mm mute"
+        bindsym XF86AudioStop exec "ff next-player"
+        bindsym $mod+m $mode menu
+        bindsym $mod+space $mode command
+        # bindsym $mod+r exec "ff update-vi3-config"
+        bindsym $mod+r restart
+        bindsym $mod+g exec '/home/michael/scripts/cycleg15.sh'
+        bindsym $mod+1 exec "ff switch-to-nth-workspace 1"
+        bindsym $mod+2 exec "ff switch-to-nth-workspace 2"
+        bindsym $mod+3 exec "ff switch-to-nth-workspace 3"
+        bindsym $mod+4 exec "ff switch-to-nth-workspace 4"
+        bindsym $mod+5 exec "ff switch-to-nth-workspace 5"
+
+        bindsym Mod1+j exec "ff navwsstack down"
+        bindsym Mod1+k exec "ff navwsstack up"
+        bindsym Shift+Mod1+j exec "ff pushws down"
+        bindsym Shift+Mod1+k exec "ff pushws up"
+
+
+#-----------------------modes------------------------------
+mode command {
+  bindsym a exec "ff ws a",$e
+  bindsym b exec "ff ws b",$e
+  bindsym c exec "ff ws c",$e
+  bindsym d exec "ff ws d",$e
+  bindsym e exec "ff ws e",$e
+  bindsym f exec "ff ws f",$e
+  bindsym g exec "ff ws g",$e
+  bindsym h exec "ff ws h",$e
+  bindsym i exec "ff ws i",$e
+  bindsym j exec "ff ws j",$e
+  bindsym k exec "ff ws k",$e
+  bindsym l exec "ff ws l",$e
+  bindsym m exec "ff ws m",$e
+  bindsym n exec "ff ws n",$e
+  bindsym o $mode open
+  bindsym p exec "ff ws p",$e
+  bindsym q $mode kill
+  bindsym r $mode relocateto
+  bindsym s exec "ff ws s",$e
+  bindsym t $mode taketo
+  bindsym u exec "ff ws u",$e
+  bindsym v exec "ff ws v",$e
+  bindsym w $mode arrange
+  bindsym x exec "ff ws x",$e
+  bindsym y $mode yankfrom
+  bindsym z exec "ff ws z",$e
+  bindsym 1 exec "ff ws 1",$e
+  bindsym 2 exec "ff ws 2",$e
+  bindsym 3 exec "ff ws 3",$e
+  bindsym 4 exec "ff ws 4",$e
+  bindsym 5 exec "ff ws 5",$e
+  bindsym 6 exec "ff ws 6",$e
+  bindsym 7 exec "ff ws 7",$e
+  bindsym 8 exec "ff ws 8",$e
+  bindsym 9 exec "ff ws 9",$e
+  bindsym 0 exec "ff ws 0",$e
+  bindsym space focus output right,$e
+  bindsym Return exec "ff rfi run",$e
+  bindsym slash $mode searchfor
+  bindsym XF86Launch2 $mode searchfor
+  bindsym Escape $exit
+}
+
+mode open {
+  bindsym a exec "ff open-app a", $e
+  bindsym b exec "ff open-app b", $e
+  bindsym c exec "ff open-app c", $e
+  bindsym d exec "ff open-app d", $e
+  bindsym e exec "ff open-app e", $e
+  bindsym f exec "ff open-app f", $e
+  bindsym g exec "ff open-app g", $e
+  bindsym h exec "ff open-app h", $e
+  bindsym i exec "ff open-app i", $e
+  bindsym j exec "ff open-app j", $e
+  bindsym k exec "ff open-app k", $e
+  bindsym l exec "ff open-app l", $e
+  bindsym m exec "ff open-app m", $e
+  bindsym n exec "ff open-app n", $e
+  bindsym o exec "ff open-app o", $e
+  bindsym p exec "ff open-app p", $e
+  bindsym q exec "ff open-app q", $e
+  bindsym r exec "ff open-app r", $e
+  bindsym s exec "ff open-app s", $e
+  bindsym t exec "ff open-app t", $e
+  bindsym u exec "ff open-app u", $e
+  bindsym v exec "ff open-app v", $e
+  bindsym w exec "ff open-app w", $e
+  bindsym x exec "ff open-app x", $e
+  bindsym y exec "ff open-app y", $e
+  bindsym z exec "ff open-app z", $e
+  bindsym shift+a exec "ff open-app A", $e
+  bindsym shift+b exec "ff open-app B", $e
+  bindsym shift+c exec "ff open-app C", $e
+  bindsym shift+d exec "ff open-app D", $e
+  bindsym shift+e exec "ff open-app E", $e
+  bindsym shift+f exec "ff open-app F", $e
+  bindsym shift+g exec "ff open-app G", $e
+  bindsym shift+h exec "ff open-app H", $e
+  bindsym shift+i exec "ff open-app I", $e
+  bindsym shift+j exec "ff open-app J", $e
+  bindsym shift+k exec "ff open-app K", $e
+  bindsym shift+l exec "ff open-app L", $e
+  bindsym shift+m exec "ff open-app M", $e
+  bindsym shift+n exec "ff open-app N", $e
+  bindsym shift+o exec "ff open-app O", $e
+  bindsym shift+p exec "ff open-app P", $e
+  bindsym shift+q exec "ff open-app Q", $e
+  bindsym shift+r exec "ff open-app R", $e
+  bindsym shift+s exec "ff open-app S", $e
+  bindsym shift+t exec "ff open-app T", $e
+  bindsym shift+u exec "ff open-app U", $e
+  bindsym shift+v exec "ff open-app V", $e
+  bindsym shift+w exec "ff open-app W", $e
+  bindsym shift+x exec "ff open-app X", $e
+  bindsym shift+y exec "ff open-app Y", $e
+  bindsym shift+z exec "ff open-app Z", $e
+  bindsym Escape $e
+  
+}
+
+mode taketo {
+  bindsym a exec "ff tws a", $e
+  bindsym b exec "ff tws b", $e
+  bindsym c exec "ff tws c", $e
+  bindsym d exec "ff tws d", $e
+  bindsym e exec "ff tws e", $e
+  bindsym f exec "ff tws f", $e
+  bindsym g exec "ff tws g", $e
+  bindsym h exec "ff tws h", $e
+  bindsym i exec "ff tws i", $e
+  bindsym j exec "ff tws j", $e
+  bindsym k exec "ff tws k", $e
+  bindsym l exec "ff tws l", $e
+  bindsym m exec "ff tws m", $e
+  bindsym n exec "ff tws n", $e
+  bindsym o exec "ff tws o", $e
+  bindsym p exec "ff tws p", $e
+  bindsym q exec "ff tws q", $e
+  bindsym r exec "ff tws r", $e
+  bindsym s exec "ff tws s", $e
+  bindsym t exec "ff tws t", $e
+  bindsym u exec "ff tws u", $e
+  bindsym v exec "ff tws v", $e
+  bindsym w exec "ff tws w", $e
+  bindsym x exec "ff tws x", $e
+  bindsym y exec "ff tws y", $e
+  bindsym z exec "ff tws z", $e
+  bindsym Escape $e
+  
+}
+
+mode yankfrom {
+  bindsym a exec "ff gws a", $e
+  bindsym b exec "ff gws b", $e
+  bindsym c exec "ff gws c", $e
+  bindsym d exec "ff gws d", $e
+  bindsym e exec "ff gws e", $e
+  bindsym f exec "ff gws f", $e
+  bindsym g exec "ff gws g", $e
+  bindsym h exec "ff gws h", $e
+  bindsym i exec "ff gws i", $e
+  bindsym j exec "ff gws j", $e
+  bindsym k exec "ff gws k", $e
+  bindsym l exec "ff gws l", $e
+  bindsym m exec "ff gws m", $e
+  bindsym n exec "ff gws n", $e
+  bindsym o exec "ff gws o", $e
+  bindsym p exec "ff gws p", $e
+  bindsym q exec "ff gws q", $e
+  bindsym r exec "ff gws r", $e
+  bindsym s exec "ff gws s", $e
+  bindsym t exec "ff gws t", $e
+  bindsym u exec "ff gws u", $e
+  bindsym v exec "ff gws v", $e
+  bindsym w exec "ff gws w", $e
+  bindsym x exec "ff gws x", $e
+  bindsym y exec "ff gws y", $e
+  bindsym z exec "ff gws z", $e
+  bindsym Escape $e
+  
+}
+
+mode relocateto {
+  bindsym a exec "ff mws a", $e
+  bindsym b exec "ff mws b", $e
+  bindsym c exec "ff mws c", $e
+  bindsym d exec "ff mws d", $e
+  bindsym e exec "ff mws e", $e
+  bindsym f exec "ff mws f", $e
+  bindsym g exec "ff mws g", $e
+  bindsym h exec "ff mws h", $e
+  bindsym i exec "ff mws i", $e
+  bindsym j exec "ff mws j", $e
+  bindsym k exec "ff mws k", $e
+  bindsym l exec "ff mws l", $e
+  bindsym m exec "ff mws m", $e
+  bindsym n exec "ff mws n", $e
+  bindsym o exec "ff mws o", $e
+  bindsym p exec "ff mws p", $e
+  bindsym q exec "ff mws q", $e
+  bindsym r exec "ff mws r", $e
+  bindsym s exec "ff mws s", $e
+  bindsym t exec "ff mws t", $e
+  bindsym u exec "ff mws u", $e
+  bindsym v exec "ff mws v", $e
+  bindsym w exec "ff mws w", $e
+  bindsym x exec "ff mws x", $e
+  bindsym y exec "ff mws y", $e
+  bindsym z exec "ff mws z", $e
+  bindsym Escape $e
+  
+}
+
+mode searchfor {
+  bindsym a exec "ff focus-app a", $e
+  bindsym b exec "ff focus-app b", $e
+  bindsym c exec "ff focus-app c", $e
+  bindsym d exec "ff focus-app d", $e
+  bindsym e exec "ff focus-app e", $e
+  bindsym f exec "ff focus-app f", $e
+  bindsym g exec "ff focus-app g", $e
+  bindsym h exec "ff focus-app h", $e
+  bindsym i exec "ff focus-app i", $e
+  bindsym j exec "ff focus-app j", $e
+  bindsym k exec "ff focus-app k", $e
+  bindsym l exec "ff focus-app l", $e
+  bindsym m exec "ff focus-app m", $e
+  bindsym n exec "ff focus-app n", $e
+  bindsym o exec "ff focus-app o", $e
+  bindsym p exec "ff focus-app p", $e
+  bindsym q exec "ff focus-app q", $e
+  bindsym r exec "ff focus-app r", $e
+  bindsym s exec "ff focus-app s", $e
+  bindsym t exec "ff focus-app t", $e
+  bindsym u exec "ff focus-app u", $e
+  bindsym v exec "ff focus-app v", $e
+  bindsym w exec "ff focus-app w", $e
+  bindsym x exec "ff focus-app x", $e
+  bindsym y exec "ff focus-app y", $e
+  bindsym z exec "ff focus-app z", $e
+  bindsym shift+a exec "ff focus-app A", $e
+  bindsym shift+b exec "ff focus-app B", $e
+  bindsym shift+c exec "ff focus-app C", $e
+  bindsym shift+d exec "ff focus-app D", $e
+  bindsym shift+e exec "ff focus-app E", $e
+  bindsym shift+f exec "ff focus-app F", $e
+  bindsym shift+g exec "ff focus-app G", $e
+  bindsym shift+h exec "ff focus-app H", $e
+  bindsym shift+i exec "ff focus-app I", $e
+  bindsym shift+j exec "ff focus-app J", $e
+  bindsym shift+k exec "ff focus-app K", $e
+  bindsym shift+l exec "ff focus-app L", $e
+  bindsym shift+m exec "ff focus-app M", $e
+  bindsym shift+n exec "ff focus-app N", $e
+  bindsym shift+o exec "ff focus-app O", $e
+  bindsym shift+p exec "ff focus-app P", $e
+  bindsym shift+q exec "ff focus-app Q", $e
+  bindsym shift+r exec "ff focus-app R", $e
+  bindsym shift+s exec "ff focus-app S", $e
+  bindsym shift+t exec "ff focus-app T", $e
+  bindsym shift+u exec "ff focus-app U", $e
+  bindsym shift+v exec "ff focus-app V", $e
+  bindsym shift+w exec "ff focus-app W", $e
+  bindsym shift+x exec "ff focus-app X", $e
+  bindsym shift+y exec "ff focus-app Y", $e
+  bindsym shift+z exec "ff focus-app Z", $e
+  bindsym Escape $e
+  
+}
+
+mode windowmove {
+    #keybindings
+        bindsym h exec "ff windowmove left 400"
+        bindsym j exec "ff windowmove down 400"
+        bindsym k exec "ff windowmove up 400"
+        bindsym l exec "ff windowmove right 400"
+
+        bindsym Escape $e
+        bindsym XF86Launch5 exec "ff greeter",$e
+}
+
+mode resize {
+    #keybindings
+        bindsym Shift+k resize grow   height 5 px or 5 ppt
+        bindsym Shift+j resize shrink height 5 px or 5 ppt
+        bindsym Shift+h resize shrink width  5 px or 5 ppt
+        bindsym Shift+l resize grow   width  5 px or 5 ppt
+        bindsym w exec "ff set -U resizedim width"
+        bindsym h exec "ff set -U resizedim height"
+        bindsym 1 exec "ff set-window-size perc 10", $e
+        bindsym 2 exec "ff set-window-size perc 20", $e
+        bindsym 3 exec "ff set-window-size perc 30", $e
+        bindsym 4 exec "ff set-window-size perc 40", $e
+        bindsym 5 exec "ff set-window-size perc 50", $e
+        bindsym 6 exec "ff set-window-size perc 60", $e
+        bindsym 7 exec "ff set-window-size perc 70", $e
+        bindsym 8 exec "ff set-window-size perc 80", $e
+        bindsym 9 exec "ff set-window-size perc 90", $e
+
+        bindsym Escape $e
+        bindsym XF86Launch5 exec "ff greeter",$e
+}
+
+mode arrange {
+    #keybindings
+        bindsym a exec "ff arrangeme",$e
+        bindsym t layout tabbed,$e
+        bindsym h layout splith,$e
+        bindsym v layout splitv,$e
+        bindsym s layout stacked,$e
+        bindsym f floating toggle,$e
+
+        bindsym Escape $exit
+        bindsym XF86Launch5 exec "ff greeter",$e
+}
+
+mode audio {
+    #keybindings
+        bindsym j exec        " ff media-ctl vol -5            "
+        bindsym k exec        " ff media-ctl vol +5            "
+        bindsym h exec        " ff media-ctl previous          "
+        bindsym l exec        " ff media-ctl next              "
+        bindsym space exec    " ff media-ctl play              "
+        bindsym n exec        " ff fishswitchaudio.fish        "
+        bindsym s exec        " ff media-ctl output speakers   "
+        bindsym p exec        " ff media-ctl output headphones "
+        bindsym m exec        " ff media-ctl mute              "
+        bindsym Shift+m exec  " ff media-ctl vol 100           "
+        bindsym v exec        " ff choose-volume               "
+        bindsym i exec        " ff show-playing                "
+        bindsym XF86AudioRaiseVolume exec "ff setvolume +5"
+        bindsym XF86AudioLowerVolume exec "ff setvolume -5"
+        bindsym XF86AudioPrev exec "ff apctl previous"
+        bindsym XF86AudioNext exec "ff apctl next"
+        bindsym XF86AudioPlay exec "ff apctl play"
+        bindsym XF86AudioMute exec "ff apctl mute"
+
+        bindsym Escape $exit
+        bindsym XF86Launch5 exec "ff greeter",$e
+}
+
+mode menu {
+    #keybindings
+        bindsym shift+s     exec "ff lq suspend",          $e
+        bindsym shift+e     exec "ff theend",              $e
+        bindsym Shift+r     exec "ff rboot",               $e
+        bindsym Escape $exit
+        bindsym XF86Launch5 exec "ff greeter",$e
+}
+
+mode brightness {
+    #keybindings
+        bindsym j exec       " ff bright -10 "
+        bindsym k exec       " ff bright +10 "
+        bindsym m exec       " ff bright 0   " , $e
+        bindsym Shift+m exec " ff bright 100 " , $e
+        bindsym 1 exec       " ff bright 10  " , $e
+        bindsym 2 exec       " ff bright 20  " , $e
+        bindsym 3 exec       " ff bright 30  " , $e
+        bindsym 4 exec       " ff bright 40  " , $e
+        bindsym 5 exec       " ff bright 50  " , $e
+        bindsym 6 exec       " ff bright 60  " , $e
+        bindsym 7 exec       " ff bright 70  " , $e
+        bindsym 8 exec       " ff bright 80  " , $e
+        bindsym 9 exec       " ff bright 90  " , $e
+
+        bindsym Escape $exit
+        bindsym XF86Launch5 exec "ff greeter",$e
+}
+
+
+
+mode transparency {
+    #keybindings
+        bindsym 1       exec "ff trans .1"  , $e
+        bindsym 2       exec "ff trans .2"  , $e
+        bindsym 3       exec "ff trans .3"  , $e
+        bindsym 4       exec "ff trans .4"  , $e
+        bindsym 5       exec "ff trans .5"  , $e
+        bindsym 6       exec "ff trans .6"  , $e
+        bindsym 7       exec "ff trans .7"  , $e
+        bindsym 8       exec "ff trans .86" , $e
+        bindsym 9       exec "ff trans .9"  , $e
+        bindsym 0       exec "ff trans 1.0" , $e
+        bindsym m       exec "ff trans 0.0" , $e
+        bindsym Shift+m exec "ff trans 1.0" , $e
+
+        bindsym Escape $exit
+        bindsym XF86Launch5 exec "ff greeter",$e
+
+}
+
+mode screenshot {
+    #keybindings
+        bindsym w exec "ff screenshot window", $e
+        bindsym d exec "ff screenshot display", $e
+        bindsym e exec "ff screenshot everything", $e
+
+        bindsym Escape $e
+        bindsym XF86Launch5 exec "ff greeter"
+}
+mode screenshotimgur {
+    #keybindings
+        bindsym w exec "ff screenshot-to-imgur window", $e
+        bindsym d exec "ff screenshot-to-imgur display", $e
+        bindsym e exec "ff screenshot-to-imgur everything", $e
+
+        bindsym Escape $e
+        bindsym XF86Launch5 exec "ff greeter"
+}
+
+mode configure {
+    #keybindings
+        bindsym a       exec "ff vi3_mode" audio
+        bindsym k       exec "ff toggle-shift-keys"  , $exit
+        bindsym c       exec "xdotool key Caps_Lock" , $exit
+        bindsym v       exec "ff choose-volume"      , $exit
+        bindsym Shift+v exec "ff choose-video"       , $exit
+        bindsym m       exec "ff choose-music"       , $exit
+        bindsym g       exec "ff toggle-game-mode"   , $exit
+        bindsym s       exec "ff symbolkeys" , $exit
+        bindsym n       exec "ff numberkeys" , $exit
+        bindsym b       exec "ff books"              , $exit
+        bindsym t       $mode transset
+        bindsym w       exec "ff wp recent"          , $exit
+        bindsym Shift+t exec "ff apply-transparency" , $exit
+
+        bindsym Escape $exit
+        bindsym XF86Launch5 exec "ff greeter"
+}
+
+
+mode transset {
+    #keybindings
+        bindsym j exec "ff trans -5"
+        bindsym k exec "ff trans +5"
+        bindsym Escape $exit
+        bindsym XF86Launch5 exec "ff greeter"
+}
+
+
+mode kill {
+    #keybindings
+      bindsym q kill, $exit
+      bindsym w exec "ff kill-workspace", $e
+      bindsym o exec "ff kill-other-windows", $e
+      bindsym e exec "ff kill-everything", $e
+      bindsym Escape $e
+      bindsym XF86Launch5 exec "ff greeter",$e
+}
+
+
+
+exec "ff . /opt/vi3/fish/vi3.fish"
+exec "~/scripts/simplestart.sh"
